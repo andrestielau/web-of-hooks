@@ -1,8 +1,9 @@
 package subs
 
 import (
-	"github.com/andrestielau/web-of-hooks/internal/domain"
-	"github.com/andrestielau/web-of-hooks/package/actor/third/gps/sub"
+	"woh/internal/domain"
+	"woh/package/actor/third/gps/sub"
+
 	"github.com/google/wire"
 )
 

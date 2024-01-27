@@ -1,13 +1,24 @@
 package layout
+import (
+    . "woh/webhooks/html/style"
+    . "woh/webhooks/html/style/color"
+	"woh/webhooks/html/style/theme"
+)
 
 templ Shell(aside templ.Component) {
     <header>
-    <nav>Header</nav>
+        <nav class={S("bg", color(ctx)))}>Header</nav>
     </header>
-    <main>
-    { children... }
+    <main class={S("bg", color(ctx))}>
+        { children... }
     </main>
     if aside != nil {
         @aside
     }
+}
+func color(ctx context.Context) string {
+    if theme.Get(ctx) == "light" {
+        return Hex("red")
+    }  
+    return Hex("blue")
 }

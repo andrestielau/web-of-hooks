@@ -1,8 +1,9 @@
 package cmd
 
 import (
-	"github.com/andrestielau/web-of-hooks/package/app/flag"
-	"github.com/andrestielau/web-of-hooks/package/utils"
+	"woh/package/app/flag"
+	"woh/package/utils"
+
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"

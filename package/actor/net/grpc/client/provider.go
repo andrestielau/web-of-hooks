@@ -3,7 +3,8 @@ package client
 import (
 	"context"
 
-	"github.com/andrestielau/web-of-hooks/package/actor"
+	"woh/package/actor"
+
 	"google.golang.org/grpc"
 )
 

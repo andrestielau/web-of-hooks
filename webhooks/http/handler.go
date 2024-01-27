@@ -4,16 +4,21 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/andrestielau/web-of-hooks/internal/domain"
-	"github.com/andrestielau/web-of-hooks/package/utils"
-	"github.com/andrestielau/web-of-hooks/webhooks/html/page"
-	webhooksv1 "github.com/andrestielau/web-of-hooks/webhooks/http/v1"
+	"woh/internal/domain"
+	"woh/package/utils"
+	"woh/webhooks/html/page"
+	webhooksv1 "woh/webhooks/http/v1"
+
+	"woh/webhooks/html/style/theme"
+
+	"github.com/alexedwards/scs/v2"
 )
 
 type Handler struct {
 	domain.Manager
 }
 
+var sessionManager *scs.SessionManager
 var _ webhooksv1.ServerInterface = &Handler{}
 
 // CreateAttempt implements webhooksv1.ServerInterface.
@@ -116,7 +121,13 @@ const status = "ok"
 // GetHealth implements webhooksv1.ServerInterface.
 func (*Handler) GetHealth(w http.ResponseWriter, r *http.Request) {
 	if strings.Contains(r.Header.Get("Accept"), "text/html") {
-		page.Health(status).Render(r.Context(), w)
+		currentCount := sessionManager.GetInt(r.Context(), "count")
+		sessionManager.Put(r.Context(), "count", currentCount+1)
+		t := "dark"
+		if currentCount%2 == 1 {
+			t = "light"
+		}
+		page.Health(status).Render(theme.Set(r.Context(), t), w)
 		return
 	}
 	utils.JsonRes(w, map[string]any{"status": status})

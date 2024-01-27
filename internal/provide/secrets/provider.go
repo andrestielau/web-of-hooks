@@ -1,8 +1,9 @@
 package secrets
 
 import (
-	"github.com/andrestielau/web-of-hooks/internal/domain"
-	"github.com/andrestielau/web-of-hooks/package/actor/third/vault"
+	"woh/internal/domain"
+	"woh/package/actor/third/vault"
+
 	"github.com/google/wire"
 )
 

@@ -3,10 +3,11 @@ package worker
 import (
 	"syscall"
 
-	"github.com/andrestielau/web-of-hooks/package/actor"
-	"github.com/andrestielau/web-of-hooks/package/app/cmd"
-	"github.com/andrestielau/web-of-hooks/package/utils"
-	"github.com/andrestielau/web-of-hooks/webhooks/cron"
+	"woh/package/actor"
+	"woh/package/app/cmd"
+	"woh/package/utils"
+	"woh/webhooks/cron"
+
 	"github.com/samber/lo"
 	"github.com/spf13/cobra"
 )

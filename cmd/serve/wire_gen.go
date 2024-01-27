@@ -7,16 +7,16 @@
 package serve
 
 import (
-	"github.com/andrestielau/web-of-hooks/internal/domain/manager"
-	"github.com/andrestielau/web-of-hooks/internal/provide/repo"
-	"github.com/andrestielau/web-of-hooks/internal/provide/secrets"
-	"github.com/andrestielau/web-of-hooks/package/actor"
-	"github.com/andrestielau/web-of-hooks/package/actor/sql/pgx"
-	"github.com/andrestielau/web-of-hooks/package/actor/third/gps"
-	"github.com/andrestielau/web-of-hooks/package/actor/third/gps/sub"
-	"github.com/andrestielau/web-of-hooks/webhooks/grpc"
-	"github.com/andrestielau/web-of-hooks/webhooks/http"
-	"github.com/andrestielau/web-of-hooks/webhooks/subs"
+	"woh/internal/domain/manager"
+	"woh/internal/provide/repo"
+	"woh/internal/provide/secrets"
+	"woh/package/actor"
+	"woh/package/actor/sql/pgx"
+	"woh/package/actor/third/gps"
+	"woh/package/actor/third/gps/sub"
+	"woh/webhooks/grpc"
+	"woh/webhooks/http"
+	"woh/webhooks/subs"
 )
 
 // Injectors from wire.go:

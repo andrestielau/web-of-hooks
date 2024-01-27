@@ -1,8 +1,9 @@
 package manager
 
 import (
-	"github.com/andrestielau/web-of-hooks/internal/domain"
-	"github.com/andrestielau/web-of-hooks/package/actor"
+	"woh/internal/domain"
+	"woh/package/actor"
+
 	"github.com/google/wire"
 )
 

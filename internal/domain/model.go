@@ -1,8 +1,8 @@
 package domain
 
 import (
-	"github.com/andrestielau/web-of-hooks/internal/provide/repo/queries"
-	"github.com/andrestielau/web-of-hooks/package/actor"
+	"woh/internal/provide/repo/queries"
+	"woh/package/actor"
 )
 
 const ManagerKey = "webhooks-manager"

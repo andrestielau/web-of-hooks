@@ -1,8 +1,9 @@
 package cmd
 
 import (
-	"github.com/andrestielau/web-of-hooks/cmd/serve"
-	"github.com/andrestielau/web-of-hooks/package/app/cmd"
+	"woh/cmd/serve"
+	"woh/package/app/cmd"
+
 	"github.com/samber/lo"
 )
 

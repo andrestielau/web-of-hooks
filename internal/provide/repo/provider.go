@@ -1,9 +1,10 @@
 package repo
 
 import (
-	"github.com/andrestielau/web-of-hooks/internal/domain"
-	"github.com/andrestielau/web-of-hooks/internal/provide/repo/queries"
-	"github.com/andrestielau/web-of-hooks/package/actor/sql/pgx"
+	"woh/internal/domain"
+	"woh/internal/provide/repo/queries"
+	"woh/package/actor/sql/pgx"
+
 	"github.com/google/wire"
 )
 

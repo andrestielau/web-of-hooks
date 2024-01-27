@@ -5,8 +5,8 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/andrestielau/web-of-hooks/package/actor"
-	"github.com/andrestielau/web-of-hooks/package/utils"
+	"woh/package/actor"
+	"woh/package/utils"
 )
 
 type Options struct {

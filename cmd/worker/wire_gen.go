@@ -7,12 +7,12 @@
 package worker
 
 import (
-	"github.com/andrestielau/web-of-hooks/internal/domain/worker"
-	"github.com/andrestielau/web-of-hooks/internal/provide/repo"
-	"github.com/andrestielau/web-of-hooks/internal/provide/secrets"
-	"github.com/andrestielau/web-of-hooks/package/actor"
-	"github.com/andrestielau/web-of-hooks/package/actor/sql/pgx"
-	"github.com/andrestielau/web-of-hooks/webhooks/cron"
+	"woh/internal/domain/worker"
+	"woh/internal/provide/repo"
+	"woh/internal/provide/secrets"
+	"woh/package/actor"
+	"woh/package/actor/sql/pgx"
+	"woh/webhooks/cron"
 )
 
 // Injectors from wire.go:

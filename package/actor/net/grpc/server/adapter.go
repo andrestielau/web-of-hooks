@@ -5,8 +5,9 @@ import (
 	"log"
 	"net"
 
-	"github.com/andrestielau/web-of-hooks/package/actor"
-	"github.com/andrestielau/web-of-hooks/package/utils"
+	"woh/package/actor"
+	"woh/package/utils"
+
 	"google.golang.org/grpc"
 )
 

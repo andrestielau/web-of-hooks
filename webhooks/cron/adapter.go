@@ -1,8 +1,9 @@
 package cron
 
 import (
-	"github.com/andrestielau/web-of-hooks/internal/domain"
-	"github.com/andrestielau/web-of-hooks/package/actor/cron"
+	"woh/internal/domain"
+	"woh/package/actor/cron"
+
 	"github.com/google/wire"
 )
 

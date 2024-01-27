@@ -4,7 +4,7 @@ import (
 	"context"
 	"sync"
 
-	"github.com/andrestielau/web-of-hooks/package/utils"
+	"woh/package/utils"
 )
 
 type Actors map[string]Actor // Actors by id

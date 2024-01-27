@@ -1,8 +1,9 @@
 package grpc
 
 import (
-	"github.com/andrestielau/web-of-hooks/internal/domain"
-	"github.com/andrestielau/web-of-hooks/package/actor/net/grpc/server"
+	"woh/internal/domain"
+	"woh/package/actor/net/grpc/server"
+
 	"github.com/google/wire"
 )
 

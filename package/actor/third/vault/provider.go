@@ -3,7 +3,8 @@ package vault
 import (
 	"context"
 
-	"github.com/andrestielau/web-of-hooks/package/actor"
+	"woh/package/actor"
+
 	vault "github.com/hashicorp/vault/api"
 )
 

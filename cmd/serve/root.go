@@ -3,12 +3,13 @@ package serve
 import (
 	"syscall"
 
-	"github.com/andrestielau/web-of-hooks/package/actor"
-	"github.com/andrestielau/web-of-hooks/package/app/cmd"
-	"github.com/andrestielau/web-of-hooks/package/utils"
-	"github.com/andrestielau/web-of-hooks/webhooks/grpc"
-	"github.com/andrestielau/web-of-hooks/webhooks/http"
-	"github.com/andrestielau/web-of-hooks/webhooks/subs"
+	"woh/package/actor"
+	"woh/package/app/cmd"
+	"woh/package/utils"
+	"woh/webhooks/grpc"
+	"woh/webhooks/http"
+	"woh/webhooks/subs"
+
 	"github.com/samber/lo"
 	"github.com/spf13/cobra"
 )

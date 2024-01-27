@@ -1,5 +1,5 @@
 package main
 
-import "github.com/andrestielau/web-of-hooks/cmd"
+import "woh/cmd"
 
 func main() { cmd.Execute() }

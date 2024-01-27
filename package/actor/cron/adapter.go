@@ -5,7 +5,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/andrestielau/web-of-hooks/package/actor"
+	"woh/package/actor"
 )
 
 type Options struct {
