@@ -1,0 +1,153 @@
+syntax = "proto3";
+
+package webhooks.v1;
+option go_package = "grpc/v1;webhooksv1";
+
+service WebHookService {
+    rpc GetApps(GetAppsRequest) returns (GetAppsResponse);
+    rpc ListApps(ListAppsRequest) returns (ListAppsResponse);
+    rpc CreateApps(CreateAppsRequest) returns (CreateAppsResponse);
+    rpc DeleteApps(DeleteAppsRequest) returns (DeleteAppsResponse);
+    rpc GetEndpoints(GetEndpointsRequest) returns (GetEndpointsResponse);
+    rpc ListEndpoints(ListEndpointsRequest) returns (ListEndpointsResponse);
+    rpc CreateEndpoints(CreateEndpointsRequest) returns (CreateEndpointsResponse);
+    rpc DeleteEndpoints(DeleteEndpointsRequest) returns (DeleteEndpointsResponse);
+    rpc GetMessages(GetMessagesRequest) returns (GetMessagesResponse);
+    rpc ListMessages(ListMessagesRequest) returns (ListMessagesResponse);
+    rpc CreateMessages(CreateMessagesRequest) returns (CreateMessagesResponse);
+    rpc DeleteMessages(DeleteMessagesRequest) returns (DeleteMessagesResponse);
+}
+
+// Entities
+message App {
+    string id = 1;
+    string uid = 2;
+    string name = 3;
+    int32 rateLimit = 4;
+    map<string, string> metadata = 5;
+}
+message Endpoint {
+    string id = 1;
+    string uid = 2;
+    string url = 3;
+    string secret = 4;
+    string description = 5;
+    bool disabled = 6;
+    int32 version = 7;
+    int32 rateLimit = 8;
+    map<string, string> metadata = 9;
+    repeated string filterTypes = 10;
+    repeated string channels = 11;
+}
+message Message {
+    string id = 1;
+    string event_id = 2;
+    string event_type = 3;
+    string timestamp = 4;
+    bytes payload = 5;
+    repeated string tags = 6;
+    repeated string channels = 7;
+}
+message Attempt {
+    string id = 1;
+}
+
+// Req/Res
+message CreateAppsRequest {
+    repeated App data = 1;
+}
+message CreateAppsResponse {
+    repeated App data = 1;
+    repeated Error errors = 2;
+}
+message CreateEndpointsRequest {
+    string tenant_id = 1;
+    repeated Endpoint data = 2;
+}
+message CreateEndpointsResponse {
+    repeated Endpoint data = 1;
+    repeated Error errors = 2;
+}
+message CreateMessagesRequest {
+    string tenant_id = 1;
+    repeated Message data = 2;
+}
+message CreateMessagesResponse {
+    repeated Message data = 1;
+    repeated Error errors = 2;
+}
+message DeleteAppsRequest {
+    repeated string ids = 1;
+}
+message DeleteAppsResponse {
+    repeated Error errors = 1;
+}
+message DeleteEndpointsRequest {
+    string tenant_id = 1;
+    repeated string ids = 2;
+}
+message DeleteEndpointsResponse {
+    repeated Error errors = 1;
+}
+message DeleteMessagesRequest {
+    string tenant_id = 1;
+    repeated string ids = 2;
+}
+message DeleteMessagesResponse {
+    repeated Error errors = 2;
+}
+
+message GetAppsRequest {
+    repeated string ids = 1;
+}
+message GetAppsResponse {
+    map<string, App> data = 1;
+    repeated Error errors = 2;
+}
+message GetEndpointsRequest {
+    string tenant_id = 1;
+    repeated string ids = 2;
+}
+message GetEndpointsResponse {
+    map<string, Endpoint> data = 1;
+    repeated Error errors = 2;
+}
+message GetMessagesRequest {
+    string tenant_id = 1;
+    repeated string ids = 2;
+}
+message GetMessagesResponse {
+    map<string, Message> data = 1;
+    repeated Error errors = 2;
+}
+message ListAppsRequest {
+    PageRequest page = 1;
+}
+message ListAppsResponse {
+    repeated App data = 1;
+}
+message ListEndpointsRequest {
+    string tenant_id = 1;
+    PageRequest page = 2;
+}
+message ListEndpointsResponse {
+    repeated Endpoint data = 1;
+}
+message ListMessagesRequest {
+    string tenant_id = 1;
+    PageRequest page = 2;
+}
+message ListMessagesResponse {
+    repeated Message data = 1;
+}
+
+message PageRequest {
+    int32 limit = 1;
+    string cursor = 2;
+    bool desc = 3;
+}
+message Error {
+    int32 code = 1;
+    string index = 2;
+    string reason = 3;
+}

@@ -1,0 +1,56 @@
+package server
+
+import (
+	"context"
+	"log"
+	"net"
+
+	"github.com/andrestielau/web-of-hooks/package/actor"
+	"github.com/andrestielau/web-of-hooks/package/utils"
+	"google.golang.org/grpc"
+)
+
+type Options struct {
+	Handler func(*grpc.Server)
+	Addr    string
+}
+type Adapter struct {
+	*actor.Base
+	opts Options
+	*grpc.Server
+	closer utils.Closer
+}
+
+func New(opts Options) *Adapter {
+	return &Adapter{
+		Base:   actor.New(),
+		opts:   opts,
+		closer: utils.NewCloser(),
+	}
+}
+
+func (a *Adapter) Start(ctx context.Context) (first bool, err error) {
+	if first, err = a.Base.Start(ctx); !first || err != nil {
+		return
+	}
+	l, err := net.Listen("tcp", a.opts.Addr)
+	if err != nil {
+		return
+	}
+	a.Server = grpc.NewServer()
+	a.opts.Handler(a.Server)
+	go func() {
+		defer a.closer.Close()
+		log.Fatal(a.Server.Serve(l))
+	}()
+	return
+}
+
+func (a *Adapter) Stop(ctx context.Context) (last bool, err error) {
+	if last, err = a.Base.Stop(ctx); !last || err != nil {
+		return
+	}
+	a.Server.GracefulStop()
+	a.closer.Wait()
+	return
+}

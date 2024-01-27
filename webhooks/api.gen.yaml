@@ -1,0 +1,7 @@
+package: webhooksv1
+generate:
+  models: true
+  client: true
+  chi-server: true
+output-options:
+  skip-prune: true

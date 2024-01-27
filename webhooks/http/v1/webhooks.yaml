@@ -1,0 +1,788 @@
+openapi: 3.1.0
+info:
+  title: webhooks-api
+  version: '1.0'
+  contact:
+    name: André Stielau
+    email: andre.stielau@anchorage.com
+  description: The API to configure your WebHook endpoints and monitor the sending attempts.
+  summary: The API to configure your WebHook endpoints and monitor the sending attempts.
+servers:
+  - url: 'http://localhost:3000'
+    description: Local
+paths:
+  /stats:
+    get:
+      summary: General Statistics
+      responses:
+        '200':
+          $ref: '#/components/responses/StatisticsOut'
+      operationId: get-stats
+      description: Get Overall Statistics for all
+      tags:
+        - utils
+  /health:
+    get:
+      summary: Health Status
+      tags:
+        - utils
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: Unauthorized
+      operationId: get-health
+      description: Get the health status for the WebHooks API
+  /jwks.json:
+    get:
+      summary: JSON Web Key Set
+      tags: 
+        - utils
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: {}
+      operationId: jwks
+      description: Set of Keys you can used to sign.
+  /event-types:
+    get:
+      summary: List Event Types
+      tags:
+        - event-types
+      responses:
+        '200':
+          $ref: '#/components/responses/EventTypeList'
+      operationId: list-event-types
+      description: List Web-Hook Event-Types that you can subscribe to.
+      parameters:
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/cursor'
+        - $ref: '#/components/parameters/reverse'
+  /endpoints:
+    get:
+      summary: List Endpoints
+      tags:
+        - endpoints
+      responses:
+        '200':
+          $ref: '#/components/responses/EndpointList'
+      operationId: list-endpoints
+      description: List the Endpoints you want to receive Web-Hook Event-Types at.
+      parameters:
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/cursor'
+        - $ref: '#/components/parameters/reverse'
+    post:
+      summary: Register Endpoints
+      operationId: create-endpoints
+      responses:
+        '201':
+          $ref: '#/components/responses/ErrorList'
+      description: 'Register the Endpoints you want to receive webhooks at. '
+      tags:
+        - endpoints
+      requestBody:
+        $ref: '#/components/requestBodies/CreateEndpointsPayload'
+    delete:
+      summary: Disable or Delete Endpoints
+      operationId: disable-endpoints
+      responses:
+        '204':
+          description: No Content
+      requestBody:
+        $ref: '#/components/requestBodies/DeleteEndpointsPayload'
+      description: Delete or Disable Endpoint
+      parameters:
+        - $ref: '#/components/parameters/force'
+      tags:
+        - endpoints
+  '/endpoints/{endpointId}':
+    parameters:
+      - $ref: '#/components/parameters/endpointId'
+    get:
+      summary: Get Endpoint Configuration
+      tags:
+        - endpoints
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Endpoint'
+      operationId: get-endpoint
+      description: Get the configurations for your Endpoint
+    delete:
+      summary: Disable or Delete Endpoint
+      operationId: delete-endpoint
+      responses:
+        '204':
+          description: No Content
+      parameters:
+        - $ref: '#/components/parameters/force'
+      description: Disable or Delete your Endpoint
+      tags:
+        - endpoints
+    patch:
+      summary: Update Endpoint Configuration
+      operationId: update-endpoint
+      responses:
+        '204':
+          $ref: '#/components/responses/ErrorOut'
+      description: Update the configurations for your Endpoint
+      tags:
+        - endpoints
+  '/endpoints/{endpointId}/stats':
+    get:
+      summary: Get Endpoint Statistics
+      tags:
+        - endpoints
+        - utils
+      responses:
+        '200':
+          $ref: '#/components/responses/StatisticsOut'
+      operationId: get-endpoint-stats
+      description: Get the statistics for your endpoint's requests.
+    parameters:
+      - $ref: '#/components/parameters/endpointId'
+  '/endpoints/{endpointId}/secret':
+    get:
+      summary: Get Endpoint Secret
+      tags:
+        - endpoints
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: string
+      operationId: get-endpoint-secret
+      description: Get the secret for your endpoint.
+    parameters:
+      - $ref: '#/components/parameters/endpointId'
+    post:
+      summary: ''
+      operationId: rotate-endpoint-secret
+      responses:
+        '202':
+          $ref: '#/components/responses/ErrorOut'
+      description: Update the security secret of your endpoint.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: string
+      tags:
+        - endpoints
+  '/endpoints/{endpointId}/attempts':
+    get:
+      summary: List Endpoint Attempts
+      tags:
+        - attempts
+        - endpoints
+      responses:
+        '200':
+          $ref: '#/components/responses/AttemptList'
+      operationId: list-endpoint-attempr
+      description: List the Message Attempts directed at your Endpoint
+      parameters:
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/cursor'
+        - $ref: '#/components/parameters/reverse'
+    parameters:
+      - $ref: '#/components/parameters/endpointId'
+    post:
+      summary: Send or Retry Endpoint Message Attempts
+      operationId: create-endpoint-attempts
+      responses:
+        '202':
+          $ref: '#/components/responses/ErrorList'
+      parameters:
+        - $ref: '#/components/parameters/force'
+      description: Send or Retry Endpoint Message Attempts
+      tags:
+        - attempts
+        - endpoints
+      requestBody:
+        $ref: '#/components/requestBodies/CreateAttemptsPayload'
+    delete:
+      summary: Expire or Delete Endpoint Message Attempts
+      operationId: delete-endpoint-attempts
+      responses:
+        '204':
+          description: No Content
+      parameters:
+        - $ref: '#/components/parameters/force'
+      description: Delete or Expire Message Attempts
+      requestBody:
+        $ref: '#/components/requestBodies/DeleteAttemptsPayload'
+      tags:
+        - attempts
+        - endpoints
+  /messages:
+    get:
+      summary: List Messages
+      tags:
+        - messages
+      responses:
+        '200':
+          $ref: '#/components/responses/MessageList'
+      operationId: list-messages
+      parameters:
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/cursor'
+        - $ref: '#/components/parameters/reverse'
+      description: List Messages
+    post:
+      summary: Send or Resend Messages
+      operationId: create-messages
+      responses:
+        '202':
+          $ref: '#/components/responses/ErrorList'
+      parameters:
+        - $ref: '#/components/parameters/force'
+      description: Send or Resend Messages
+      tags:
+        - messages
+      requestBody:
+        $ref: '#/components/requestBodies/CreateMessagesPayload'
+    delete:
+      summary: Expire or Delete Endpoint Messages
+      operationId: delete-messages
+      responses:
+        '204':
+          description: No Content
+      parameters:
+        - $ref: '#/components/parameters/force'
+      requestBody:
+        $ref: '#/components/requestBodies/DeleteMessagesPayload'
+      description: Expire or Delete Endpoint Messages
+      tags:
+        - messages
+  '/messages/{messageId}':
+    parameters:
+      - $ref: '#/components/parameters/messageId'
+    get:
+      summary: Get Message
+      tags:
+        - messages
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+      operationId: get-message
+      description: Get Message
+    post:
+      summary: Send or Retry Message
+      operationId: create-message
+      parameters:
+        - $ref: '#/components/parameters/force'
+      description: Send or Retry Message
+      tags:
+        - messages
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewMessage'
+      responses:
+        '200':
+          $ref: '#/components/responses/ErrorOut'
+    delete:
+      summary: Expire or Delete Message
+      description: Expire or Delete Message
+      operationId: delete-message
+      responses:
+        '204':
+          description: No Content
+      parameters:
+        - $ref: '#/components/parameters/force'
+      tags:
+        - messages
+  '/messages/{messageId}/attempts':
+    parameters:
+      - $ref: '#/components/parameters/messageId'
+    get:
+      summary: List Message Attempts
+      description: List Message Attempts
+      tags:
+        - attempts
+        - messages
+      responses:
+        '200':
+          $ref: '#/components/responses/AttemptList'
+      operationId: list-message-attempts
+      parameters:
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/cursor'
+        - $ref: '#/components/parameters/reverse'
+    post:
+      summary: Send or Retry Message's Attempts
+      operationId: create-messages-attempts
+      description: Send or Retry Message's Attempts
+      responses:
+        '202':
+          $ref: '#/components/responses/ErrorList'
+      parameters:
+        - $ref: '#/components/parameters/force'
+      requestBody:
+        $ref: '#/components/requestBodies/CreateAttemptsPayload'
+      tags:
+        - attempts
+        - messages
+    delete:
+      summary: Expire or Delete Message's Attempts
+      operationId: delete-message-attempts
+      description: Expire or Delete Message's Attempts
+      responses:
+        '204':
+          description: No Content
+      parameters:
+        - $ref: '#/components/parameters/force'
+      requestBody:
+        $ref: '#/components/requestBodies/DeleteAttemptsPayload'
+      tags:
+        - attempts
+        - messages
+  /attempts:
+    get:
+      summary: List Message Attempts
+      description: List Message Attempts
+      tags:
+        - attempts
+      responses:
+        '200':
+          $ref: '#/components/responses/AttemptList'
+      operationId: list-attempts
+      parameters:
+        - $ref: '#/components/parameters/limit'
+    post:
+      summary: Send or Retry Message Attempts
+      operationId: create-attempts
+      responses:
+        '202':
+          $ref: '#/components/responses/ErrorList'
+      parameters:
+        - $ref: '#/components/parameters/force'
+      description: Send or Retry Message Attempts
+      requestBody:
+        $ref: '#/components/requestBodies/CreateAttemptsPayload'
+      tags:
+        - attempts
+    delete:
+      summary: Expire or Delete Message Attempts
+      operationId: delete-attempts
+      responses:
+        '204':
+          description: No Content
+      parameters:
+        - $ref: '#/components/parameters/force'
+      requestBody:
+        $ref: '#/components/requestBodies/DeleteAttemptsPayload'
+      tags:
+        - attempts
+      description: Expire or Delete Message Attempts
+  '/attempts/{attemptId}':
+    get:
+      summary: Get Attempt Details
+      tags:
+        - attempts
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Attempt'
+      operationId: get-attempt
+      description: Get the details for a specific Message Attempt
+    post:
+      summary: Send or Retry Message Attempt
+      operationId: create-attempt
+      responses:
+        '202':
+          $ref: '#/components/responses/ErrorOut'
+      parameters:
+        - $ref: '#/components/parameters/force'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewAttempt'
+      tags:
+        - attempts
+      description: Send or Retry Message Attempt
+    delete:
+      summary: Expire or Delete Message Attempt
+      operationId: delete-attempt
+      responses:
+        '204':
+          description: No Content
+      parameters:
+        - $ref: '#/components/parameters/force'
+      tags:
+        - attempts
+      description: Expire or Delete Message Attempt
+    parameters:
+      - $ref: '#/components/parameters/attemptId'
+components:
+  schemas:
+    EventType:
+      title: EventType
+      x-stoplight:
+        id: 4xqvb44f7uj5c
+      type: object
+      properties:
+        id:
+          type: string
+      description: Type of Messages that you can receive in your Endpoints.
+    NewEndpoint:
+      title: Endpoint
+      x-stoplight:
+        id: qzgkhrzd8q64j
+      type: object
+      description: 'The URL you can receive WebHooks at.read '
+      properties:
+        url:
+          type: string
+        uid:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        rateLimit:
+          type: integer
+        secret:
+          type: string
+        filterTypes:
+          type: array
+          uniqueItems: true
+          items:
+            type: string
+        channels:
+          type: array
+          uniqueItems: true
+          items:
+            type: string
+      required:
+        - url
+      examples:
+        - url: string
+          uid: string
+          name: string
+          description: string
+          rateLimit: 0
+          secret: string
+          filterTypes:
+            - string
+          channels:
+            - string
+    Endpoint:
+      type: object
+      x-examples:
+        example-1:
+          url: string
+          uid: string
+          name: string
+          description: string
+          rateLimit: 0
+          secret: string
+          filterTypes:
+            - string
+          channels:
+            - string
+      properties:
+        url:
+          type: string
+        uid:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        rateLimit:
+          type: integer
+        filterTypes:
+          type: array
+          items:
+            type: string
+        channels:
+          type: array
+          items:
+            type: string
+      required:
+        - url
+        - uid
+    NewMessage:
+      title: NewMessage
+      x-stoplight:
+        id: vnwci1ve4rpwa
+      type: object
+      properties:
+        id:
+          type: string
+    Message:
+      title: Message
+      x-stoplight:
+        id: qx2av4u1i21o6
+      type: object
+      properties:
+        id:
+          type: string
+    NewAttempt:
+      title: NewAttempt
+      x-stoplight:
+        id: cgk6y7ie7xyba
+      type: object
+      properties:
+        id:
+          type: string
+    Attempt:
+      title: Attempt
+      x-stoplight:
+        id: ny3bi1wtj2d75
+      type: object
+      properties:
+        id:
+          type: string
+    Statistics:
+      title: Statistics
+      x-stoplight:
+        id: 21cqt7ccboh84
+      type: object
+      properties:
+        id:
+          type: string
+    PageInfo:
+      title: PageInfo
+      x-stoplight:
+        id: 309yuev0spabt
+      type: object
+      properties:
+        next:
+          type: string
+        prev:
+          type: string
+        done:
+          type: boolean
+      required:
+        - done
+    Error:
+      title: Error
+      x-stoplight:
+        id: x5td3tsuri0qx
+      type: object
+      properties:
+        index:
+          type: string
+        cause:
+          type: string
+        code:
+          type: integer
+      required:
+        - cause
+        - code
+  requestBodies:
+    CreateEndpointsPayload:
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/NewEndpoint'
+    CreateMessagesPayload:
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/NewMessage'
+    CreateAttemptsPayload:
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/NewAttempt'
+    DeleteAttemptsPayload:
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              type: string
+    DeleteMessagesPayload:
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              type: string
+    DeleteEndpointsPayload:
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              type: object
+              properties:
+                id:
+                  type: string
+                secret:
+                  type: string
+  responses:
+    EndpointList:
+      description: Endpoint List with cursors
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              data:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Endpoint'
+              page:
+                $ref: '#/components/schemas/PageInfo'
+            required:
+              - data
+              - page
+    MessageList:
+      description: Message List with cursors
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              data:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Message'
+              page:
+                $ref: '#/components/schemas/PageInfo'
+            required:
+              - data
+              - page
+    AttemptList:
+      description: Message Attempt List with cursors
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              data:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Attempt'
+              page:
+                $ref: '#/components/schemas/PageInfo'
+            required:
+              - data
+              - page
+    StatisticsOut:
+      description: Example response
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Statistics'
+    EventTypeList:
+      description: EventType List with cursors
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              data:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EventType'
+              page:
+                $ref: '#/components/schemas/PageInfo'
+            required:
+              - data
+              - page
+    ErrorOut:
+      description: Example response
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                $ref: '#/components/schemas/Error'
+    ErrorList:
+      description: Example response
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              errors:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Error'
+            required:
+              - errors
+  parameters:
+    endpointId:
+      name: endpointId
+      in: path
+      required: true
+      schema:
+        type: string
+    messageId:
+      name: messageId
+      in: path
+      required: true
+      schema:
+        type: string
+    attemptId:
+      name: attemptId
+      in: path
+      required: true
+      schema:
+        type: string
+    force:
+      name: force
+      in: query
+      required: false
+      schema:
+        type: boolean
+    limit:
+      name: limit
+      in: query
+      required: false
+      schema:
+        type: integer
+    cursor:
+      name: cursor
+      in: query
+      required: false
+      schema:
+        type: string
+    reverse:
+      name: reverse
+      in: query
+      required: false
+      schema:
+        type: boolean
+  securitySchemes:
+    API-Key:
+      name: API Key
+      type: apiKey
+      in: header
+tags:
+  - name: attempts
+  - name: endpoints
+  - name: event-types
+  - name: messages
+  - name: utils
