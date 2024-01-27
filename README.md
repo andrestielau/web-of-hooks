@@ -5,34 +5,53 @@
   - `call`  Call Webhooks Grpc
   - `serve` Run Webhooks Manager
   - `worker` Run Webhooks Worker
-- `demo`
-  - `grpc`
-  - `pubsub`
-  - `temporal`
-- `internal`
-  - `domain`
-    - `manager`
-    - `worker`
-  - `provide`
-    - `repo`
-      - `migrations`
-      - `queries`
-    - `secrets`
-- `package`
-  - `actor`
-  - `app`
-  - `util` 
-- `webhooks`
-  - `cron`
-    - `v1`
-  - `grpc`
-    - `v1`
-  - `html`
-    - `v1`
-  - `http`
-    - `v1`
-  - `subs`
-    - `v1`
+- `demo` Examples
+  - `grpc` Create Messages from gRPC
+  - `pubsub` Create Messages from PubSub
+  - `temporal` Create Messages from Temporal
+- `internal` Implementation
+  - `domain` Domain Logic
+    - `manager` Service to Manage Data
+    - `worker` Service to Send WebHook Messages
+  - `provide` Provider Implementations
+    - `repo` Postgres Access
+      - `migrations` Database DDL
+      - `queries` Database DQL/DML
+    - `secrets` Vault Access 
+- `package` Generic Code
+  - `actor` Lifecycle Manager
+    - `cron` Base Cron Adapter
+    - `net` Network Modules
+      - `grpc` Grpc Actors
+        - `server` Grpc Adapter
+        - `client` Grpc Provider
+      - `http` Http Actors
+        - `server` Http Adapter
+        - `client` Http Provider
+  - `app` Application Utilities
+    - `cfg` Configuration Utilities
+    - `cmd` Command Line Utilities
+    - `flag` Flag Utilities
+  - `util` Generic Utilities
+- `webhooks` Application Adapters
+  - `cron` Cron for Workers
+  - `grpc` Internal API
+    - `v1` Grpc Definition
+  - `html` Browser API
+    - `components` Reusable Atomic Components
+      - `atom` Simple Composable Components
+      - `molecule` Encapsulation of Components
+    - `layouts` Reusable Aggregate Dispositions
+    - `pages` Pages to Render
+    - `scripts` Reusable JavaScript
+    - `styles` Style Definitions
+    - `utils` Utility Methods
+  - `http` External API
+    - `v1` OAPI Definition
+  - `pub` Publisher
+    - `v1` Produced Message Definition
+  - `subs` Subscriber
+    - `v1` Consumed Message Definition 
 
 # High Level Architecture
 ```mermaid
@@ -139,3 +158,8 @@ erDiagram
 # Cherry on Top
 - [ ] Integrate with Backoffice Dashboard
 - [ ] Integrate with Client Dashboard
+  
+# Other Ideas
+- Reusable Secrets
+- Publish Errors and/or Successes
+- OTEL Metrics
