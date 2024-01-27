@@ -1,0 +1,10 @@
+package layout
+
+templ Html(head templ.Component) {
+    <html>
+        if head != nil {
+            @head
+        }
+        { children... }
+    </html>
+}

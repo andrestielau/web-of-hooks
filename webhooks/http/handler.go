@@ -6,8 +6,8 @@ import (
 
 	"github.com/andrestielau/web-of-hooks/internal/domain"
 	"github.com/andrestielau/web-of-hooks/package/utils"
+	"github.com/andrestielau/web-of-hooks/webhooks/html/page"
 	webhooksv1 "github.com/andrestielau/web-of-hooks/webhooks/http/v1"
-	"github.com/gomarkdown/markdown"
 )
 
 type Handler struct {
@@ -115,13 +115,8 @@ const status = "ok"
 
 // GetHealth implements webhooksv1.ServerInterface.
 func (*Handler) GetHealth(w http.ResponseWriter, r *http.Request) {
-	// If negotiator returns html render health page
-	if strings.Contains(r.Header.Get("Accept"), "application/html") {
-		w.WriteHeader(200)
-		w.Header().Add("Content-Type", "application/html")
-		w.Write(markdown.ToHTML([]byte(`# Health
-	## Status: `+status+`
-	`), nil, nil))
+	if strings.Contains(r.Header.Get("Accept"), "text/html") {
+		page.Health(status).Render(r.Context(), w)
 		return
 	}
 	utils.JsonRes(w, map[string]any{"status": status})

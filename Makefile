@@ -13,7 +13,7 @@ run:
 	go run . serve
 
 dev:
-	templ generate --watch --proxy="http://localhost:3000" --cmd="go run ."
+	templ generate --watch --proxy="http://localhost:3000" --cmd="go run . serve"
 
 # Compose Commands
 up:

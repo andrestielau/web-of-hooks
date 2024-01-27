@@ -5,8 +5,8 @@ go 1.21.6
 require (
 	github.com/ThreeDotsLabs/watermill v1.3.5
 	github.com/ThreeDotsLabs/watermill-googlecloud v1.1.0
+	github.com/a-h/templ v0.2.543
 	github.com/go-chi/chi/v5 v5.0.8
-	github.com/gomarkdown/markdown v0.0.0-20230922112808-5421fefb8386
 	github.com/google/wire v0.5.0
 	github.com/hashicorp/vault/api v1.11.0
 	github.com/jackc/pgconn v1.14.1
@@ -67,7 +67,7 @@ require (
 	github.com/spf13/cast v1.6.0 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
 	go.opencensus.io v0.24.0 // indirect
-	go.uber.org/atomic v1.9.0 // indirect
+	go.uber.org/atomic v1.10.0 // indirect
 	go.uber.org/multierr v1.9.0 // indirect
 	golang.org/x/crypto v0.17.0 // indirect
 	golang.org/x/exp v0.0.0-20230905200255-921286631fa9 // indirect

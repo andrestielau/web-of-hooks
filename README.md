@@ -1,5 +1,13 @@
 # Web-of-Hooks
-# Project Structure
+Welcome to our 2024's Hackathon project!  
+This week we'll be working on a new notification solution: WebHooks!! :tada:  
+I hope you're all excited for this, we'll need motivation to endure the hardships ahead.  
+We're facing some tough challenges, so we should prepare ourselves first.  
+Here's a list of topics that will come up in our journey:
+
+# Project
+## Structure
+Y'all found this repository with an initial structure, this doesn't mean that the structure won't change, but if it does please update this document to reflect the latest structure.
 - `.vscode` VSCode configs
 - `cmd` CLI Commands
   - `call`  Call Webhooks Grpc
@@ -53,7 +61,8 @@
   - `subs` Subscriber
     - `v1` Consumed Message Definition 
 
-# High Level Architecture
+## High Level Architecture
+Since it's not easy to understand the organization of an application from the folder structure alone, here's a little drawing to help you get a high level idea of the pieces of this service and how they're conected.
 ```mermaid
 graph LR
     Temporal --> Activity
@@ -76,7 +85,9 @@ graph LR
     Worker --> Endpoints 
 ```
 
-# Entity-Relation Diagram
+## Entity-Relation Diagram
+Since you'll be persisting data you need to be aware of the structure and relations that the data has, for that purpose you can use the following diagram to refresh your memory.
+TODO: This section is still incomplete, please update it when possible.
 ```mermaid
 erDiagram
     EventType {
@@ -107,7 +118,12 @@ erDiagram
     Endpoint }o--o{ EventType : "filter"
 ```
 
-# Make
+# Tools
+In order to make your developement experience more pleasant this repository makes use of some third-party tools.  
+You can check the following links for more documentation on each:
+
+## [Make](https://makefiletutorial.com/)
+
 - `make` alias for `make down db gen`
 - `make up` alias for `docker-compose up -d`
 - `make down` alias for `docker-compose down`
@@ -120,9 +136,18 @@ erDiagram
   - `make db/up` starts db and waits for it to be healthy
   - `make db/push` runs db migrations
 
-# Compose
-- Postgres
-- Vault
+## [Docker Compose](https://docs.docker.com/compose/)
+- `postgres` database
+- `vault` secret manager
+
+## [OAPI CodeGen](https://github.com/deepmap/oapi-codegen)
+OpenAPI Client and Server Code Generator
+## [Migrate](https://github.com/golang-migrate/migrate)
+Database migrations written in Go
+## [PgGen](https://github.com/jschaf/pggen)
+Generate type safe Go methods from Postgres SQL queries
+## [Templ](https://templ.guide/)
+An HTML templating language for Go that has great developer tooling
 
 # Develop
 
@@ -132,7 +157,7 @@ erDiagram
 - Run: `go run . serve`
 - Test `https://port3000.[your-name].anchorlabs.dev/health`
 
-# Tasks:
+## Tasks:
 - Adapters
   - [ ] Http
   - [ ] Grpc
@@ -145,21 +170,30 @@ erDiagram
   - [ ] Repo
   - [ ] Secrets
   
-# Goals 
+## Goals 
 - [ ] onboard tenants (create applications) (grpc + db)
 - [ ] register event-types (CRUD event-types) (grpc + db)
 - [ ] manage configs (edit application + CRUD endpoint) (http/grpc + db)
 - [ ] register messages (create message) (grpc/http/pubsub/temporal + db)
 - [ ] worker calls (dequeue + submit)
-# Bonus
+## Bonus
 - [ ] Integrate grpc with GraphQL (grpc + graphql)
 - [ ] Integrate with existing workflows (temporal)
 - [ ] Integrate with existing API (http)
-# Cherry on Top
+## Cherry on Top
 - [ ] Integrate with Backoffice Dashboard
 - [ ] Integrate with Client Dashboard
   
-# Other Ideas
+## Other Ideas
 - Reusable Secrets
 - Publish Errors and/or Successes
 - OTEL Metrics
+- Store Responses (and maybe requests) in FileStorage
+- `Content-Type` Negotiator (get preferred content type from `Accept` headers and response formats for each endpoint)
+
+## Common issues
+### Zombie process
+When you get the error `listen tcp :3000: bind: address already in use`
+Run: `netstat -nlp | grep 3000`
+You'll see something like: `tcp6 0 0 :::3000 :::* LISTEN {PID}/web-of-hooks`
+Then run: `kill -9 {PID}`

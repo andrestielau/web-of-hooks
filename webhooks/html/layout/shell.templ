@@ -1,0 +1,13 @@
+package layout
+
+templ Shell(aside templ.Component) {
+    <header>
+    <nav>Header</nav>
+    </header>
+    <main>
+    { children... }
+    </main>
+    if aside != nil {
+        @aside
+    }
+}
