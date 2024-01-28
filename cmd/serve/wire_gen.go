@@ -7,16 +7,16 @@
 package serve
 
 import (
-	"woh/internal/domain/manager"
-	"woh/internal/provide/repo"
-	"woh/internal/provide/secrets"
 	"woh/package/actor"
 	"woh/package/actor/sql/pgx"
 	"woh/package/actor/third/gps"
 	"woh/package/actor/third/gps/sub"
-	"woh/webhooks/grpc"
-	"woh/webhooks/http"
-	"woh/webhooks/subs"
+	"woh/webhooks/adapt/grpc"
+	"woh/webhooks/adapt/http"
+	"woh/webhooks/adapt/subs"
+	"woh/webhooks/provide/repo"
+	"woh/webhooks/provide/secrets"
+	"woh/webhooks/service/manager"
 )
 
 // Injectors from wire.go:

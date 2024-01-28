@@ -6,7 +6,7 @@ import (
 	"woh/package/actor"
 	"woh/package/app/cmd"
 	"woh/package/utils"
-	"woh/webhooks/cron"
+	"woh/webhooks/adapt/cron"
 
 	"github.com/samber/lo"
 	"github.com/spf13/cobra"

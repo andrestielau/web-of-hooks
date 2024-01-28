@@ -1,0 +1,32 @@
+package layout
+import (
+    . "woh/webhooks/adapt/html/style"
+    . "woh/webhooks/adapt/html/style/color"
+	"woh/webhooks/adapt/html/style/theme"
+)
+
+script stickyHeader() {
+    var navbar = document.getElementById("navbar");
+    var sticky = navbar.offsetTop;
+    window.onscroll = () => {
+        if (window.pageYOffset >= sticky) navbar.classList.add("sticky")
+        else navbar.classList.remove("sticky");
+    };
+}
+
+templ Shell(aside templ.Component) {
+    @stickyHeader()
+    <nav id="navbar" class={C(`sticky top:0 bg:%s`, color(ctx, true))}>Header</nav>
+    <main class={C(`vh bg:%s`, color(ctx, false))}>
+        { children... }
+    </main>
+    if aside != nil {
+        @aside
+    }
+}
+func color(ctx context.Context, primary bool) string {
+    if theme.Get(ctx) == "light" != primary {
+        return Hex("red")
+    }  
+    return Hex("blue")
+}

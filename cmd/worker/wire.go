@@ -4,11 +4,11 @@
 package worker
 
 import (
-	"woh/internal/domain/worker"
-	"woh/internal/provide/repo"
-	"woh/internal/provide/secrets"
 	"woh/package/actor"
-	"woh/webhooks/cron"
+	"woh/webhooks/adapt/cron"
+	"woh/webhooks/provide/repo"
+	"woh/webhooks/provide/secrets"
+	"woh/webhooks/service/worker"
 
 	"github.com/google/wire"
 )

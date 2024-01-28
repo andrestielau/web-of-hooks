@@ -1,0 +1,14 @@
+package page
+import (
+    . "woh/webhooks/adapt/html/style"
+    "woh/webhooks/adapt/html/layout"
+)
+
+templ Health(status string) {
+    @layout.Html(nil) {
+        @layout.Shell(nil) {
+            <h1 class={C("capitalize")}>health</h1>
+            <h2 class={C("italic")}>Status: {status}</h2>
+        }
+    }
+}

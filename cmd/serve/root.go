@@ -6,9 +6,9 @@ import (
 	"woh/package/actor"
 	"woh/package/app/cmd"
 	"woh/package/utils"
-	"woh/webhooks/grpc"
-	"woh/webhooks/http"
-	"woh/webhooks/subs"
+	"woh/webhooks/adapt/grpc"
+	"woh/webhooks/adapt/http"
+	"woh/webhooks/adapt/subs"
 
 	"github.com/samber/lo"
 	"github.com/spf13/cobra"

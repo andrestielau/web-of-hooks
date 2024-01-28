@@ -31,13 +31,13 @@ wait:
 # Generator Commands
 gen: gen/grpc gen/api gen/db
 
-gen/grpc: ${GRPC_DIR}/webhooks.proto webhooks/buf.gen.yaml 
+gen/grpc: ${GRPC_DIR}/webhooks.proto buf.gen.yaml 
 	@echo Generating gRPC
-	@cd webhooks && buf generate
+	@buf generate
 
-gen/api: ${API_DIR}/webhooks.yaml webhooks/api.gen.yaml
+gen/api: ${API_DIR}/webhooks.yaml api.gen.yaml
 	@echo Generating API
-	@oapi-codegen --config webhooks/api.gen.yaml ${API_DIR}/webhooks.yaml > ${API_DIR}/webhooks.gen.go
+	@oapi-codegen --config api.gen.yaml ${API_DIR}/webhooks.yaml > ${API_DIR}/webhooks.gen.go
 
 gen/db:
 	@echo Generating DB

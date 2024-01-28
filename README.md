@@ -18,7 +18,7 @@ Y'all found this repository with an initial structure, this doesn't mean that th
   - `pubsub` Create Messages from PubSub
   - `temporal` Create Messages from Temporal
 - `internal` Implementation
-  - `domain` Domain Logic
+  - `webhooks` webhooks Logic
     - `manager` Service to Manage Data
     - `worker` Service to Send WebHook Messages
   - `provide` Provider Implementations
