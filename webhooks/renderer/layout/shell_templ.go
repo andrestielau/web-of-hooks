@@ -11,9 +11,9 @@ import "io"
 import "bytes"
 
 import (
-	. "woh/webhooks/adapt/html/style"
-	. "woh/webhooks/adapt/html/style/color"
-	"woh/webhooks/adapt/html/style/theme"
+	. "woh/webhooks/renderer/style"
+	. "woh/webhooks/renderer/style/color"
+	"woh/webhooks/renderer/style/theme"
 )
 
 func stickyHeader() templ.ComponentScript {

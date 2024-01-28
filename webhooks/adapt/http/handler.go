@@ -6,10 +6,9 @@ import (
 
 	"woh/package/utils"
 	"woh/webhooks"
-	"woh/webhooks/adapt/html/page"
 	webhooksv1 "woh/webhooks/adapt/http/v1"
-
-	"woh/webhooks/adapt/html/style/theme"
+	"woh/webhooks/renderer/page"
+	"woh/webhooks/renderer/style/theme"
 
 	"github.com/alexedwards/scs/v2"
 )
