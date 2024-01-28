@@ -6,6 +6,7 @@ import (
 	"woh/package/actor"
 	"woh/package/app/cmd"
 	"woh/package/utils"
+	"woh/webhooks/adapt/cron"
 	"woh/webhooks/adapt/grpc"
 	"woh/webhooks/adapt/http"
 	"woh/webhooks/adapt/subs"
@@ -28,12 +29,14 @@ func runServe(cmd *cobra.Command, args []string) {
 
 func ChooseAdapters(
 	h *http.Adapter,
-	_ *grpc.Adapter,
+	g *grpc.Adapter,
 	s *subs.Adapter,
+	c *cron.Adapter,
 ) actor.Actors {
 	return actor.Actors{
 		"http": h,
-		//"grpc": g,
+		"grpc": g,
 		"subs": s,
+		"cron": c,
 	}
 }

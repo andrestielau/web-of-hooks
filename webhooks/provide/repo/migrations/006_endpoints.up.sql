@@ -1,5 +1,7 @@
 CREATE TYPE webhooks.new_endpoint AS (
-    tenant_id TEXT,
+    url TEXT,
+    name TEXT,
+    application_id UUID,
     rate_limit INT,
     metadata JSONB,
     description TEXT,
@@ -9,6 +11,8 @@ CREATE TYPE webhooks.new_endpoint AS (
 
 CREATE TABLE webhooks.endpoint (
     id SERIAL PRIMARY KEY,
+    url TEXT NOT NULL,
+    name TEXT NOT NULL DEFAULT '',
     application_id INT NOT NULL REFERENCES webhooks.application(id),
     uid UUID UNIQUE NOT NULL DEFAULT generate_ulid(),
     rate_limit INT NOT NULL DEFAULT 0,

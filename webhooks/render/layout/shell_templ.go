@@ -11,9 +11,7 @@ import "io"
 import "bytes"
 
 import (
-	. "woh/webhooks/renderer/style"
-	. "woh/webhooks/renderer/style/color"
-	"woh/webhooks/renderer/style/theme"
+	. "woh/webhooks/render/style"
 )
 
 func stickyHeader() templ.ComponentScript {
@@ -48,7 +46,7 @@ func Shell(aside templ.Component) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var2 = []any{C(`sticky top:0 bg:%s`, color(ctx, true))}
+		var templ_7745c5c3_Var2 = []any{C(`sticky top:0 bg:turquoise`)}
 		templ_7745c5c3_Err = templ.RenderCSSItems(ctx, templ_7745c5c3_Buffer, templ_7745c5c3_Var2...)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
@@ -65,7 +63,7 @@ func Shell(aside templ.Component) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var3 = []any{C(`vh bg:%s`, color(ctx, false))}
+		var templ_7745c5c3_Var3 = []any{C(`vh bg:bisque`)}
 		templ_7745c5c3_Err = templ.RenderCSSItems(ctx, templ_7745c5c3_Buffer, templ_7745c5c3_Var3...)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
@@ -101,11 +99,4 @@ func Shell(aside templ.Component) templ.Component {
 		}
 		return templ_7745c5c3_Err
 	})
-}
-
-func color(ctx context.Context, primary bool) string {
-	if theme.Get(ctx) == "light" != primary {
-		return Hex("red")
-	}
-	return Hex("blue")
 }

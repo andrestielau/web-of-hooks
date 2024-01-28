@@ -6,6 +6,7 @@ package serve
 import (
 	"woh/package/actor"
 	"woh/package/actor/third/gps"
+	"woh/webhooks/adapt/cron"
 	"woh/webhooks/adapt/grpc"
 	"woh/webhooks/adapt/http"
 	"woh/webhooks/adapt/subs"
@@ -25,6 +26,7 @@ func Adapters() actor.Actors {
 		subs.Set,
 		grpc.Set,
 		http.Set,
+		cron.Set,
 		ChooseAdapters,
 	))
 }

@@ -2,11 +2,25 @@ package style
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/a-h/templ"
 )
 
+var sizes = map[string]int{
+	"4xs": 360,
+	"3xs": 480,
+	"2xs": 600,
+	"xs":  768,
+	"sm":  834,
+	"md":  1024,
+	"lg":  1280,
+	"xl":  1440,
+	"2xl": 1600,
+	"3xl": 1920,
+	"4xl": 2560,
+}
 var keywords = map[string]string{
 	"square":             `aspect-ratio: 1/1;`,
 	"video":              `aspect-ratio: 16/9;`,
@@ -113,7 +127,11 @@ func C(classes string, args ...any) templ.CSSClass {
 			if n, ok = alias[key]; !ok {
 				n = key
 			}
-			t.WriteString(string(templ.SanitizeCSS(n, parts[1])))
+			v := parts[1]
+			if size, ok := sizes[v]; ok {
+				v = strconv.Itoa(size)
+			}
+			t.WriteString(string(templ.SanitizeCSS(n, v)))
 		}
 	}
 	ret := t.String()

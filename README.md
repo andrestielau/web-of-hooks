@@ -11,8 +11,7 @@ Y'all found this repository with an initial structure, this doesn't mean that th
 - `.vscode` VSCode configs
 - `cmd` CLI Commands
   - `call`  Call Webhooks Grpc
-  - `serve` Run Webhooks Manager
-  - `worker` Run Webhooks Worker
+  - `serve` Run Application
 - `demo` Examples
   - `grpc` Create Messages from gRPC
   - `pubsub` Create Messages from PubSub
@@ -56,7 +55,7 @@ Y'all found this repository with an initial structure, this doesn't mean that th
       - `migrations` Database DDL
       - `queries` Database DQL/DML
     - `secrets` Vault Access 
-  - `renderer` HTML renderers
+  - `render` HTML renders
     - `components` Reusable Atomic Components
       - `atom` Simple Composable Components
       - `molecule` Encapsulation of Components
@@ -211,3 +210,16 @@ When you get the error `listen tcp :3000: bind: address already in use`
 Run: `netstat -nlp | grep 3000`
 You'll see something like: `tcp6 0 0 :::3000 :::* LISTEN {PID}/web-of-hooks`
 Then run: `kill -9 {PID}`
+
+
+# Notes
+Why separate secret management from endpoint configuration?
+- Decoupled storage:
+  instead of salting, hashing, or alike and store secrets on the database, these can be stored in vault so that they're never exposed.
+- Reusability
+  since some clients might want to receive webhooks in different endpoints on the same server, they might also want to use the same secret.
+
+
+# Validation Process:
+- Using Authorized API Key, customer requests latest validation keys for endpoints
+- Whenever a customer endpoint receives a message, they can use the endpoint's key to 

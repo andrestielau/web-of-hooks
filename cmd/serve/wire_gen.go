@@ -11,6 +11,7 @@ import (
 	"woh/package/actor/sql/pgx"
 	"woh/package/actor/third/gps"
 	"woh/package/actor/third/gps/sub"
+	"woh/webhooks/adapt/cron"
 	"woh/webhooks/adapt/grpc"
 	"woh/webhooks/adapt/http"
 	"woh/webhooks/adapt/subs"
@@ -55,6 +56,14 @@ func Adapters() actor.Actors {
 		Options: subOptions,
 	}
 	subsAdapter := subs.New(subsOptions)
-	actors := ChooseAdapters(adapter, grpcAdapter, subsAdapter)
+	cronHandler := &cron.Handler{
+		Repo:    provider,
+		Secrets: secretsProvider,
+	}
+	cronOptions := cron.Options{
+		Handler: cronHandler,
+	}
+	cronAdapter := cron.New(cronOptions)
+	actors := ChooseAdapters(adapter, grpcAdapter, subsAdapter, cronAdapter)
 	return actors
 }

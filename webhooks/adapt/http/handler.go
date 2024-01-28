@@ -7,8 +7,8 @@ import (
 	"woh/package/utils"
 	"woh/webhooks"
 	webhooksv1 "woh/webhooks/adapt/http/v1"
-	"woh/webhooks/renderer/page"
-	"woh/webhooks/renderer/style/theme"
+	"woh/webhooks/render/page"
+	"woh/webhooks/render/style/theme"
 
 	"github.com/alexedwards/scs/v2"
 )
@@ -160,17 +160,28 @@ func (h *Handler) ListEndpointAttempr(w http.ResponseWriter, r *http.Request, en
 
 // ListEndpoints implements webhooksv1.ServerInterface.
 func (h *Handler) ListEndpoints(w http.ResponseWriter, r *http.Request, params webhooksv1.ListEndpointsParams) {
-	panic("unimplemented")
+	Endpoints, err := h.Repo.ListEndpoints(r.Context(), 100, 0)
+	if strings.Contains(r.Header.Get("Accept"), "text/html") {
+		page.Endpoints(page.EndpointsViewModel{ // Todo decouple from DB
+			Data: Endpoints,
+		}, err).Render(r.Context(), w)
+		return
+	}
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	utils.JsonRes(w, Endpoints)
 }
 
 // ListEventTypes implements webhooksv1.ServerInterface.
 func (h *Handler) ListEventTypes(w http.ResponseWriter, r *http.Request, params webhooksv1.ListEventTypesParams) {
+	//	h.Repo.CreateEventTypes(r.Context(), []queries.NewEventType{{"test-" + uuid.NewString()}}) uncomment to test types
 	eventTypes, err := h.Repo.ListEventTypes(r.Context(), 100, 0)
 	if strings.Contains(r.Header.Get("Accept"), "text/html") {
-		page.EventTypes(page.EventTypesViewModel{
+		page.EventTypes(page.EventTypesViewModel{ // Todo decouple from DB
 			Data: eventTypes,
-			Err:  err,
-		}).Render(r.Context(), w)
+		}, err).Render(r.Context(), w)
 		return
 	}
 	if err != nil {

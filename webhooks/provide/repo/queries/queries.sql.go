@@ -17,10 +17,16 @@ type Querier interface {
 	CreateEventTypes(ctx context.Context, eventTypes []NewEventType) ([]CreateEventTypesRow, error)
 
 	// CreateApplications inserts applications into the database
-	CreateApplications(ctx context.Context, eventTypes []NewApplication) ([]CreateApplicationsRow, error)
+	CreateApplications(ctx context.Context, applications []NewApplication) ([]CreateApplicationsRow, error)
+
+	// CreateEndpoints inserts endpoints into the database
+	CreateEndpoints(ctx context.Context, endpoints []NewEndpoint) ([]CreateEndpointsRow, error)
 
 	// ListEventTypes lists event-types
 	ListEventTypes(ctx context.Context, limit int, offset int) ([]ListEventTypesRow, error)
+
+	// ListEndpoints lists endpoints
+	ListEndpoints(ctx context.Context, limit int, offset int) ([]ListEndpointsRow, error)
 }
 
 var _ Querier = &DBQuerier{}
@@ -47,6 +53,18 @@ type NewApplication struct {
 	TenantID  string       `json:"tenant_id"`
 	RateLimit *int32       `json:"rate_limit"`
 	Metadata  pgtype.JSONB `json:"metadata"`
+}
+
+// NewEndpoint represents the Postgres composite type "new_endpoint".
+type NewEndpoint struct {
+	Url           string       `json:"url"`
+	Name          string       `json:"name"`
+	ApplicationID string       `json:"application_id"`
+	RateLimit     *int32       `json:"rate_limit"`
+	Metadata      pgtype.JSONB `json:"metadata"`
+	Description   string       `json:"description"`
+	Filtertypes   []string     `json:"filtertypes"`
+	Channels      []string     `json:"channels"`
 }
 
 // NewEventType represents the Postgres composite type "new_event_type".
@@ -155,6 +173,37 @@ func (tr *typeResolver) newNewApplicationRaw(v NewApplication) []interface{} {
 	}
 }
 
+// newNewEndpoint creates a new pgtype.ValueTranscoder for the Postgres
+// composite type 'new_endpoint'.
+func (tr *typeResolver) newNewEndpoint() pgtype.ValueTranscoder {
+	return tr.newCompositeValue(
+		"new_endpoint",
+		compositeField{name: "url", typeName: "text", defaultVal: &pgtype.Text{}},
+		compositeField{name: "name", typeName: "text", defaultVal: &pgtype.Text{}},
+		compositeField{name: "application_id", typeName: "uuid", defaultVal: &pgtype.UUID{}},
+		compositeField{name: "rate_limit", typeName: "int4", defaultVal: &pgtype.Int4{}},
+		compositeField{name: "metadata", typeName: "jsonb", defaultVal: &pgtype.JSONB{}},
+		compositeField{name: "description", typeName: "text", defaultVal: &pgtype.Text{}},
+		compositeField{name: "filtertypes", typeName: "_text", defaultVal: &pgtype.TextArray{}},
+		compositeField{name: "channels", typeName: "_text", defaultVal: &pgtype.TextArray{}},
+	)
+}
+
+// newNewEndpointRaw returns all composite fields for the Postgres composite
+// type 'new_endpoint' as a slice of interface{} to encode query parameters.
+func (tr *typeResolver) newNewEndpointRaw(v NewEndpoint) []interface{} {
+	return []interface{}{
+		v.Url,
+		v.Name,
+		v.ApplicationID,
+		v.RateLimit,
+		v.Metadata,
+		v.Description,
+		v.Filtertypes,
+		v.Channels,
+	}
+}
+
 // newNewEventType creates a new pgtype.ValueTranscoder for the Postgres
 // composite type 'new_event_type'.
 func (tr *typeResolver) newNewEventType() pgtype.ValueTranscoder {
@@ -194,6 +243,32 @@ func (tr *typeResolver) newNewApplicationArrayRaw(vs []NewApplication) []interfa
 	elems := make([]interface{}, len(vs))
 	for i, v := range vs {
 		elems[i] = tr.newNewApplicationRaw(v)
+	}
+	return elems
+}
+
+// newNewEndpointArray creates a new pgtype.ValueTranscoder for the Postgres
+// '_new_endpoint' array type.
+func (tr *typeResolver) newNewEndpointArray() pgtype.ValueTranscoder {
+	return tr.newArrayValue("_new_endpoint", "new_endpoint", tr.newNewEndpoint)
+}
+
+// newNewEndpointArrayInit creates an initialized pgtype.ValueTranscoder for the
+// Postgres array type '_new_endpoint' to encode query parameters.
+func (tr *typeResolver) newNewEndpointArrayInit(ps []NewEndpoint) pgtype.ValueTranscoder {
+	dec := tr.newNewEndpointArray()
+	if err := dec.Set(tr.newNewEndpointArrayRaw(ps)); err != nil {
+		panic("encode []NewEndpoint: " + err.Error()) // should always succeed
+	}
+	return textPreferrer{ValueTranscoder: dec, typeName: "_new_endpoint"}
+}
+
+// newNewEndpointArrayRaw returns all elements for the Postgres array type '_new_endpoint'
+// as a slice of interface{} for use with the pgtype.Value Set method.
+func (tr *typeResolver) newNewEndpointArrayRaw(vs []NewEndpoint) []interface{} {
+	elems := make([]interface{}, len(vs))
+	for i, v := range vs {
+		elems[i] = tr.newNewEndpointRaw(v)
 	}
 	return elems
 }
@@ -295,9 +370,9 @@ type CreateApplicationsRow struct {
 }
 
 // CreateApplications implements Querier.CreateApplications.
-func (q *DBQuerier) CreateApplications(ctx context.Context, eventTypes []NewApplication) ([]CreateApplicationsRow, error) {
+func (q *DBQuerier) CreateApplications(ctx context.Context, applications []NewApplication) ([]CreateApplicationsRow, error) {
 	ctx = context.WithValue(ctx, "pggen_query_name", "CreateApplications")
-	rows, err := q.conn.Query(ctx, createApplicationsSQL, q.types.newNewApplicationArrayInit(eventTypes))
+	rows, err := q.conn.Query(ctx, createApplicationsSQL, q.types.newNewApplicationArrayInit(applications))
 	if err != nil {
 		return nil, fmt.Errorf("query CreateApplications: %w", err)
 	}
@@ -312,6 +387,63 @@ func (q *DBQuerier) CreateApplications(ctx context.Context, eventTypes []NewAppl
 	}
 	if err := rows.Err(); err != nil {
 		return nil, fmt.Errorf("close CreateApplications rows: %w", err)
+	}
+	return items, err
+}
+
+const createEndpointsSQL = `INSERT INTO webhooks.endpoint (
+    application_id,
+    url,
+    name,
+    rate_limit,
+    metadata,
+    description
+) 
+SELECT 
+    a.id,
+    u.url,
+    u.name,
+    u.rate_limit,
+    u.metadata,
+    u.description
+FROM unnest($1::webhooks.new_endpoint[]) u
+JOIN webhooks.application a ON u.application_id = a.uid
+ON CONFLICT DO NOTHING
+RETURNING 
+    id,
+    uid,
+        application_id,
+    rate_limit,
+    metadata,
+    created_at;`
+
+type CreateEndpointsRow struct {
+	ID            int32        `json:"id"`
+	Uid           string       `json:"uid"`
+	ApplicationID int32        `json:"application_id"`
+	RateLimit     int32        `json:"rate_limit"`
+	Metadata      pgtype.JSONB `json:"metadata"`
+	CreatedAt     time.Time    `json:"created_at"`
+}
+
+// CreateEndpoints implements Querier.CreateEndpoints.
+func (q *DBQuerier) CreateEndpoints(ctx context.Context, endpoints []NewEndpoint) ([]CreateEndpointsRow, error) {
+	ctx = context.WithValue(ctx, "pggen_query_name", "CreateEndpoints")
+	rows, err := q.conn.Query(ctx, createEndpointsSQL, q.types.newNewEndpointArrayInit(endpoints))
+	if err != nil {
+		return nil, fmt.Errorf("query CreateEndpoints: %w", err)
+	}
+	defer rows.Close()
+	items := []CreateEndpointsRow{}
+	for rows.Next() {
+		var item CreateEndpointsRow
+		if err := rows.Scan(&item.ID, &item.Uid, &item.ApplicationID, &item.RateLimit, &item.Metadata, &item.CreatedAt); err != nil {
+			return nil, fmt.Errorf("scan CreateEndpoints row: %w", err)
+		}
+		items = append(items, item)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("close CreateEndpoints rows: %w", err)
 	}
 	return items, err
 }
@@ -351,6 +483,59 @@ func (q *DBQuerier) ListEventTypes(ctx context.Context, limit int, offset int) (
 	}
 	if err := rows.Err(); err != nil {
 		return nil, fmt.Errorf("close ListEventTypes rows: %w", err)
+	}
+	return items, err
+}
+
+const listEndpointsSQL = `SELECT 
+    id,
+    uid,
+    url,
+    name,
+    metadata,
+    disabled,
+    rate_limit,
+    created_at,
+    updated_at,
+    description,
+    application_id
+FROM webhooks.endpoint
+ORDER BY uid
+LIMIT $1
+OFFSET $2;`
+
+type ListEndpointsRow struct {
+	ID            *int32       `json:"id"`
+	Uid           string       `json:"uid"`
+	Url           string       `json:"url"`
+	Name          string       `json:"name"`
+	Metadata      pgtype.JSONB `json:"metadata"`
+	Disabled      *bool        `json:"disabled"`
+	RateLimit     *int32       `json:"rate_limit"`
+	CreatedAt     time.Time    `json:"created_at"`
+	UpdatedAt     time.Time    `json:"updated_at"`
+	Description   string       `json:"description"`
+	ApplicationID *int32       `json:"application_id"`
+}
+
+// ListEndpoints implements Querier.ListEndpoints.
+func (q *DBQuerier) ListEndpoints(ctx context.Context, limit int, offset int) ([]ListEndpointsRow, error) {
+	ctx = context.WithValue(ctx, "pggen_query_name", "ListEndpoints")
+	rows, err := q.conn.Query(ctx, listEndpointsSQL, limit, offset)
+	if err != nil {
+		return nil, fmt.Errorf("query ListEndpoints: %w", err)
+	}
+	defer rows.Close()
+	items := []ListEndpointsRow{}
+	for rows.Next() {
+		var item ListEndpointsRow
+		if err := rows.Scan(&item.ID, &item.Uid, &item.Url, &item.Name, &item.Metadata, &item.Disabled, &item.RateLimit, &item.CreatedAt, &item.UpdatedAt, &item.Description, &item.ApplicationID); err != nil {
+			return nil, fmt.Errorf("scan ListEndpoints row: %w", err)
+		}
+		items = append(items, item)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("close ListEndpoints rows: %w", err)
 	}
 	return items, err
 }

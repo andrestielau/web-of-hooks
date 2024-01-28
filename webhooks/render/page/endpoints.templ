@@ -1,0 +1,51 @@
+package page
+
+import (
+	"woh/webhooks/provide/repo/queries"
+    . "woh/webhooks/render/style"
+    "woh/webhooks/render/layout"
+)
+
+type EndpointsViewModel struct {
+    Data []queries.ListEndpointsRow
+}
+
+templ Endpoints(vm EndpointsViewModel, err error) {
+    @layout.Html(nil) {
+        @layout.Shell(nil) {
+            <h1 class={C("capitalize")}>endpoints</h1>
+            if err != nil {
+                @EndpointsError(err)
+            } else {
+                @EndpointForm()
+                @EndpointList(vm.Data)
+            }
+        }
+    }
+}
+
+templ EndpointsError(err error) {
+    <h1>An error has occured</h1>
+    <p>{err.Error()}</p>
+} 
+
+templ EndpointList(data []queries.ListEndpointsRow) {
+    if len(data) == 0 {
+        <h2>No Endpoint was found</h2>
+    } else {
+        <ul>
+        for _, endpoint := range data {
+            <li>{endpoint.Url}</li>
+        }
+        </ul>
+    }
+}
+
+templ EndpointForm() {
+    <form>
+        <label for="key">Key</label>
+        <input id="key" />
+        <button type="reset">Reset</button>
+        <button type="submit">Create</button>
+    </form>
+}

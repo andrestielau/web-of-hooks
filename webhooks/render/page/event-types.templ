@@ -1,0 +1,41 @@
+package page
+
+import (
+	"woh/webhooks/provide/repo/queries"
+    . "woh/webhooks/render/style"
+    "woh/webhooks/render/layout"
+)
+
+type EventTypesViewModel struct {
+    Data []queries.ListEventTypesRow
+}
+
+templ EventTypes(vm EventTypesViewModel, err error) {
+    @layout.Html(nil) {
+        @layout.Shell(nil) {
+            <h1 class={C("capitalize")}>event-types</h1>
+            if err != nil {
+                @EventTypesError(err)
+            } else {
+                @EventTypeList(vm.Data)
+            }
+        }
+    }
+}
+
+templ EventTypesError(err error) {
+    <h1>An error has occured</h1>
+    <p>{err.Error()}</p>
+} 
+
+templ EventTypeList(data []queries.ListEventTypesRow) {
+    if len(data) == 0 {
+        <h2>No Event Type was found</h2>
+    } else {
+        <ul>
+        for _, eventType := range data {
+            <li>{eventType.Key}</li>
+        }
+        </ul>
+    }
+}
