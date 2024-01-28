@@ -16,25 +16,45 @@ import (
 	"woh/webhooks/adapt/subs"
 	"woh/webhooks/provide/repo"
 	"woh/webhooks/provide/secrets"
-	"woh/webhooks/service/manager"
 )
 
 // Injectors from wire.go:
 
 func Adapters() actor.Actors {
-	provider := secrets.New()
 	options := pgx.ProvideOptions()
-	repoProvider := repo.New(options)
-	service := manager.New(provider, repoProvider)
-	adapter := http.New(service)
-	grpcAdapter := grpc.New(service)
+	provider := repo.New(options)
+	secretsProvider := secrets.New()
+	handler := &http.Handler{
+		Repo:    provider,
+		Secrets: secretsProvider,
+	}
+	httpOptions := http.Options{
+		Handler: handler,
+	}
+	adapter := http.New(httpOptions)
+	grpcHandler := &grpc.Handler{
+		Repo:    provider,
+		Secrets: secretsProvider,
+	}
+	grpcOptions := grpc.Options{
+		Handler: grpcHandler,
+	}
+	grpcAdapter := grpc.New(grpcOptions)
+	subsHandler := &subs.Handler{
+		Repo:    provider,
+		Secrets: secretsProvider,
+	}
 	subscriberConfig := sub.ProvideOptions()
 	loggerAdapter := gps.ProvideLogger()
 	subOptions := sub.Options{
 		Config: subscriberConfig,
 		Logger: loggerAdapter,
 	}
-	subsAdapter := subs.New(service, subOptions)
+	subsOptions := subs.Options{
+		Handler: subsHandler,
+		Options: subOptions,
+	}
+	subsAdapter := subs.New(subsOptions)
 	actors := ChooseAdapters(adapter, grpcAdapter, subsAdapter)
 	return actors
 }

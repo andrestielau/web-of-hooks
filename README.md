@@ -17,15 +17,6 @@ Y'all found this repository with an initial structure, this doesn't mean that th
   - `grpc` Create Messages from gRPC
   - `pubsub` Create Messages from PubSub
   - `temporal` Create Messages from Temporal
-- `internal` Implementation
-  - `webhooks` webhooks Logic
-    - `manager` Service to Manage Data
-    - `worker` Service to Send WebHook Messages
-  - `provide` Provider Implementations
-    - `repo` Postgres Access
-      - `migrations` Database DDL
-      - `queries` Database DQL/DML
-    - `secrets` Vault Access 
 - `package` Generic Code
   - `actor` Lifecycle Manager
     - `cron` Base Cron Adapter
@@ -36,30 +27,44 @@ Y'all found this repository with an initial structure, this doesn't mean that th
       - `http` Http Actors
         - `server` Http Adapter
         - `client` Http Provider
+    - `third` Third party ports
+      - `temporal`
+        - `client` Provider for temporal
+        - `worker` Adapter for Activities and Workflows
+      - `vault` Provider for Vault
   - `app` Application Utilities
     - `cfg` Configuration Utilities
     - `cmd` Command Line Utilities
     - `flag` Flag Utilities
   - `util` Generic Utilities
-- `webhooks` Application Adapters
-  - `cron` Cron for Workers
-  - `grpc` Internal API
-    - `v1` Grpc Definition
-  - `html` Browser API
-    - `components` Reusable Atomic Components
-      - `atom` Simple Composable Components
-      - `molecule` Encapsulation of Components
-    - `layouts` Reusable Aggregate Dispositions
-    - `pages` Pages to Render
-    - `scripts` Reusable JavaScript
-    - `styles` Style Definitions
-    - `utils` Utility Methods
-  - `http` External API
-    - `v1` OAPI Definition
-  - `pub` Publisher
-    - `v1` Produced Message Definition
-  - `subs` Subscriber
-    - `v1` Consumed Message Definition 
+- `webhooks` Implementation
+  - `adapt` Application Adapters
+    - `cron` Cron for Workers
+    - `grpc` Internal API
+      - `v1` Grpc Definition
+    - `html` Browser API
+      - `components` Reusable Atomic Components
+        - `atom` Simple Composable Components
+        - `molecule` Encapsulation of Components
+      - `layouts` Reusable Aggregate Dispositions
+      - `pages` Pages to Render
+      - `scripts` Reusable JavaScript
+      - `styles` Style Definitions
+      - `utils` Utility Methods
+    - `http` External API
+      - `v1` OAPI Definition
+    - `pub` Publisher
+      - `v1` Produced Message Definition
+    - `subs` Subscriber
+      - `v1` Consumed Message Definition 
+    - `work` Workflows and Activities
+      - `v1` Workflow or Activity Message Definition 
+  - `provide` Provider Implementations
+    - `pub` Publisher
+    - `repo` Postgres Access
+      - `migrations` Database DDL
+      - `queries` Database DQL/DML
+    - `secrets` Vault Access 
 
 ## High Level Architecture
 Since it's not easy to understand the organization of an application from the folder structure alone, here's a little drawing to help you get a high level idea of the pieces of this service and how they're conected.
@@ -151,7 +156,7 @@ An HTML templating language for Go that has great developer tooling
 
 # Develop
 
-- Clone: `git clone https://github.com/andrestielau/web-of-hooks`
+- Clone: `git clone https://woh`
 - Enter: `cd web-of-hooks`
 - Bootstrap: `make` (yes, just `make`)
 - Run: `go run . serve`

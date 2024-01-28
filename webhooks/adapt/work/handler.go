@@ -1,4 +1,4 @@
-package subs
+package work
 
 import "woh/webhooks"
 

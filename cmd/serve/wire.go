@@ -11,7 +11,6 @@ import (
 	"woh/webhooks/adapt/subs"
 	"woh/webhooks/provide/repo"
 	"woh/webhooks/provide/secrets"
-	"woh/webhooks/service/manager"
 
 	"github.com/google/wire"
 )
@@ -21,8 +20,6 @@ func Adapters() actor.Actors {
 		// Providers
 		secrets.Set,
 		repo.Set,
-		// Services
-		manager.Set,
 		// Adapters
 		gps.Set,
 		subs.Set,

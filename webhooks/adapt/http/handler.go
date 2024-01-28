@@ -15,7 +15,8 @@ import (
 )
 
 type Handler struct {
-	webhooks.Manager
+	Repo    webhooks.Repository
+	Secrets webhooks.Secrets
 }
 
 var sessionManager *scs.SessionManager

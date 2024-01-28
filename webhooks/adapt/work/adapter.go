@@ -1,26 +1,29 @@
-package grpc
+package work
 
 import (
 	"woh/package/actor"
-	"woh/package/actor/net/grpc/server"
+	"woh/package/actor/third/temporal/client"
+	"woh/package/actor/third/temporal/worker"
 	"woh/webhooks"
-	webhooksv1 "woh/webhooks/adapt/grpc/v1"
+
+	worker2 "go.temporal.io/sdk/worker"
 
 	"github.com/google/wire"
-	"google.golang.org/grpc"
 )
 
 type Options struct {
-	Handler *Handler
+	Provider *client.Provider
+	Handler  *Handler
 }
 type Adapter struct {
-	*server.Adapter
+	*worker.Adapter
 }
 
 func New(opts Options) *Adapter {
-	a := server.New(server.Options{
-		Handler: func(s *grpc.Server) {
-			webhooksv1.RegisterWebHookServiceServer(s, opts.Handler)
+	a := worker.New(worker.Options{
+		Provider: opts.Provider,
+		Handler: func(w worker2.Worker) {
+			// Register workflows and activities
 		},
 	})
 	a.SpawnAll(actor.Actors{

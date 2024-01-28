@@ -12,17 +12,22 @@ import (
 	"woh/webhooks/adapt/cron"
 	"woh/webhooks/provide/repo"
 	"woh/webhooks/provide/secrets"
-	"woh/webhooks/service/worker"
 )
 
 // Injectors from wire.go:
 
 func Adapters() actor.Actors {
-	provider := secrets.New()
 	options := pgx.ProvideOptions()
-	repoProvider := repo.New(options)
-	service := worker.New(provider, repoProvider)
-	adapter := cron.New(service)
+	provider := repo.New(options)
+	secretsProvider := secrets.New()
+	handler := &cron.Handler{
+		Repo:    provider,
+		Secrets: secretsProvider,
+	}
+	cronOptions := cron.Options{
+		Handler: handler,
+	}
+	adapter := cron.New(cronOptions)
 	actors := ChooseAdapters(adapter)
 	return actors
 }

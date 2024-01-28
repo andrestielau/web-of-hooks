@@ -18,12 +18,17 @@ CREATE TABLE webhooks.endpoint (
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-CREATE TABLE endpoint_filter (
+CREATE TABLE webhooks.endpoint_secret (
+    endpoint_id INT REFERENCES webhooks.endpoint(id),
+    secret_id INT REFERENCES webhooks.secret(id),
+    PRIMARY KEY(endpoint_id, secret_id)
+);
+CREATE TABLE webhooks.endpoint_filter (
     endpoint_id INT REFERENCES webhooks.endpoint(id),
     event_type_id INT REFERENCES webhooks.event_type(id),
     PRIMARY KEY(endpoint_id, event_type_id)
 );
-CREATE TABLE endpoint_channel (
+CREATE TABLE webhooks.endpoint_channel (
     endpoint_id INT REFERENCES webhooks.endpoint(id),
     channel_id INT REFERENCES webhooks.channel(id),
     PRIMARY KEY(endpoint_id, channel_id)
