@@ -45,16 +45,27 @@ templ EndpointList(data []queries.ListEndpointsRow) {
     }
 }
 
-script AddEndpoint() {
+templ EndpointInput() {
+    <div>
+        <label for="url.0">Url</label>
+        <input id="url.0" />
+    </div>
+}
 
+script AddEndpoint() {
+    var templ = document.getElementById("endpoint-form-item")
+    var clone = templ.content.cloneNode(true)
+    document.getElementById("endpoint-form").appendChild(clone)
 }
 
 templ EndpointForm(applicationId string) {
-    <form action="/{applicationId}/endpoints" method="POST" id="endpoint-form">
-        <label for="url.0">Url</label>
-        <input id="url.0" />
+    <form action={templ.SafeURL("/applications/"+applicationId+"/endpoints")} method="POST" id="endpoint-form">
+        @EndpointInput()
         <button type="button" onclick={AddEndpoint()}>Add</button>
         <button type="reset">Reset</button>
         <button type="submit">Create</button>
     </form>
+    <template id="endpoint-form-item">
+        @EndpointInput()
+    </template>
 }

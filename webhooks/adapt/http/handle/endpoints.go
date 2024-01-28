@@ -20,6 +20,7 @@ func (h *Handler) CreateEndpoints(w http.ResponseWriter, r *http.Request, applic
 		req, err = utils.JsonReq[webhooksv1.CreateEndpointsPayload](w, r)
 	}
 	if err != nil {
+		log.Println(err)
 		return
 	}
 	log.Println(req)
@@ -60,7 +61,8 @@ func (h *Handler) ListEndpoints(w http.ResponseWriter, r *http.Request, applicat
 	endpoints, err := h.Repo.ListEndpoints(r.Context(), 100, 0)
 	if strings.Contains(r.Header.Get("Accept"), "text/html") {
 		applications.Endpoints(applications.EndpointsViewModel{ // Todo decouple from DB
-			Data: endpoints,
+			ApplicationId: applicationId,
+			Data:          endpoints,
 		}, err).Render(r.Context(), w)
 		return
 	}
