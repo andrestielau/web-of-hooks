@@ -42,15 +42,6 @@ Y'all found this repository with an initial structure, this doesn't mean that th
     - `cron` Cron for Workers
     - `grpc` Internal API
       - `v1` Grpc Definition
-    - `html` Browser API
-      - `components` Reusable Atomic Components
-        - `atom` Simple Composable Components
-        - `molecule` Encapsulation of Components
-      - `layouts` Reusable Aggregate Dispositions
-      - `pages` Pages to Render
-      - `scripts` Reusable JavaScript
-      - `styles` Style Definitions
-      - `utils` Utility Methods
     - `http` External API
       - `v1` OAPI Definition
     - `pub` Publisher
@@ -65,6 +56,15 @@ Y'all found this repository with an initial structure, this doesn't mean that th
       - `migrations` Database DDL
       - `queries` Database DQL/DML
     - `secrets` Vault Access 
+  - `renderer` HTML renderers
+    - `components` Reusable Atomic Components
+      - `atom` Simple Composable Components
+      - `molecule` Encapsulation of Components
+    - `layouts` Reusable Aggregate Dispositions
+    - `pages` Pages to Render
+    - `scripts` Reusable JavaScript
+    - `styles` Style Definitions
+    - `utils` Utility Methods
 
 ## High Level Architecture
 Since it's not easy to understand the organization of an application from the folder structure alone, here's a little drawing to help you get a high level idea of the pieces of this service and how they're conected.
