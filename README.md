@@ -70,24 +70,29 @@ Y'all found this repository with an initial structure, this doesn't mean that th
 Since it's not easy to understand the organization of an application from the folder structure alone, here's a little drawing to help you get a high level idea of the pieces of this service and how they're conected.
 ```mermaid
 graph LR
+    Temporal
+    Activity
+    Topic
+    Grpc
+    API
+
+    Activity --> Repo
+    Activity --> PubSub
     Temporal --> Activity
     Customers --> API
     GraphQL --> Grpc
     PubSub --> Topic
 
-    API --> Manager
-    Grpc --> Manager
-    Topic --> Manager
-    Activity --> Manager
+    Activity --> Secrets
+    Cron --> Secrets
+    Grpc --> Secrets
+    API --> Secrets
 
-    Manager --> Repo
-    Manager --> Secrets
-
-    Cron --> Worker
-
-    Worker --> Repo
-    Worker --> Secrets
-    Worker --> Endpoints 
+    Cron --> Repo
+    Grpc --> Repo
+    API --> Repo
+    Topic --> Repo
+    Cron --> Endpoints 
 ```
 
 ## Entity-Relation Diagram
@@ -113,6 +118,9 @@ erDiagram
     Attempt {
         string key
     }
+    Secret {
+        string key
+    }
     Message }o--|| EventType : "has one"
     Message }o--|| Channel : "has one"
     Message }o--|| Application : "has one"
@@ -121,6 +129,7 @@ erDiagram
     Endpoint }o--|| Application : "has one"
     Endpoint }o--o{ Channel : "has many"
     Endpoint }o--o{ EventType : "filter"
+    Endpoint }o--o| Secret : "uses"
 ```
 
 # Tools
