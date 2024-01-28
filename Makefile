@@ -1,14 +1,7 @@
 include .env
 export
 
-all: boot down db gen
-
-boot:
-	go install github.com/deepmap/oapi-codegen/v2/cmd/oapi-codegen@latest
-	go install github.com/jschaf/pggen/cmd/pggen@latest
-	go install github.com/a-h/templ/cmd/templ@latest
-	go install github.com/cosmtrek/air@latest
-	go mod tidy
+all: down db gen
 
 run: 
 	go run . serve
@@ -45,7 +38,9 @@ gen/db:
 	@pggen gen go --query-glob ${REPO_DIR}/queries/queries.sql --postgres-connection ${DB_URL} ${PGGEN_MAP}
 
 gen/go:
+	@go mod tidy
 	@go generate ./...
+	@go mod tidy
 
 # Database Commands
 db: db/up db/push

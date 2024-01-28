@@ -218,6 +218,9 @@ type CreateEndpointsPayload = []NewEndpoint
 // CreateMessagesPayload defines model for CreateMessagesPayload.
 type CreateMessagesPayload = []NewMessage
 
+// CreateSecretsPayload defines model for CreateSecretsPayload.
+type CreateSecretsPayload = []NewSecret
+
 // DeleteApplicationsPayload defines model for DeleteApplicationsPayload.
 type DeleteApplicationsPayload = []struct {
 	Id *string `json:"id,omitempty"`
@@ -250,6 +253,9 @@ type GetApplicationsParams struct {
 // CreateApplicationsJSONBody defines parameters for CreateApplications.
 type CreateApplicationsJSONBody = []NewApplication
 
+// CreateApplicationsMultipartBody defines parameters for CreateApplications.
+type CreateApplicationsMultipartBody = []NewEndpoint
+
 // DeleteApplicationParams defines parameters for DeleteApplication.
 type DeleteApplicationParams struct {
 	Force *Force `form:"force,omitempty" json:"force,omitempty"`
@@ -281,6 +287,9 @@ type ListEndpointsParams struct {
 // CreateEndpointsJSONBody defines parameters for CreateEndpoints.
 type CreateEndpointsJSONBody = []NewEndpoint
 
+// CreateEndpointsMultipartBody defines parameters for CreateEndpoints.
+type CreateEndpointsMultipartBody = []NewEndpoint
+
 // DeleteMessagesJSONBody defines parameters for DeleteMessages.
 type DeleteMessagesJSONBody = []string
 
@@ -298,6 +307,9 @@ type ListMessagesParams struct {
 
 // CreateMessagesJSONBody defines parameters for CreateMessages.
 type CreateMessagesJSONBody = []NewMessage
+
+// CreateMessagesMultipartBody defines parameters for CreateMessages.
+type CreateMessagesMultipartBody = []NewMessage
 
 // CreateMessagesParams defines parameters for CreateMessages.
 type CreateMessagesParams struct {
@@ -321,6 +333,9 @@ type ListAttemptsParams struct {
 
 // CreateAttemptsJSONBody defines parameters for CreateAttempts.
 type CreateAttemptsJSONBody = []NewAttempt
+
+// CreateAttemptsMultipartBody defines parameters for CreateAttempts.
+type CreateAttemptsMultipartBody = []NewAttempt
 
 // CreateAttemptsParams defines parameters for CreateAttempts.
 type CreateAttemptsParams struct {
@@ -367,6 +382,9 @@ type ListEndpointAttemptsParams struct {
 // CreateEndpointAttemptsJSONBody defines parameters for CreateEndpointAttempts.
 type CreateEndpointAttemptsJSONBody = []NewAttempt
 
+// CreateEndpointAttemptsMultipartBody defines parameters for CreateEndpointAttempts.
+type CreateEndpointAttemptsMultipartBody = []NewAttempt
+
 // CreateEndpointAttemptsParams defines parameters for CreateEndpointAttempts.
 type CreateEndpointAttemptsParams struct {
 	Force *Force `form:"force,omitempty" json:"force,omitempty"`
@@ -407,6 +425,9 @@ type ListMessageAttemptsParams struct {
 // CreateMessagesAttemptsJSONBody defines parameters for CreateMessagesAttempts.
 type CreateMessagesAttemptsJSONBody = []NewAttempt
 
+// CreateMessagesAttemptsMultipartBody defines parameters for CreateMessagesAttempts.
+type CreateMessagesAttemptsMultipartBody = []NewAttempt
+
 // CreateMessagesAttemptsParams defines parameters for CreateMessagesAttempts.
 type CreateMessagesAttemptsParams struct {
 	Force *Force `form:"force,omitempty" json:"force,omitempty"`
@@ -418,11 +439,17 @@ type DeleteApplicationsJSONRequestBody = DeleteApplicationsJSONBody
 // CreateApplicationsJSONRequestBody defines body for CreateApplications for application/json ContentType.
 type CreateApplicationsJSONRequestBody = CreateApplicationsJSONBody
 
+// CreateApplicationsMultipartRequestBody defines body for CreateApplications for multipart/form-data ContentType.
+type CreateApplicationsMultipartRequestBody = CreateApplicationsMultipartBody
+
 // DisableEndpointsJSONRequestBody defines body for DisableEndpoints for application/json ContentType.
 type DisableEndpointsJSONRequestBody = DisableEndpointsJSONBody
 
 // CreateEndpointsJSONRequestBody defines body for CreateEndpoints for application/json ContentType.
 type CreateEndpointsJSONRequestBody = CreateEndpointsJSONBody
+
+// CreateEndpointsMultipartRequestBody defines body for CreateEndpoints for multipart/form-data ContentType.
+type CreateEndpointsMultipartRequestBody = CreateEndpointsMultipartBody
 
 // DeleteMessagesJSONRequestBody defines body for DeleteMessages for application/json ContentType.
 type DeleteMessagesJSONRequestBody = DeleteMessagesJSONBody
@@ -430,11 +457,17 @@ type DeleteMessagesJSONRequestBody = DeleteMessagesJSONBody
 // CreateMessagesJSONRequestBody defines body for CreateMessages for application/json ContentType.
 type CreateMessagesJSONRequestBody = CreateMessagesJSONBody
 
+// CreateMessagesMultipartRequestBody defines body for CreateMessages for multipart/form-data ContentType.
+type CreateMessagesMultipartRequestBody = CreateMessagesMultipartBody
+
 // DeleteAttemptsJSONRequestBody defines body for DeleteAttempts for application/json ContentType.
 type DeleteAttemptsJSONRequestBody = DeleteAttemptsJSONBody
 
 // CreateAttemptsJSONRequestBody defines body for CreateAttempts for application/json ContentType.
 type CreateAttemptsJSONRequestBody = CreateAttemptsJSONBody
+
+// CreateAttemptsMultipartRequestBody defines body for CreateAttempts for multipart/form-data ContentType.
+type CreateAttemptsMultipartRequestBody = CreateAttemptsMultipartBody
 
 // CreateAttemptJSONRequestBody defines body for CreateAttempt for application/json ContentType.
 type CreateAttemptJSONRequestBody = NewAttempt
@@ -445,6 +478,9 @@ type DeleteEndpointAttemptsJSONRequestBody = DeleteEndpointAttemptsJSONBody
 // CreateEndpointAttemptsJSONRequestBody defines body for CreateEndpointAttempts for application/json ContentType.
 type CreateEndpointAttemptsJSONRequestBody = CreateEndpointAttemptsJSONBody
 
+// CreateEndpointAttemptsMultipartRequestBody defines body for CreateEndpointAttempts for multipart/form-data ContentType.
+type CreateEndpointAttemptsMultipartRequestBody = CreateEndpointAttemptsMultipartBody
+
 // CreateMessageJSONRequestBody defines body for CreateMessage for application/json ContentType.
 type CreateMessageJSONRequestBody = NewMessage
 
@@ -453,6 +489,9 @@ type DeleteMessageAttemptsJSONRequestBody = DeleteMessageAttemptsJSONBody
 
 // CreateMessagesAttemptsJSONRequestBody defines body for CreateMessagesAttempts for application/json ContentType.
 type CreateMessagesAttemptsJSONRequestBody = CreateMessagesAttemptsJSONBody
+
+// CreateMessagesAttemptsMultipartRequestBody defines body for CreateMessagesAttempts for multipart/form-data ContentType.
+type CreateMessagesAttemptsMultipartRequestBody = CreateMessagesAttemptsMultipartBody
 
 // RotateSecretJSONRequestBody defines body for RotateSecret for application/json ContentType.
 type RotateSecretJSONRequestBody = NewSecret

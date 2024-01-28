@@ -829,6 +829,11 @@ components:
             type: array
             items:
               $ref: '#/components/schemas/NewEndpoint'
+        multipart/form-data:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/NewEndpoint'
     CreateMessagesPayload:
       content:
         application/json:
@@ -836,9 +841,19 @@ components:
             type: array
             items:
               $ref: '#/components/schemas/NewMessage'
+        multipart/form-data:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/NewMessage'
     CreateAttemptsPayload:
       content:
         application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/NewAttempt'
+        multipart/form-data:
           schema:
             type: array
             items:
@@ -876,6 +891,12 @@ components:
             type: array
             items:
               $ref: '#/components/schemas/NewApplication'
+        multipart/form-data:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/NewEndpoint'
+      description: ''
     DeleteApplicationsPayload:
       content:
         application/json:
@@ -886,6 +907,18 @@ components:
               properties:
                 id:
                   type: string
+    CreateSecretsPayload:
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/NewSecret'
+        multipart/form-data:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/NewSecret'
   responses:
     EndpointList:
       description: Endpoint List with cursors

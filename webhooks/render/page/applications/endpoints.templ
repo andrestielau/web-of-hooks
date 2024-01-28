@@ -1,4 +1,4 @@
-package page
+package applications
 
 import (
 	"woh/webhooks/provide/repo/queries"
@@ -7,6 +7,7 @@ import (
 )
 
 type EndpointsViewModel struct {
+    ApplicationId string
     Data []queries.ListEndpointsRow
 }
 
@@ -15,7 +16,7 @@ templ Endpoints(vm EndpointsViewModel, err error) {
         @layout.Shell(nil) {
             <h1 class={C("capitalize")}>endpoints</h1>
             @EndpointList(vm.Data)
-            @EndpointForm()
+            @EndpointForm(vm.ApplicationId)
             if err != nil {
                 @EndpointsError(err)
             }
@@ -28,22 +29,31 @@ templ EndpointsError(err error) {
     <p>{err.Error()}</p>
 } 
 
+templ EndpointItem(id, url string) {
+    <li>{id}: {url}</li>
+}
+// TODO: map to generic input before calling
 templ EndpointList(data []queries.ListEndpointsRow) {
     if len(data) == 0 {
         <h2>No Endpoint was found</h2>
     } else {
         <ul>
         for _, endpoint := range data {
-            <li>{endpoint.Url}</li>
+            @EndpointItem(endpoint.Uid, endpoint.Url)
         }
         </ul>
     }
 }
 
-templ EndpointForm() {
-    <form>
-        <label for="url">Url</label>
-        <input id="url" />
+script AddEndpoint() {
+
+}
+
+templ EndpointForm(applicationId string) {
+    <form action="/{applicationId}/endpoints" method="POST" id="endpoint-form">
+        <label for="url.0">Url</label>
+        <input id="url.0" />
+        <button type="button" onclick={AddEndpoint()}>Add</button>
         <button type="reset">Reset</button>
         <button type="submit">Create</button>
     </form>
