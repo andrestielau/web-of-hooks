@@ -14,11 +14,10 @@ templ Endpoints(vm EndpointsViewModel, err error) {
     @layout.Html(nil) {
         @layout.Shell(nil) {
             <h1 class={C("capitalize")}>endpoints</h1>
+            @EndpointList(vm.Data)
+            @EndpointForm()
             if err != nil {
                 @EndpointsError(err)
-            } else {
-                @EndpointForm()
-                @EndpointList(vm.Data)
             }
         }
     }
@@ -43,8 +42,8 @@ templ EndpointList(data []queries.ListEndpointsRow) {
 
 templ EndpointForm() {
     <form>
-        <label for="key">Key</label>
-        <input id="key" />
+        <label for="url">Url</label>
+        <input id="url" />
         <button type="reset">Reset</button>
         <button type="submit">Create</button>
     </form>

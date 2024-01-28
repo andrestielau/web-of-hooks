@@ -7,13 +7,16 @@
 package serve
 
 import (
+	"github.com/alexedwards/scs/v2"
 	"woh/package/actor"
 	"woh/package/actor/sql/pgx"
 	"woh/package/actor/third/gps"
 	"woh/package/actor/third/gps/sub"
 	"woh/webhooks/adapt/cron"
 	"woh/webhooks/adapt/grpc"
+	handle2 "woh/webhooks/adapt/grpc/handle"
 	"woh/webhooks/adapt/http"
+	"woh/webhooks/adapt/http/handle"
 	"woh/webhooks/adapt/subs"
 	"woh/webhooks/provide/repo"
 	"woh/webhooks/provide/secrets"
@@ -22,10 +25,12 @@ import (
 // Injectors from wire.go:
 
 func Adapters() actor.Actors {
+	sessionManager := scs.New()
 	options := pgx.ProvideOptions()
 	provider := repo.New(options)
 	secretsProvider := secrets.New()
-	handler := &http.Handler{
+	handler := &handle.Handler{
+		Session: sessionManager,
 		Repo:    provider,
 		Secrets: secretsProvider,
 	}
@@ -33,12 +38,12 @@ func Adapters() actor.Actors {
 		Handler: handler,
 	}
 	adapter := http.New(httpOptions)
-	grpcHandler := &grpc.Handler{
+	handleHandler := &handle2.Handler{
 		Repo:    provider,
 		Secrets: secretsProvider,
 	}
 	grpcOptions := grpc.Options{
-		Handler: grpcHandler,
+		Handler: handleHandler,
 	}
 	grpcAdapter := grpc.New(grpcOptions)
 	subsHandler := &subs.Handler{

@@ -4,6 +4,7 @@ import (
 	"woh/package/actor"
 	"woh/package/actor/net/http/server"
 	"woh/webhooks"
+	"woh/webhooks/adapt/http/handle"
 	webhooksv1 "woh/webhooks/adapt/http/v1"
 
 	"github.com/alexedwards/scs/v2"
@@ -11,17 +12,18 @@ import (
 )
 
 type Options struct {
-	Handler *Handler
+	Handler *handle.Handler
 }
 type Adapter struct {
 	*server.Adapter
 }
 
 func New(opts Options) *Adapter {
-	sessionManager = scs.New()
 	a := server.New(server.Options{
-		Handler: sessionManager.LoadAndSave(webhooksv1.Handler(opts.Handler)),
-		Addr:    ":3000",
+		Handler: opts.Handler.Session.LoadAndSave( // wrap in session middleware
+			webhooksv1.Handler(opts.Handler),
+		),
+		Addr: ":3000",
 	})
 	a.SpawnAll(actor.Actors{
 		webhooks.SecretsKey: opts.Handler.Secrets,
@@ -33,7 +35,8 @@ func New(opts Options) *Adapter {
 }
 
 var Set = wire.NewSet(
-	wire.Struct(new(Handler), "*"),
+	wire.Struct(new(handle.Handler), "*"),
 	wire.Struct(new(Options), "*"),
+	scs.New,
 	New,
 )

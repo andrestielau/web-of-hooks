@@ -12,14 +12,35 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/oapi-codegen/runtime"
 )
 
+// Application defines model for Application.
+type Application struct {
+	CreatedAt *string `json:"createdAt,omitempty"`
+	Id        string  `json:"id"`
+	Name      *string `json:"name,omitempty"`
+	RateLimit *int    `json:"rateLimit,omitempty"`
+}
+
 // Attempt defines model for Attempt.
 type Attempt struct {
-	Id *string `json:"id,omitempty"`
+	EndpointId     *string `json:"endpointId,omitempty"`
+	Id             *string `json:"id,omitempty"`
+	MessageId      *string `json:"messageId,omitempty"`
+	Response       *string `json:"response,omitempty"`
+	ResponseStatus *int    `json:"responseStatus,omitempty"`
+	Status         *string `json:"status,omitempty"`
+}
+
+// Channel defines model for Channel.
+type Channel struct {
+	CreatedAt string `json:"createdAt"`
+	Id        string `json:"id"`
+	Key       string `json:"key"`
 }
 
 // Endpoint defines model for Endpoint.
@@ -27,32 +48,42 @@ type Endpoint struct {
 	Channels    *[]string `json:"channels,omitempty"`
 	Description *string   `json:"description,omitempty"`
 	FilterTypes *[]string `json:"filterTypes,omitempty"`
+	Id          string    `json:"id"`
 	Name        *string   `json:"name,omitempty"`
 	RateLimit   *int      `json:"rateLimit,omitempty"`
-	Uid         string    `json:"uid"`
 	Url         string    `json:"url"`
-}
-
-// Error defines model for Error.
-type Error struct {
-	Cause string  `json:"cause"`
-	Code  int     `json:"code"`
-	Index *string `json:"index,omitempty"`
 }
 
 // EventType Type of Messages that you can receive in your Endpoints.
 type EventType struct {
-	Id *string `json:"id,omitempty"`
+	CreatedAt string `json:"createdAt"`
+	Id        string `json:"id"`
+	Key       string `json:"key"`
 }
 
 // Message defines model for Message.
 type Message struct {
-	Id *string `json:"id,omitempty"`
+	CreatedAt   *string `json:"createdAt,omitempty"`
+	EventId     string  `json:"eventId"`
+	EventTypeId *string `json:"eventTypeId,omitempty"`
+	Id          string  `json:"id"`
+	Payload     string  `json:"payload"`
+}
+
+// NewApplication defines model for NewApplication.
+type NewApplication struct {
+	Id        *string `json:"id,omitempty"`
+	Name      *string `json:"name,omitempty"`
+	RateLimit *int    `json:"rateLimit,omitempty"`
 }
 
 // NewAttempt defines model for NewAttempt.
 type NewAttempt struct {
-	Id *string `json:"id,omitempty"`
+	EndpointId  *string `json:"endpointId,omitempty"`
+	EventId     string  `json:"eventId"`
+	EventTypeId *string `json:"eventTypeId,omitempty"`
+	Id          string  `json:"id"`
+	Payload     string  `json:"payload"`
 }
 
 // NewEndpoint The URL you can receive WebHooks at.read
@@ -60,16 +91,25 @@ type NewEndpoint struct {
 	Channels    *[]string `json:"channels,omitempty"`
 	Description *string   `json:"description,omitempty"`
 	FilterTypes *[]string `json:"filterTypes,omitempty"`
+	Id          *string   `json:"id,omitempty"`
 	Name        *string   `json:"name,omitempty"`
 	RateLimit   *int      `json:"rateLimit,omitempty"`
 	Secret      *string   `json:"secret,omitempty"`
-	Uid         *string   `json:"uid,omitempty"`
 	Url         string    `json:"url"`
 }
 
 // NewMessage defines model for NewMessage.
 type NewMessage struct {
-	Id *string `json:"id,omitempty"`
+	EventId     *string `json:"eventId,omitempty"`
+	EventTypeId *string `json:"eventTypeId,omitempty"`
+	Id          *string `json:"id,omitempty"`
+	Payload     *string `json:"payload,omitempty"`
+}
+
+// NewSecret defines model for NewSecret.
+type NewSecret struct {
+	Id    *string `json:"id,omitempty"`
+	Value string  `json:"value"`
 }
 
 // PageInfo defines model for PageInfo.
@@ -79,10 +119,20 @@ type PageInfo struct {
 	Prev *string `json:"prev,omitempty"`
 }
 
+// Secret defines model for Secret.
+type Secret struct {
+	CreatedAt *string `json:"createdAt,omitempty"`
+	Id        string  `json:"id"`
+	Value     string  `json:"value"`
+}
+
 // Statistics defines model for Statistics.
 type Statistics struct {
 	Id *string `json:"id,omitempty"`
 }
+
+// ApplicationId defines model for applicationId.
+type ApplicationId = string
 
 // AttemptId defines model for attemptId.
 type AttemptId = string
@@ -105,10 +155,21 @@ type MessageId = string
 // Reverse defines model for reverse.
 type Reverse = bool
 
+// SecretId defines model for secretId.
+type SecretId = string
+
+// ApplicationList defines model for ApplicationList.
+type ApplicationList = []Application
+
 // AttemptList defines model for AttemptList.
 type AttemptList struct {
 	Data []Attempt `json:"data"`
 	Page PageInfo  `json:"page"`
+}
+
+// ChannelList defines model for ChannelList.
+type ChannelList struct {
+	Data *[]Channel `json:"data,omitempty"`
 }
 
 // EndpointList defines model for EndpointList.
@@ -117,14 +178,17 @@ type EndpointList struct {
 	Page PageInfo   `json:"page"`
 }
 
-// ErrorList defines model for ErrorList.
-type ErrorList struct {
-	Errors []Error `json:"errors"`
+// Error defines model for Error.
+type Error struct {
+	Cause *string `json:"cause,omitempty"`
+	Code  *int    `json:"code,omitempty"`
 }
 
-// ErrorOut defines model for ErrorOut.
-type ErrorOut struct {
-	Error *Error `json:"error,omitempty"`
+// ErrorList defines model for ErrorList.
+type ErrorList = []struct {
+	Cause *string `json:"cause,omitempty"`
+	Code  *int    `json:"code,omitempty"`
+	Index *string `json:"index,omitempty"`
 }
 
 // EventTypeList defines model for EventTypeList.
@@ -142,6 +206,9 @@ type MessageList struct {
 // StatisticsOut defines model for StatisticsOut.
 type StatisticsOut = Statistics
 
+// CreateApplicationsPayload defines model for CreateApplicationsPayload.
+type CreateApplicationsPayload = []NewApplication
+
 // CreateAttemptsPayload defines model for CreateAttemptsPayload.
 type CreateAttemptsPayload = []NewAttempt
 
@@ -150,6 +217,11 @@ type CreateEndpointsPayload = []NewEndpoint
 
 // CreateMessagesPayload defines model for CreateMessagesPayload.
 type CreateMessagesPayload = []NewMessage
+
+// DeleteApplicationsPayload defines model for DeleteApplicationsPayload.
+type DeleteApplicationsPayload = []struct {
+	Id *string `json:"id,omitempty"`
+}
 
 // DeleteAttemptsPayload defines model for DeleteAttemptsPayload.
 type DeleteAttemptsPayload = []string
@@ -163,34 +235,28 @@ type DeleteEndpointsPayload = []struct {
 // DeleteMessagesPayload defines model for DeleteMessagesPayload.
 type DeleteMessagesPayload = []string
 
-// DeleteAttemptsJSONBody defines parameters for DeleteAttempts.
-type DeleteAttemptsJSONBody = []string
+// DeleteApplicationsJSONBody defines parameters for DeleteApplications.
+type DeleteApplicationsJSONBody = []struct {
+	Id *string `json:"id,omitempty"`
+}
 
-// DeleteAttemptsParams defines parameters for DeleteAttempts.
-type DeleteAttemptsParams struct {
+// GetApplicationsParams defines parameters for GetApplications.
+type GetApplicationsParams struct {
+	Limit   *Limit   `form:"limit,omitempty" json:"limit,omitempty"`
+	Cursor  *Cursor  `form:"cursor,omitempty" json:"cursor,omitempty"`
+	Reverse *Reverse `form:"reverse,omitempty" json:"reverse,omitempty"`
+}
+
+// CreateApplicationsJSONBody defines parameters for CreateApplications.
+type CreateApplicationsJSONBody = []NewApplication
+
+// DeleteApplicationParams defines parameters for DeleteApplication.
+type DeleteApplicationParams struct {
 	Force *Force `form:"force,omitempty" json:"force,omitempty"`
 }
 
-// ListAttemptsParams defines parameters for ListAttempts.
-type ListAttemptsParams struct {
-	Limit *Limit `form:"limit,omitempty" json:"limit,omitempty"`
-}
-
-// CreateAttemptsJSONBody defines parameters for CreateAttempts.
-type CreateAttemptsJSONBody = []NewAttempt
-
-// CreateAttemptsParams defines parameters for CreateAttempts.
-type CreateAttemptsParams struct {
-	Force *Force `form:"force,omitempty" json:"force,omitempty"`
-}
-
-// DeleteAttemptParams defines parameters for DeleteAttempt.
-type DeleteAttemptParams struct {
-	Force *Force `form:"force,omitempty" json:"force,omitempty"`
-}
-
-// CreateAttemptParams defines parameters for CreateAttempt.
-type CreateAttemptParams struct {
+// UpdateApplicationParams defines parameters for UpdateApplication.
+type UpdateApplicationParams struct {
 	Force *Force `form:"force,omitempty" json:"force,omitempty"`
 }
 
@@ -215,44 +281,6 @@ type ListEndpointsParams struct {
 // CreateEndpointsJSONBody defines parameters for CreateEndpoints.
 type CreateEndpointsJSONBody = []NewEndpoint
 
-// DeleteEndpointParams defines parameters for DeleteEndpoint.
-type DeleteEndpointParams struct {
-	Force *Force `form:"force,omitempty" json:"force,omitempty"`
-}
-
-// DeleteEndpointAttemptsJSONBody defines parameters for DeleteEndpointAttempts.
-type DeleteEndpointAttemptsJSONBody = []string
-
-// DeleteEndpointAttemptsParams defines parameters for DeleteEndpointAttempts.
-type DeleteEndpointAttemptsParams struct {
-	Force *Force `form:"force,omitempty" json:"force,omitempty"`
-}
-
-// ListEndpointAttemprParams defines parameters for ListEndpointAttempr.
-type ListEndpointAttemprParams struct {
-	Limit   *Limit   `form:"limit,omitempty" json:"limit,omitempty"`
-	Cursor  *Cursor  `form:"cursor,omitempty" json:"cursor,omitempty"`
-	Reverse *Reverse `form:"reverse,omitempty" json:"reverse,omitempty"`
-}
-
-// CreateEndpointAttemptsJSONBody defines parameters for CreateEndpointAttempts.
-type CreateEndpointAttemptsJSONBody = []NewAttempt
-
-// CreateEndpointAttemptsParams defines parameters for CreateEndpointAttempts.
-type CreateEndpointAttemptsParams struct {
-	Force *Force `form:"force,omitempty" json:"force,omitempty"`
-}
-
-// RotateEndpointSecretJSONBody defines parameters for RotateEndpointSecret.
-type RotateEndpointSecretJSONBody = string
-
-// ListEventTypesParams defines parameters for ListEventTypes.
-type ListEventTypesParams struct {
-	Limit   *Limit   `form:"limit,omitempty" json:"limit,omitempty"`
-	Cursor  *Cursor  `form:"cursor,omitempty" json:"cursor,omitempty"`
-	Reverse *Reverse `form:"reverse,omitempty" json:"reverse,omitempty"`
-}
-
 // DeleteMessagesJSONBody defines parameters for DeleteMessages.
 type DeleteMessagesJSONBody = []string
 
@@ -274,6 +302,81 @@ type CreateMessagesJSONBody = []NewMessage
 // CreateMessagesParams defines parameters for CreateMessages.
 type CreateMessagesParams struct {
 	Force *Force `form:"force,omitempty" json:"force,omitempty"`
+}
+
+// DeleteAttemptsJSONBody defines parameters for DeleteAttempts.
+type DeleteAttemptsJSONBody = []string
+
+// DeleteAttemptsParams defines parameters for DeleteAttempts.
+type DeleteAttemptsParams struct {
+	Force *Force `form:"force,omitempty" json:"force,omitempty"`
+}
+
+// ListAttemptsParams defines parameters for ListAttempts.
+type ListAttemptsParams struct {
+	Limit   *Limit   `form:"limit,omitempty" json:"limit,omitempty"`
+	Cursor  *Cursor  `form:"cursor,omitempty" json:"cursor,omitempty"`
+	Reverse *Reverse `form:"reverse,omitempty" json:"reverse,omitempty"`
+}
+
+// CreateAttemptsJSONBody defines parameters for CreateAttempts.
+type CreateAttemptsJSONBody = []NewAttempt
+
+// CreateAttemptsParams defines parameters for CreateAttempts.
+type CreateAttemptsParams struct {
+	Force *Force `form:"force,omitempty" json:"force,omitempty"`
+}
+
+// DeleteAttemptParams defines parameters for DeleteAttempt.
+type DeleteAttemptParams struct {
+	Force *Force `form:"force,omitempty" json:"force,omitempty"`
+}
+
+// CreateAttemptParams defines parameters for CreateAttempt.
+type CreateAttemptParams struct {
+	Force *Force `form:"force,omitempty" json:"force,omitempty"`
+}
+
+// ListChannelsParams defines parameters for ListChannels.
+type ListChannelsParams struct {
+	Limit   *Limit   `form:"limit,omitempty" json:"limit,omitempty"`
+	Cursor  *Cursor  `form:"cursor,omitempty" json:"cursor,omitempty"`
+	Reverse *Reverse `form:"reverse,omitempty" json:"reverse,omitempty"`
+}
+
+// DeleteEndpointParams defines parameters for DeleteEndpoint.
+type DeleteEndpointParams struct {
+	Force *Force `form:"force,omitempty" json:"force,omitempty"`
+}
+
+// DeleteEndpointAttemptsJSONBody defines parameters for DeleteEndpointAttempts.
+type DeleteEndpointAttemptsJSONBody = []string
+
+// DeleteEndpointAttemptsParams defines parameters for DeleteEndpointAttempts.
+type DeleteEndpointAttemptsParams struct {
+	Force *Force `form:"force,omitempty" json:"force,omitempty"`
+}
+
+// ListEndpointAttemptsParams defines parameters for ListEndpointAttempts.
+type ListEndpointAttemptsParams struct {
+	Limit   *Limit   `form:"limit,omitempty" json:"limit,omitempty"`
+	Cursor  *Cursor  `form:"cursor,omitempty" json:"cursor,omitempty"`
+	Reverse *Reverse `form:"reverse,omitempty" json:"reverse,omitempty"`
+}
+
+// CreateEndpointAttemptsJSONBody defines parameters for CreateEndpointAttempts.
+type CreateEndpointAttemptsJSONBody = []NewAttempt
+
+// CreateEndpointAttemptsParams defines parameters for CreateEndpointAttempts.
+type CreateEndpointAttemptsParams struct {
+	Force *Force `form:"force,omitempty" json:"force,omitempty"`
+}
+
+// ListEventTypesParams defines parameters for ListEventTypes.
+type ListEventTypesParams struct {
+	Limit   *Limit   `form:"limit,omitempty" json:"limit,omitempty"`
+	Cursor  *Cursor  `form:"cursor,omitempty" json:"cursor,omitempty"`
+	Reverse *Reverse `form:"reverse,omitempty" json:"reverse,omitempty"`
 }
 
 // DeleteMessageParams defines parameters for DeleteMessage.
@@ -309,6 +412,24 @@ type CreateMessagesAttemptsParams struct {
 	Force *Force `form:"force,omitempty" json:"force,omitempty"`
 }
 
+// DeleteApplicationsJSONRequestBody defines body for DeleteApplications for application/json ContentType.
+type DeleteApplicationsJSONRequestBody = DeleteApplicationsJSONBody
+
+// CreateApplicationsJSONRequestBody defines body for CreateApplications for application/json ContentType.
+type CreateApplicationsJSONRequestBody = CreateApplicationsJSONBody
+
+// DisableEndpointsJSONRequestBody defines body for DisableEndpoints for application/json ContentType.
+type DisableEndpointsJSONRequestBody = DisableEndpointsJSONBody
+
+// CreateEndpointsJSONRequestBody defines body for CreateEndpoints for application/json ContentType.
+type CreateEndpointsJSONRequestBody = CreateEndpointsJSONBody
+
+// DeleteMessagesJSONRequestBody defines body for DeleteMessages for application/json ContentType.
+type DeleteMessagesJSONRequestBody = DeleteMessagesJSONBody
+
+// CreateMessagesJSONRequestBody defines body for CreateMessages for application/json ContentType.
+type CreateMessagesJSONRequestBody = CreateMessagesJSONBody
+
 // DeleteAttemptsJSONRequestBody defines body for DeleteAttempts for application/json ContentType.
 type DeleteAttemptsJSONRequestBody = DeleteAttemptsJSONBody
 
@@ -318,26 +439,11 @@ type CreateAttemptsJSONRequestBody = CreateAttemptsJSONBody
 // CreateAttemptJSONRequestBody defines body for CreateAttempt for application/json ContentType.
 type CreateAttemptJSONRequestBody = NewAttempt
 
-// DisableEndpointsJSONRequestBody defines body for DisableEndpoints for application/json ContentType.
-type DisableEndpointsJSONRequestBody = DisableEndpointsJSONBody
-
-// CreateEndpointsJSONRequestBody defines body for CreateEndpoints for application/json ContentType.
-type CreateEndpointsJSONRequestBody = CreateEndpointsJSONBody
-
 // DeleteEndpointAttemptsJSONRequestBody defines body for DeleteEndpointAttempts for application/json ContentType.
 type DeleteEndpointAttemptsJSONRequestBody = DeleteEndpointAttemptsJSONBody
 
 // CreateEndpointAttemptsJSONRequestBody defines body for CreateEndpointAttempts for application/json ContentType.
 type CreateEndpointAttemptsJSONRequestBody = CreateEndpointAttemptsJSONBody
-
-// RotateEndpointSecretJSONRequestBody defines body for RotateEndpointSecret for application/json ContentType.
-type RotateEndpointSecretJSONRequestBody = RotateEndpointSecretJSONBody
-
-// DeleteMessagesJSONRequestBody defines body for DeleteMessages for application/json ContentType.
-type DeleteMessagesJSONRequestBody = DeleteMessagesJSONBody
-
-// CreateMessagesJSONRequestBody defines body for CreateMessages for application/json ContentType.
-type CreateMessagesJSONRequestBody = CreateMessagesJSONBody
 
 // CreateMessageJSONRequestBody defines body for CreateMessage for application/json ContentType.
 type CreateMessageJSONRequestBody = NewMessage
@@ -347,6 +453,9 @@ type DeleteMessageAttemptsJSONRequestBody = DeleteMessageAttemptsJSONBody
 
 // CreateMessagesAttemptsJSONRequestBody defines body for CreateMessagesAttempts for application/json ContentType.
 type CreateMessagesAttemptsJSONRequestBody = CreateMessagesAttemptsJSONBody
+
+// RotateSecretJSONRequestBody defines body for RotateSecret for application/json ContentType.
+type RotateSecretJSONRequestBody = NewSecret
 
 // RequestEditorFn  is the function signature for the RequestEditor callback function
 type RequestEditorFn func(ctx context.Context, req *http.Request) error
@@ -421,6 +530,60 @@ func WithRequestEditorFn(fn RequestEditorFn) ClientOption {
 
 // The interface specification for the client above.
 type ClientInterface interface {
+	// DeleteApplicationsWithBody request with any body
+	DeleteApplicationsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	DeleteApplications(ctx context.Context, body DeleteApplicationsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetApplications request
+	GetApplications(ctx context.Context, params *GetApplicationsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateApplicationsWithBody request with any body
+	CreateApplicationsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateApplications(ctx context.Context, body CreateApplicationsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteApplication request
+	DeleteApplication(ctx context.Context, applicationId ApplicationId, params *DeleteApplicationParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetApplication request
+	GetApplication(ctx context.Context, applicationId ApplicationId, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateApplication request
+	UpdateApplication(ctx context.Context, applicationId ApplicationId, params *UpdateApplicationParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DisableEndpointsWithBody request with any body
+	DisableEndpointsWithBody(ctx context.Context, applicationId ApplicationId, params *DisableEndpointsParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	DisableEndpoints(ctx context.Context, applicationId ApplicationId, params *DisableEndpointsParams, body DisableEndpointsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ListEndpoints request
+	ListEndpoints(ctx context.Context, applicationId ApplicationId, params *ListEndpointsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateEndpointsWithBody request with any body
+	CreateEndpointsWithBody(ctx context.Context, applicationId ApplicationId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateEndpoints(ctx context.Context, applicationId ApplicationId, body CreateEndpointsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteMessagesWithBody request with any body
+	DeleteMessagesWithBody(ctx context.Context, applicationId ApplicationId, params *DeleteMessagesParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	DeleteMessages(ctx context.Context, applicationId ApplicationId, params *DeleteMessagesParams, body DeleteMessagesJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ListMessages request
+	ListMessages(ctx context.Context, applicationId ApplicationId, params *ListMessagesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateMessagesWithBody request with any body
+	CreateMessagesWithBody(ctx context.Context, applicationId ApplicationId, params *CreateMessagesParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateMessages(ctx context.Context, applicationId ApplicationId, params *CreateMessagesParams, body CreateMessagesJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ListApplicationSecrets request
+	ListApplicationSecrets(ctx context.Context, applicationId ApplicationId, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetStats request
+	GetStats(ctx context.Context, applicationId ApplicationId, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// DeleteAttemptsWithBody request with any body
 	DeleteAttemptsWithBody(ctx context.Context, params *DeleteAttemptsParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -445,73 +608,39 @@ type ClientInterface interface {
 
 	CreateAttempt(ctx context.Context, attemptId AttemptId, params *CreateAttemptParams, body CreateAttemptJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// DisableEndpointsWithBody request with any body
-	DisableEndpointsWithBody(ctx context.Context, params *DisableEndpointsParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	DisableEndpoints(ctx context.Context, params *DisableEndpointsParams, body DisableEndpointsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	// ListEndpoints request
-	ListEndpoints(ctx context.Context, params *ListEndpointsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	// CreateEndpointsWithBody request with any body
-	CreateEndpointsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	CreateEndpoints(ctx context.Context, body CreateEndpointsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// ListChannels request
+	ListChannels(ctx context.Context, params *ListChannelsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// DeleteEndpoint request
-	DeleteEndpoint(ctx context.Context, endpointId EndpointId, params *DeleteEndpointParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+	DeleteEndpoint(ctx context.Context, endpointId string, params *DeleteEndpointParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetEndpoint request
-	GetEndpoint(ctx context.Context, endpointId EndpointId, reqEditors ...RequestEditorFn) (*http.Response, error)
+	GetEndpoint(ctx context.Context, endpointId string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// UpdateEndpoint request
-	UpdateEndpoint(ctx context.Context, endpointId EndpointId, reqEditors ...RequestEditorFn) (*http.Response, error)
+	UpdateEndpoint(ctx context.Context, endpointId string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// DeleteEndpointAttemptsWithBody request with any body
 	DeleteEndpointAttemptsWithBody(ctx context.Context, endpointId EndpointId, params *DeleteEndpointAttemptsParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	DeleteEndpointAttempts(ctx context.Context, endpointId EndpointId, params *DeleteEndpointAttemptsParams, body DeleteEndpointAttemptsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// ListEndpointAttempr request
-	ListEndpointAttempr(ctx context.Context, endpointId EndpointId, params *ListEndpointAttemprParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// ListEndpointAttempts request
+	ListEndpointAttempts(ctx context.Context, endpointId EndpointId, params *ListEndpointAttemptsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// CreateEndpointAttemptsWithBody request with any body
 	CreateEndpointAttemptsWithBody(ctx context.Context, endpointId EndpointId, params *CreateEndpointAttemptsParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	CreateEndpointAttempts(ctx context.Context, endpointId EndpointId, params *CreateEndpointAttemptsParams, body CreateEndpointAttemptsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// GetEndpointSecret request
-	GetEndpointSecret(ctx context.Context, endpointId EndpointId, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	// RotateEndpointSecretWithBody request with any body
-	RotateEndpointSecretWithBody(ctx context.Context, endpointId EndpointId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	RotateEndpointSecret(ctx context.Context, endpointId EndpointId, body RotateEndpointSecretJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
-
 	// GetEndpointStats request
-	GetEndpointStats(ctx context.Context, endpointId EndpointId, reqEditors ...RequestEditorFn) (*http.Response, error)
+	GetEndpointStats(ctx context.Context, endpointId string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListEventTypes request
 	ListEventTypes(ctx context.Context, params *ListEventTypesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetHealth request
 	GetHealth(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	// Jwks request
-	Jwks(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	// DeleteMessagesWithBody request with any body
-	DeleteMessagesWithBody(ctx context.Context, params *DeleteMessagesParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	DeleteMessages(ctx context.Context, params *DeleteMessagesParams, body DeleteMessagesJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	// ListMessages request
-	ListMessages(ctx context.Context, params *ListMessagesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	// CreateMessagesWithBody request with any body
-	CreateMessagesWithBody(ctx context.Context, params *CreateMessagesParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	CreateMessages(ctx context.Context, params *CreateMessagesParams, body CreateMessagesJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// DeleteMessage request
 	DeleteMessage(ctx context.Context, messageId MessageId, params *DeleteMessageParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -537,8 +666,253 @@ type ClientInterface interface {
 
 	CreateMessagesAttempts(ctx context.Context, messageId MessageId, params *CreateMessagesAttemptsParams, body CreateMessagesAttemptsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// GetStats request
-	GetStats(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// GetSecret request
+	GetSecret(ctx context.Context, secretId SecretId, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// RotateSecretWithBody request with any body
+	RotateSecretWithBody(ctx context.Context, secretId SecretId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	RotateSecret(ctx context.Context, secretId SecretId, body RotateSecretJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+}
+
+func (c *Client) DeleteApplicationsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteApplicationsRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteApplications(ctx context.Context, body DeleteApplicationsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteApplicationsRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetApplications(ctx context.Context, params *GetApplicationsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetApplicationsRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateApplicationsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateApplicationsRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateApplications(ctx context.Context, body CreateApplicationsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateApplicationsRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteApplication(ctx context.Context, applicationId ApplicationId, params *DeleteApplicationParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteApplicationRequest(c.Server, applicationId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetApplication(ctx context.Context, applicationId ApplicationId, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetApplicationRequest(c.Server, applicationId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateApplication(ctx context.Context, applicationId ApplicationId, params *UpdateApplicationParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateApplicationRequest(c.Server, applicationId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DisableEndpointsWithBody(ctx context.Context, applicationId ApplicationId, params *DisableEndpointsParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDisableEndpointsRequestWithBody(c.Server, applicationId, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DisableEndpoints(ctx context.Context, applicationId ApplicationId, params *DisableEndpointsParams, body DisableEndpointsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDisableEndpointsRequest(c.Server, applicationId, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListEndpoints(ctx context.Context, applicationId ApplicationId, params *ListEndpointsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListEndpointsRequest(c.Server, applicationId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateEndpointsWithBody(ctx context.Context, applicationId ApplicationId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateEndpointsRequestWithBody(c.Server, applicationId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateEndpoints(ctx context.Context, applicationId ApplicationId, body CreateEndpointsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateEndpointsRequest(c.Server, applicationId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteMessagesWithBody(ctx context.Context, applicationId ApplicationId, params *DeleteMessagesParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteMessagesRequestWithBody(c.Server, applicationId, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteMessages(ctx context.Context, applicationId ApplicationId, params *DeleteMessagesParams, body DeleteMessagesJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteMessagesRequest(c.Server, applicationId, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListMessages(ctx context.Context, applicationId ApplicationId, params *ListMessagesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListMessagesRequest(c.Server, applicationId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateMessagesWithBody(ctx context.Context, applicationId ApplicationId, params *CreateMessagesParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateMessagesRequestWithBody(c.Server, applicationId, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateMessages(ctx context.Context, applicationId ApplicationId, params *CreateMessagesParams, body CreateMessagesJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateMessagesRequest(c.Server, applicationId, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListApplicationSecrets(ctx context.Context, applicationId ApplicationId, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListApplicationSecretsRequest(c.Server, applicationId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetStats(ctx context.Context, applicationId ApplicationId, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetStatsRequest(c.Server, applicationId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
 }
 
 func (c *Client) DeleteAttemptsWithBody(ctx context.Context, params *DeleteAttemptsParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -649,8 +1023,8 @@ func (c *Client) CreateAttempt(ctx context.Context, attemptId AttemptId, params 
 	return c.Client.Do(req)
 }
 
-func (c *Client) DisableEndpointsWithBody(ctx context.Context, params *DisableEndpointsParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewDisableEndpointsRequestWithBody(c.Server, params, contentType, body)
+func (c *Client) ListChannels(ctx context.Context, params *ListChannelsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListChannelsRequest(c.Server, params)
 	if err != nil {
 		return nil, err
 	}
@@ -661,55 +1035,7 @@ func (c *Client) DisableEndpointsWithBody(ctx context.Context, params *DisableEn
 	return c.Client.Do(req)
 }
 
-func (c *Client) DisableEndpoints(ctx context.Context, params *DisableEndpointsParams, body DisableEndpointsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewDisableEndpointsRequest(c.Server, params, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) ListEndpoints(ctx context.Context, params *ListEndpointsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewListEndpointsRequest(c.Server, params)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) CreateEndpointsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewCreateEndpointsRequestWithBody(c.Server, contentType, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) CreateEndpoints(ctx context.Context, body CreateEndpointsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewCreateEndpointsRequest(c.Server, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) DeleteEndpoint(ctx context.Context, endpointId EndpointId, params *DeleteEndpointParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) DeleteEndpoint(ctx context.Context, endpointId string, params *DeleteEndpointParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewDeleteEndpointRequest(c.Server, endpointId, params)
 	if err != nil {
 		return nil, err
@@ -721,7 +1047,7 @@ func (c *Client) DeleteEndpoint(ctx context.Context, endpointId EndpointId, para
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetEndpoint(ctx context.Context, endpointId EndpointId, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) GetEndpoint(ctx context.Context, endpointId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetEndpointRequest(c.Server, endpointId)
 	if err != nil {
 		return nil, err
@@ -733,7 +1059,7 @@ func (c *Client) GetEndpoint(ctx context.Context, endpointId EndpointId, reqEdit
 	return c.Client.Do(req)
 }
 
-func (c *Client) UpdateEndpoint(ctx context.Context, endpointId EndpointId, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) UpdateEndpoint(ctx context.Context, endpointId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateEndpointRequest(c.Server, endpointId)
 	if err != nil {
 		return nil, err
@@ -769,8 +1095,8 @@ func (c *Client) DeleteEndpointAttempts(ctx context.Context, endpointId Endpoint
 	return c.Client.Do(req)
 }
 
-func (c *Client) ListEndpointAttempr(ctx context.Context, endpointId EndpointId, params *ListEndpointAttemprParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewListEndpointAttemprRequest(c.Server, endpointId, params)
+func (c *Client) ListEndpointAttempts(ctx context.Context, endpointId EndpointId, params *ListEndpointAttemptsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListEndpointAttemptsRequest(c.Server, endpointId, params)
 	if err != nil {
 		return nil, err
 	}
@@ -805,43 +1131,7 @@ func (c *Client) CreateEndpointAttempts(ctx context.Context, endpointId Endpoint
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetEndpointSecret(ctx context.Context, endpointId EndpointId, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetEndpointSecretRequest(c.Server, endpointId)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) RotateEndpointSecretWithBody(ctx context.Context, endpointId EndpointId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewRotateEndpointSecretRequestWithBody(c.Server, endpointId, contentType, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) RotateEndpointSecret(ctx context.Context, endpointId EndpointId, body RotateEndpointSecretJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewRotateEndpointSecretRequest(c.Server, endpointId, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) GetEndpointStats(ctx context.Context, endpointId EndpointId, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) GetEndpointStats(ctx context.Context, endpointId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetEndpointStatsRequest(c.Server, endpointId)
 	if err != nil {
 		return nil, err
@@ -867,78 +1157,6 @@ func (c *Client) ListEventTypes(ctx context.Context, params *ListEventTypesParam
 
 func (c *Client) GetHealth(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetHealthRequest(c.Server)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) Jwks(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewJwksRequest(c.Server)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) DeleteMessagesWithBody(ctx context.Context, params *DeleteMessagesParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewDeleteMessagesRequestWithBody(c.Server, params, contentType, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) DeleteMessages(ctx context.Context, params *DeleteMessagesParams, body DeleteMessagesJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewDeleteMessagesRequest(c.Server, params, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) ListMessages(ctx context.Context, params *ListMessagesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewListMessagesRequest(c.Server, params)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) CreateMessagesWithBody(ctx context.Context, params *CreateMessagesParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewCreateMessagesRequestWithBody(c.Server, params, contentType, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) CreateMessages(ctx context.Context, params *CreateMessagesParams, body CreateMessagesJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewCreateMessagesRequest(c.Server, params, body)
 	if err != nil {
 		return nil, err
 	}
@@ -1057,8 +1275,8 @@ func (c *Client) CreateMessagesAttempts(ctx context.Context, messageId MessageId
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetStats(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetStatsRequest(c.Server)
+func (c *Client) GetSecret(ctx context.Context, secretId SecretId, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetSecretRequest(c.Server, secretId)
 	if err != nil {
 		return nil, err
 	}
@@ -1067,6 +1285,835 @@ func (c *Client) GetStats(ctx context.Context, reqEditors ...RequestEditorFn) (*
 		return nil, err
 	}
 	return c.Client.Do(req)
+}
+
+func (c *Client) RotateSecretWithBody(ctx context.Context, secretId SecretId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewRotateSecretRequestWithBody(c.Server, secretId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) RotateSecret(ctx context.Context, secretId SecretId, body RotateSecretJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewRotateSecretRequest(c.Server, secretId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// NewDeleteApplicationsRequest calls the generic DeleteApplications builder with application/json body
+func NewDeleteApplicationsRequest(server string, body DeleteApplicationsJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewDeleteApplicationsRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewDeleteApplicationsRequestWithBody generates requests for DeleteApplications with any type of body
+func NewDeleteApplicationsRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/applications")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewGetApplicationsRequest generates requests for GetApplications
+func NewGetApplicationsRequest(server string, params *GetApplicationsParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/applications")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.Limit != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "limit", runtime.ParamLocationQuery, *params.Limit); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Cursor != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "cursor", runtime.ParamLocationQuery, *params.Cursor); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Reverse != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "reverse", runtime.ParamLocationQuery, *params.Reverse); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewCreateApplicationsRequest calls the generic CreateApplications builder with application/json body
+func NewCreateApplicationsRequest(server string, body CreateApplicationsJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateApplicationsRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewCreateApplicationsRequestWithBody generates requests for CreateApplications with any type of body
+func NewCreateApplicationsRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/applications")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteApplicationRequest generates requests for DeleteApplication
+func NewDeleteApplicationRequest(server string, applicationId ApplicationId, params *DeleteApplicationParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "applicationId", runtime.ParamLocationPath, applicationId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/applications/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.Force != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "force", runtime.ParamLocationQuery, *params.Force); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetApplicationRequest generates requests for GetApplication
+func NewGetApplicationRequest(server string, applicationId ApplicationId) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "applicationId", runtime.ParamLocationPath, applicationId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/applications/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewUpdateApplicationRequest generates requests for UpdateApplication
+func NewUpdateApplicationRequest(server string, applicationId ApplicationId, params *UpdateApplicationParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "applicationId", runtime.ParamLocationPath, applicationId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/applications/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.Force != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "force", runtime.ParamLocationQuery, *params.Force); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("PATCH", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewDisableEndpointsRequest calls the generic DisableEndpoints builder with application/json body
+func NewDisableEndpointsRequest(server string, applicationId ApplicationId, params *DisableEndpointsParams, body DisableEndpointsJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewDisableEndpointsRequestWithBody(server, applicationId, params, "application/json", bodyReader)
+}
+
+// NewDisableEndpointsRequestWithBody generates requests for DisableEndpoints with any type of body
+func NewDisableEndpointsRequestWithBody(server string, applicationId ApplicationId, params *DisableEndpointsParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "applicationId", runtime.ParamLocationPath, applicationId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/applications/%s/endpoints", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.Force != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "force", runtime.ParamLocationQuery, *params.Force); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewListEndpointsRequest generates requests for ListEndpoints
+func NewListEndpointsRequest(server string, applicationId ApplicationId, params *ListEndpointsParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "applicationId", runtime.ParamLocationPath, applicationId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/applications/%s/endpoints", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.Limit != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "limit", runtime.ParamLocationQuery, *params.Limit); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Cursor != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "cursor", runtime.ParamLocationQuery, *params.Cursor); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Reverse != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "reverse", runtime.ParamLocationQuery, *params.Reverse); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewCreateEndpointsRequest calls the generic CreateEndpoints builder with application/json body
+func NewCreateEndpointsRequest(server string, applicationId ApplicationId, body CreateEndpointsJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateEndpointsRequestWithBody(server, applicationId, "application/json", bodyReader)
+}
+
+// NewCreateEndpointsRequestWithBody generates requests for CreateEndpoints with any type of body
+func NewCreateEndpointsRequestWithBody(server string, applicationId ApplicationId, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "applicationId", runtime.ParamLocationPath, applicationId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/applications/%s/endpoints", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteMessagesRequest calls the generic DeleteMessages builder with application/json body
+func NewDeleteMessagesRequest(server string, applicationId ApplicationId, params *DeleteMessagesParams, body DeleteMessagesJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewDeleteMessagesRequestWithBody(server, applicationId, params, "application/json", bodyReader)
+}
+
+// NewDeleteMessagesRequestWithBody generates requests for DeleteMessages with any type of body
+func NewDeleteMessagesRequestWithBody(server string, applicationId ApplicationId, params *DeleteMessagesParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "applicationId", runtime.ParamLocationPath, applicationId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/applications/%s/messages", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.Force != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "force", runtime.ParamLocationQuery, *params.Force); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewListMessagesRequest generates requests for ListMessages
+func NewListMessagesRequest(server string, applicationId ApplicationId, params *ListMessagesParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "applicationId", runtime.ParamLocationPath, applicationId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/applications/%s/messages", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.Limit != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "limit", runtime.ParamLocationQuery, *params.Limit); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Cursor != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "cursor", runtime.ParamLocationQuery, *params.Cursor); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Reverse != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "reverse", runtime.ParamLocationQuery, *params.Reverse); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewCreateMessagesRequest calls the generic CreateMessages builder with application/json body
+func NewCreateMessagesRequest(server string, applicationId ApplicationId, params *CreateMessagesParams, body CreateMessagesJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateMessagesRequestWithBody(server, applicationId, params, "application/json", bodyReader)
+}
+
+// NewCreateMessagesRequestWithBody generates requests for CreateMessages with any type of body
+func NewCreateMessagesRequestWithBody(server string, applicationId ApplicationId, params *CreateMessagesParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "applicationId", runtime.ParamLocationPath, applicationId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/applications/%s/messages", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.Force != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "force", runtime.ParamLocationQuery, *params.Force); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewListApplicationSecretsRequest generates requests for ListApplicationSecrets
+func NewListApplicationSecretsRequest(server string, applicationId ApplicationId) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "applicationId", runtime.ParamLocationPath, applicationId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/applications/%s/secrets", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetStatsRequest generates requests for GetStats
+func NewGetStatsRequest(server string, applicationId ApplicationId) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "applicationId", runtime.ParamLocationPath, applicationId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/applications/%s/stats", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
 }
 
 // NewDeleteAttemptsRequest calls the generic DeleteAttempts builder with application/json body
@@ -1156,6 +2203,38 @@ func NewListAttemptsRequest(server string, params *ListAttemptsParams) (*http.Re
 		if params.Limit != nil {
 
 			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "limit", runtime.ParamLocationQuery, *params.Limit); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Cursor != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "cursor", runtime.ParamLocationQuery, *params.Cursor); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Reverse != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "reverse", runtime.ParamLocationQuery, *params.Reverse); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err
@@ -1401,19 +2480,8 @@ func NewCreateAttemptRequestWithBody(server string, attemptId AttemptId, params 
 	return req, nil
 }
 
-// NewDisableEndpointsRequest calls the generic DisableEndpoints builder with application/json body
-func NewDisableEndpointsRequest(server string, params *DisableEndpointsParams, body DisableEndpointsJSONRequestBody) (*http.Request, error) {
-	var bodyReader io.Reader
-	buf, err := json.Marshal(body)
-	if err != nil {
-		return nil, err
-	}
-	bodyReader = bytes.NewReader(buf)
-	return NewDisableEndpointsRequestWithBody(server, params, "application/json", bodyReader)
-}
-
-// NewDisableEndpointsRequestWithBody generates requests for DisableEndpoints with any type of body
-func NewDisableEndpointsRequestWithBody(server string, params *DisableEndpointsParams, contentType string, body io.Reader) (*http.Request, error) {
+// NewListChannelsRequest generates requests for ListChannels
+func NewListChannelsRequest(server string, params *ListChannelsParams) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -1421,58 +2489,7 @@ func NewDisableEndpointsRequestWithBody(server string, params *DisableEndpointsP
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/endpoints")
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	if params != nil {
-		queryValues := queryURL.Query()
-
-		if params.Force != nil {
-
-			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "force", runtime.ParamLocationQuery, *params.Force); err != nil {
-				return nil, err
-			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-				return nil, err
-			} else {
-				for k, v := range parsed {
-					for _, v2 := range v {
-						queryValues.Add(k, v2)
-					}
-				}
-			}
-
-		}
-
-		queryURL.RawQuery = queryValues.Encode()
-	}
-
-	req, err := http.NewRequest("DELETE", queryURL.String(), body)
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Add("Content-Type", contentType)
-
-	return req, nil
-}
-
-// NewListEndpointsRequest generates requests for ListEndpoints
-func NewListEndpointsRequest(server string, params *ListEndpointsParams) (*http.Request, error) {
-	var err error
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/endpoints")
+	operationPath := fmt.Sprintf("/channels")
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -1544,48 +2561,8 @@ func NewListEndpointsRequest(server string, params *ListEndpointsParams) (*http.
 	return req, nil
 }
 
-// NewCreateEndpointsRequest calls the generic CreateEndpoints builder with application/json body
-func NewCreateEndpointsRequest(server string, body CreateEndpointsJSONRequestBody) (*http.Request, error) {
-	var bodyReader io.Reader
-	buf, err := json.Marshal(body)
-	if err != nil {
-		return nil, err
-	}
-	bodyReader = bytes.NewReader(buf)
-	return NewCreateEndpointsRequestWithBody(server, "application/json", bodyReader)
-}
-
-// NewCreateEndpointsRequestWithBody generates requests for CreateEndpoints with any type of body
-func NewCreateEndpointsRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
-	var err error
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/endpoints")
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest("POST", queryURL.String(), body)
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Add("Content-Type", contentType)
-
-	return req, nil
-}
-
 // NewDeleteEndpointRequest generates requests for DeleteEndpoint
-func NewDeleteEndpointRequest(server string, endpointId EndpointId, params *DeleteEndpointParams) (*http.Request, error) {
+func NewDeleteEndpointRequest(server string, endpointId string, params *DeleteEndpointParams) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -1641,7 +2618,7 @@ func NewDeleteEndpointRequest(server string, endpointId EndpointId, params *Dele
 }
 
 // NewGetEndpointRequest generates requests for GetEndpoint
-func NewGetEndpointRequest(server string, endpointId EndpointId) (*http.Request, error) {
+func NewGetEndpointRequest(server string, endpointId string) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -1675,7 +2652,7 @@ func NewGetEndpointRequest(server string, endpointId EndpointId) (*http.Request,
 }
 
 // NewUpdateEndpointRequest generates requests for UpdateEndpoint
-func NewUpdateEndpointRequest(server string, endpointId EndpointId) (*http.Request, error) {
+func NewUpdateEndpointRequest(server string, endpointId string) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -1777,8 +2754,8 @@ func NewDeleteEndpointAttemptsRequestWithBody(server string, endpointId Endpoint
 	return req, nil
 }
 
-// NewListEndpointAttemprRequest generates requests for ListEndpointAttempr
-func NewListEndpointAttemprRequest(server string, endpointId EndpointId, params *ListEndpointAttemprParams) (*http.Request, error) {
+// NewListEndpointAttemptsRequest generates requests for ListEndpointAttempts
+func NewListEndpointAttemptsRequest(server string, endpointId EndpointId, params *ListEndpointAttemptsParams) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -1934,89 +2911,8 @@ func NewCreateEndpointAttemptsRequestWithBody(server string, endpointId Endpoint
 	return req, nil
 }
 
-// NewGetEndpointSecretRequest generates requests for GetEndpointSecret
-func NewGetEndpointSecretRequest(server string, endpointId EndpointId) (*http.Request, error) {
-	var err error
-
-	var pathParam0 string
-
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "endpointId", runtime.ParamLocationPath, endpointId)
-	if err != nil {
-		return nil, err
-	}
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/endpoints/%s/secret", pathParam0)
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest("GET", queryURL.String(), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	return req, nil
-}
-
-// NewRotateEndpointSecretRequest calls the generic RotateEndpointSecret builder with application/json body
-func NewRotateEndpointSecretRequest(server string, endpointId EndpointId, body RotateEndpointSecretJSONRequestBody) (*http.Request, error) {
-	var bodyReader io.Reader
-	buf, err := json.Marshal(body)
-	if err != nil {
-		return nil, err
-	}
-	bodyReader = bytes.NewReader(buf)
-	return NewRotateEndpointSecretRequestWithBody(server, endpointId, "application/json", bodyReader)
-}
-
-// NewRotateEndpointSecretRequestWithBody generates requests for RotateEndpointSecret with any type of body
-func NewRotateEndpointSecretRequestWithBody(server string, endpointId EndpointId, contentType string, body io.Reader) (*http.Request, error) {
-	var err error
-
-	var pathParam0 string
-
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "endpointId", runtime.ParamLocationPath, endpointId)
-	if err != nil {
-		return nil, err
-	}
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/endpoints/%s/secret", pathParam0)
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest("POST", queryURL.String(), body)
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Add("Content-Type", contentType)
-
-	return req, nil
-}
-
 // NewGetEndpointStatsRequest generates requests for GetEndpointStats
-func NewGetEndpointStatsRequest(server string, endpointId EndpointId) (*http.Request, error) {
+func NewGetEndpointStatsRequest(server string, endpointId string) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -2153,238 +3049,6 @@ func NewGetHealthRequest(server string) (*http.Request, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	return req, nil
-}
-
-// NewJwksRequest generates requests for Jwks
-func NewJwksRequest(server string) (*http.Request, error) {
-	var err error
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/jwks.json")
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest("GET", queryURL.String(), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	return req, nil
-}
-
-// NewDeleteMessagesRequest calls the generic DeleteMessages builder with application/json body
-func NewDeleteMessagesRequest(server string, params *DeleteMessagesParams, body DeleteMessagesJSONRequestBody) (*http.Request, error) {
-	var bodyReader io.Reader
-	buf, err := json.Marshal(body)
-	if err != nil {
-		return nil, err
-	}
-	bodyReader = bytes.NewReader(buf)
-	return NewDeleteMessagesRequestWithBody(server, params, "application/json", bodyReader)
-}
-
-// NewDeleteMessagesRequestWithBody generates requests for DeleteMessages with any type of body
-func NewDeleteMessagesRequestWithBody(server string, params *DeleteMessagesParams, contentType string, body io.Reader) (*http.Request, error) {
-	var err error
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/messages")
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	if params != nil {
-		queryValues := queryURL.Query()
-
-		if params.Force != nil {
-
-			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "force", runtime.ParamLocationQuery, *params.Force); err != nil {
-				return nil, err
-			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-				return nil, err
-			} else {
-				for k, v := range parsed {
-					for _, v2 := range v {
-						queryValues.Add(k, v2)
-					}
-				}
-			}
-
-		}
-
-		queryURL.RawQuery = queryValues.Encode()
-	}
-
-	req, err := http.NewRequest("DELETE", queryURL.String(), body)
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Add("Content-Type", contentType)
-
-	return req, nil
-}
-
-// NewListMessagesRequest generates requests for ListMessages
-func NewListMessagesRequest(server string, params *ListMessagesParams) (*http.Request, error) {
-	var err error
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/messages")
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	if params != nil {
-		queryValues := queryURL.Query()
-
-		if params.Limit != nil {
-
-			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "limit", runtime.ParamLocationQuery, *params.Limit); err != nil {
-				return nil, err
-			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-				return nil, err
-			} else {
-				for k, v := range parsed {
-					for _, v2 := range v {
-						queryValues.Add(k, v2)
-					}
-				}
-			}
-
-		}
-
-		if params.Cursor != nil {
-
-			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "cursor", runtime.ParamLocationQuery, *params.Cursor); err != nil {
-				return nil, err
-			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-				return nil, err
-			} else {
-				for k, v := range parsed {
-					for _, v2 := range v {
-						queryValues.Add(k, v2)
-					}
-				}
-			}
-
-		}
-
-		if params.Reverse != nil {
-
-			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "reverse", runtime.ParamLocationQuery, *params.Reverse); err != nil {
-				return nil, err
-			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-				return nil, err
-			} else {
-				for k, v := range parsed {
-					for _, v2 := range v {
-						queryValues.Add(k, v2)
-					}
-				}
-			}
-
-		}
-
-		queryURL.RawQuery = queryValues.Encode()
-	}
-
-	req, err := http.NewRequest("GET", queryURL.String(), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	return req, nil
-}
-
-// NewCreateMessagesRequest calls the generic CreateMessages builder with application/json body
-func NewCreateMessagesRequest(server string, params *CreateMessagesParams, body CreateMessagesJSONRequestBody) (*http.Request, error) {
-	var bodyReader io.Reader
-	buf, err := json.Marshal(body)
-	if err != nil {
-		return nil, err
-	}
-	bodyReader = bytes.NewReader(buf)
-	return NewCreateMessagesRequestWithBody(server, params, "application/json", bodyReader)
-}
-
-// NewCreateMessagesRequestWithBody generates requests for CreateMessages with any type of body
-func NewCreateMessagesRequestWithBody(server string, params *CreateMessagesParams, contentType string, body io.Reader) (*http.Request, error) {
-	var err error
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/messages")
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	if params != nil {
-		queryValues := queryURL.Query()
-
-		if params.Force != nil {
-
-			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "force", runtime.ParamLocationQuery, *params.Force); err != nil {
-				return nil, err
-			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-				return nil, err
-			} else {
-				for k, v := range parsed {
-					for _, v2 := range v {
-						queryValues.Add(k, v2)
-					}
-				}
-			}
-
-		}
-
-		queryURL.RawQuery = queryValues.Encode()
-	}
-
-	req, err := http.NewRequest("POST", queryURL.String(), body)
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Add("Content-Type", contentType)
 
 	return req, nil
 }
@@ -2774,16 +3438,23 @@ func NewCreateMessagesAttemptsRequestWithBody(server string, messageId MessageId
 	return req, nil
 }
 
-// NewGetStatsRequest generates requests for GetStats
-func NewGetStatsRequest(server string) (*http.Request, error) {
+// NewGetSecretRequest generates requests for GetSecret
+func NewGetSecretRequest(server string, secretId SecretId) (*http.Request, error) {
 	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "secretId", runtime.ParamLocationPath, secretId)
+	if err != nil {
+		return nil, err
+	}
 
 	serverURL, err := url.Parse(server)
 	if err != nil {
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/stats")
+	operationPath := fmt.Sprintf("/secrets/%s", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -2797,6 +3468,53 @@ func NewGetStatsRequest(server string) (*http.Request, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	return req, nil
+}
+
+// NewRotateSecretRequest calls the generic RotateSecret builder with application/json body
+func NewRotateSecretRequest(server string, secretId SecretId, body RotateSecretJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewRotateSecretRequestWithBody(server, secretId, "application/json", bodyReader)
+}
+
+// NewRotateSecretRequestWithBody generates requests for RotateSecret with any type of body
+func NewRotateSecretRequestWithBody(server string, secretId SecretId, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "secretId", runtime.ParamLocationPath, secretId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/secrets/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
 
 	return req, nil
 }
@@ -2844,6 +3562,60 @@ func WithBaseURL(baseURL string) ClientOption {
 
 // ClientWithResponsesInterface is the interface specification for the client with responses above.
 type ClientWithResponsesInterface interface {
+	// DeleteApplicationsWithBodyWithResponse request with any body
+	DeleteApplicationsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*DeleteApplicationsResponse, error)
+
+	DeleteApplicationsWithResponse(ctx context.Context, body DeleteApplicationsJSONRequestBody, reqEditors ...RequestEditorFn) (*DeleteApplicationsResponse, error)
+
+	// GetApplicationsWithResponse request
+	GetApplicationsWithResponse(ctx context.Context, params *GetApplicationsParams, reqEditors ...RequestEditorFn) (*GetApplicationsResponse, error)
+
+	// CreateApplicationsWithBodyWithResponse request with any body
+	CreateApplicationsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateApplicationsResponse, error)
+
+	CreateApplicationsWithResponse(ctx context.Context, body CreateApplicationsJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateApplicationsResponse, error)
+
+	// DeleteApplicationWithResponse request
+	DeleteApplicationWithResponse(ctx context.Context, applicationId ApplicationId, params *DeleteApplicationParams, reqEditors ...RequestEditorFn) (*DeleteApplicationResponse, error)
+
+	// GetApplicationWithResponse request
+	GetApplicationWithResponse(ctx context.Context, applicationId ApplicationId, reqEditors ...RequestEditorFn) (*GetApplicationResponse, error)
+
+	// UpdateApplicationWithResponse request
+	UpdateApplicationWithResponse(ctx context.Context, applicationId ApplicationId, params *UpdateApplicationParams, reqEditors ...RequestEditorFn) (*UpdateApplicationResponse, error)
+
+	// DisableEndpointsWithBodyWithResponse request with any body
+	DisableEndpointsWithBodyWithResponse(ctx context.Context, applicationId ApplicationId, params *DisableEndpointsParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*DisableEndpointsResponse, error)
+
+	DisableEndpointsWithResponse(ctx context.Context, applicationId ApplicationId, params *DisableEndpointsParams, body DisableEndpointsJSONRequestBody, reqEditors ...RequestEditorFn) (*DisableEndpointsResponse, error)
+
+	// ListEndpointsWithResponse request
+	ListEndpointsWithResponse(ctx context.Context, applicationId ApplicationId, params *ListEndpointsParams, reqEditors ...RequestEditorFn) (*ListEndpointsResponse, error)
+
+	// CreateEndpointsWithBodyWithResponse request with any body
+	CreateEndpointsWithBodyWithResponse(ctx context.Context, applicationId ApplicationId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateEndpointsResponse, error)
+
+	CreateEndpointsWithResponse(ctx context.Context, applicationId ApplicationId, body CreateEndpointsJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateEndpointsResponse, error)
+
+	// DeleteMessagesWithBodyWithResponse request with any body
+	DeleteMessagesWithBodyWithResponse(ctx context.Context, applicationId ApplicationId, params *DeleteMessagesParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*DeleteMessagesResponse, error)
+
+	DeleteMessagesWithResponse(ctx context.Context, applicationId ApplicationId, params *DeleteMessagesParams, body DeleteMessagesJSONRequestBody, reqEditors ...RequestEditorFn) (*DeleteMessagesResponse, error)
+
+	// ListMessagesWithResponse request
+	ListMessagesWithResponse(ctx context.Context, applicationId ApplicationId, params *ListMessagesParams, reqEditors ...RequestEditorFn) (*ListMessagesResponse, error)
+
+	// CreateMessagesWithBodyWithResponse request with any body
+	CreateMessagesWithBodyWithResponse(ctx context.Context, applicationId ApplicationId, params *CreateMessagesParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateMessagesResponse, error)
+
+	CreateMessagesWithResponse(ctx context.Context, applicationId ApplicationId, params *CreateMessagesParams, body CreateMessagesJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateMessagesResponse, error)
+
+	// ListApplicationSecretsWithResponse request
+	ListApplicationSecretsWithResponse(ctx context.Context, applicationId ApplicationId, reqEditors ...RequestEditorFn) (*ListApplicationSecretsResponse, error)
+
+	// GetStatsWithResponse request
+	GetStatsWithResponse(ctx context.Context, applicationId ApplicationId, reqEditors ...RequestEditorFn) (*GetStatsResponse, error)
+
 	// DeleteAttemptsWithBodyWithResponse request with any body
 	DeleteAttemptsWithBodyWithResponse(ctx context.Context, params *DeleteAttemptsParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*DeleteAttemptsResponse, error)
 
@@ -2868,73 +3640,39 @@ type ClientWithResponsesInterface interface {
 
 	CreateAttemptWithResponse(ctx context.Context, attemptId AttemptId, params *CreateAttemptParams, body CreateAttemptJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateAttemptResponse, error)
 
-	// DisableEndpointsWithBodyWithResponse request with any body
-	DisableEndpointsWithBodyWithResponse(ctx context.Context, params *DisableEndpointsParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*DisableEndpointsResponse, error)
-
-	DisableEndpointsWithResponse(ctx context.Context, params *DisableEndpointsParams, body DisableEndpointsJSONRequestBody, reqEditors ...RequestEditorFn) (*DisableEndpointsResponse, error)
-
-	// ListEndpointsWithResponse request
-	ListEndpointsWithResponse(ctx context.Context, params *ListEndpointsParams, reqEditors ...RequestEditorFn) (*ListEndpointsResponse, error)
-
-	// CreateEndpointsWithBodyWithResponse request with any body
-	CreateEndpointsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateEndpointsResponse, error)
-
-	CreateEndpointsWithResponse(ctx context.Context, body CreateEndpointsJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateEndpointsResponse, error)
+	// ListChannelsWithResponse request
+	ListChannelsWithResponse(ctx context.Context, params *ListChannelsParams, reqEditors ...RequestEditorFn) (*ListChannelsResponse, error)
 
 	// DeleteEndpointWithResponse request
-	DeleteEndpointWithResponse(ctx context.Context, endpointId EndpointId, params *DeleteEndpointParams, reqEditors ...RequestEditorFn) (*DeleteEndpointResponse, error)
+	DeleteEndpointWithResponse(ctx context.Context, endpointId string, params *DeleteEndpointParams, reqEditors ...RequestEditorFn) (*DeleteEndpointResponse, error)
 
 	// GetEndpointWithResponse request
-	GetEndpointWithResponse(ctx context.Context, endpointId EndpointId, reqEditors ...RequestEditorFn) (*GetEndpointResponse, error)
+	GetEndpointWithResponse(ctx context.Context, endpointId string, reqEditors ...RequestEditorFn) (*GetEndpointResponse, error)
 
 	// UpdateEndpointWithResponse request
-	UpdateEndpointWithResponse(ctx context.Context, endpointId EndpointId, reqEditors ...RequestEditorFn) (*UpdateEndpointResponse, error)
+	UpdateEndpointWithResponse(ctx context.Context, endpointId string, reqEditors ...RequestEditorFn) (*UpdateEndpointResponse, error)
 
 	// DeleteEndpointAttemptsWithBodyWithResponse request with any body
 	DeleteEndpointAttemptsWithBodyWithResponse(ctx context.Context, endpointId EndpointId, params *DeleteEndpointAttemptsParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*DeleteEndpointAttemptsResponse, error)
 
 	DeleteEndpointAttemptsWithResponse(ctx context.Context, endpointId EndpointId, params *DeleteEndpointAttemptsParams, body DeleteEndpointAttemptsJSONRequestBody, reqEditors ...RequestEditorFn) (*DeleteEndpointAttemptsResponse, error)
 
-	// ListEndpointAttemprWithResponse request
-	ListEndpointAttemprWithResponse(ctx context.Context, endpointId EndpointId, params *ListEndpointAttemprParams, reqEditors ...RequestEditorFn) (*ListEndpointAttemprResponse, error)
+	// ListEndpointAttemptsWithResponse request
+	ListEndpointAttemptsWithResponse(ctx context.Context, endpointId EndpointId, params *ListEndpointAttemptsParams, reqEditors ...RequestEditorFn) (*ListEndpointAttemptsResponse, error)
 
 	// CreateEndpointAttemptsWithBodyWithResponse request with any body
 	CreateEndpointAttemptsWithBodyWithResponse(ctx context.Context, endpointId EndpointId, params *CreateEndpointAttemptsParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateEndpointAttemptsResponse, error)
 
 	CreateEndpointAttemptsWithResponse(ctx context.Context, endpointId EndpointId, params *CreateEndpointAttemptsParams, body CreateEndpointAttemptsJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateEndpointAttemptsResponse, error)
 
-	// GetEndpointSecretWithResponse request
-	GetEndpointSecretWithResponse(ctx context.Context, endpointId EndpointId, reqEditors ...RequestEditorFn) (*GetEndpointSecretResponse, error)
-
-	// RotateEndpointSecretWithBodyWithResponse request with any body
-	RotateEndpointSecretWithBodyWithResponse(ctx context.Context, endpointId EndpointId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*RotateEndpointSecretResponse, error)
-
-	RotateEndpointSecretWithResponse(ctx context.Context, endpointId EndpointId, body RotateEndpointSecretJSONRequestBody, reqEditors ...RequestEditorFn) (*RotateEndpointSecretResponse, error)
-
 	// GetEndpointStatsWithResponse request
-	GetEndpointStatsWithResponse(ctx context.Context, endpointId EndpointId, reqEditors ...RequestEditorFn) (*GetEndpointStatsResponse, error)
+	GetEndpointStatsWithResponse(ctx context.Context, endpointId string, reqEditors ...RequestEditorFn) (*GetEndpointStatsResponse, error)
 
 	// ListEventTypesWithResponse request
 	ListEventTypesWithResponse(ctx context.Context, params *ListEventTypesParams, reqEditors ...RequestEditorFn) (*ListEventTypesResponse, error)
 
 	// GetHealthWithResponse request
 	GetHealthWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetHealthResponse, error)
-
-	// JwksWithResponse request
-	JwksWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*JwksResponse, error)
-
-	// DeleteMessagesWithBodyWithResponse request with any body
-	DeleteMessagesWithBodyWithResponse(ctx context.Context, params *DeleteMessagesParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*DeleteMessagesResponse, error)
-
-	DeleteMessagesWithResponse(ctx context.Context, params *DeleteMessagesParams, body DeleteMessagesJSONRequestBody, reqEditors ...RequestEditorFn) (*DeleteMessagesResponse, error)
-
-	// ListMessagesWithResponse request
-	ListMessagesWithResponse(ctx context.Context, params *ListMessagesParams, reqEditors ...RequestEditorFn) (*ListMessagesResponse, error)
-
-	// CreateMessagesWithBodyWithResponse request with any body
-	CreateMessagesWithBodyWithResponse(ctx context.Context, params *CreateMessagesParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateMessagesResponse, error)
-
-	CreateMessagesWithResponse(ctx context.Context, params *CreateMessagesParams, body CreateMessagesJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateMessagesResponse, error)
 
 	// DeleteMessageWithResponse request
 	DeleteMessageWithResponse(ctx context.Context, messageId MessageId, params *DeleteMessageParams, reqEditors ...RequestEditorFn) (*DeleteMessageResponse, error)
@@ -2960,8 +3698,317 @@ type ClientWithResponsesInterface interface {
 
 	CreateMessagesAttemptsWithResponse(ctx context.Context, messageId MessageId, params *CreateMessagesAttemptsParams, body CreateMessagesAttemptsJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateMessagesAttemptsResponse, error)
 
-	// GetStatsWithResponse request
-	GetStatsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetStatsResponse, error)
+	// GetSecretWithResponse request
+	GetSecretWithResponse(ctx context.Context, secretId SecretId, reqEditors ...RequestEditorFn) (*GetSecretResponse, error)
+
+	// RotateSecretWithBodyWithResponse request with any body
+	RotateSecretWithBodyWithResponse(ctx context.Context, secretId SecretId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*RotateSecretResponse, error)
+
+	RotateSecretWithResponse(ctx context.Context, secretId SecretId, body RotateSecretJSONRequestBody, reqEditors ...RequestEditorFn) (*RotateSecretResponse, error)
+}
+
+type DeleteApplicationsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteApplicationsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteApplicationsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetApplicationsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ApplicationList
+}
+
+// Status returns HTTPResponse.Status
+func (r GetApplicationsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetApplicationsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type CreateApplicationsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ErrorList
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateApplicationsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateApplicationsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteApplicationResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteApplicationResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteApplicationResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetApplicationResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Application
+}
+
+// Status returns HTTPResponse.Status
+func (r GetApplicationResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetApplicationResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpdateApplicationResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateApplicationResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateApplicationResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DisableEndpointsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r DisableEndpointsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DisableEndpointsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ListEndpointsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *EndpointList
+}
+
+// Status returns HTTPResponse.Status
+func (r ListEndpointsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListEndpointsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type CreateEndpointsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON201      *ErrorList
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateEndpointsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateEndpointsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteMessagesResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteMessagesResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteMessagesResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ListMessagesResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *MessageList
+}
+
+// Status returns HTTPResponse.Status
+func (r ListMessagesResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListMessagesResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type CreateMessagesResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON202      *ErrorList
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateMessagesResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateMessagesResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ListApplicationSecretsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *string
+}
+
+// Status returns HTTPResponse.Status
+func (r ListApplicationSecretsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListApplicationSecretsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetStatsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *StatisticsOut
+}
+
+// Status returns HTTPResponse.Status
+func (r GetStatsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetStatsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
 }
 
 type DeleteAttemptsResponse struct {
@@ -3075,7 +4122,7 @@ func (r GetAttemptResponse) StatusCode() int {
 type CreateAttemptResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON202      *ErrorOut
+	JSON202      *Error
 }
 
 // Status returns HTTPResponse.Status
@@ -3094,13 +4141,14 @@ func (r CreateAttemptResponse) StatusCode() int {
 	return 0
 }
 
-type DisableEndpointsResponse struct {
+type ListChannelsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
+	JSON200      *ChannelList
 }
 
 // Status returns HTTPResponse.Status
-func (r DisableEndpointsResponse) Status() string {
+func (r ListChannelsResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -3108,51 +4156,7 @@ func (r DisableEndpointsResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r DisableEndpointsResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-type ListEndpointsResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	JSON200      *EndpointList
-}
-
-// Status returns HTTPResponse.Status
-func (r ListEndpointsResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r ListEndpointsResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-type CreateEndpointsResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	JSON201      *ErrorList
-}
-
-// Status returns HTTPResponse.Status
-func (r CreateEndpointsResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r CreateEndpointsResponse) StatusCode() int {
+func (r ListChannelsResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -3205,7 +4209,7 @@ func (r GetEndpointResponse) StatusCode() int {
 type UpdateEndpointResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON204      *ErrorOut
+	JSON204      *Error
 }
 
 // Status returns HTTPResponse.Status
@@ -3245,14 +4249,14 @@ func (r DeleteEndpointAttemptsResponse) StatusCode() int {
 	return 0
 }
 
-type ListEndpointAttemprResponse struct {
+type ListEndpointAttemptsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *AttemptList
 }
 
 // Status returns HTTPResponse.Status
-func (r ListEndpointAttemprResponse) Status() string {
+func (r ListEndpointAttemptsResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -3260,7 +4264,7 @@ func (r ListEndpointAttemprResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r ListEndpointAttemprResponse) StatusCode() int {
+func (r ListEndpointAttemptsResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -3283,50 +4287,6 @@ func (r CreateEndpointAttemptsResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r CreateEndpointAttemptsResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-type GetEndpointSecretResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	JSON200      *string
-}
-
-// Status returns HTTPResponse.Status
-func (r GetEndpointSecretResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r GetEndpointSecretResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-type RotateEndpointSecretResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	JSON202      *ErrorOut
-}
-
-// Status returns HTTPResponse.Status
-func (r RotateEndpointSecretResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r RotateEndpointSecretResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -3380,6 +4340,10 @@ func (r ListEventTypesResponse) StatusCode() int {
 type GetHealthResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
+	JSON200      *struct {
+		Since  time.Time `json:"since"`
+		Status string    `json:"status"`
+	}
 }
 
 // Status returns HTTPResponse.Status
@@ -3392,93 +4356,6 @@ func (r GetHealthResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r GetHealthResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-type JwksResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	JSON200      *map[string]interface{}
-}
-
-// Status returns HTTPResponse.Status
-func (r JwksResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r JwksResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-type DeleteMessagesResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-}
-
-// Status returns HTTPResponse.Status
-func (r DeleteMessagesResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r DeleteMessagesResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-type ListMessagesResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	JSON200      *MessageList
-}
-
-// Status returns HTTPResponse.Status
-func (r ListMessagesResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r ListMessagesResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-type CreateMessagesResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	JSON202      *ErrorList
-}
-
-// Status returns HTTPResponse.Status
-func (r CreateMessagesResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r CreateMessagesResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -3531,7 +4408,7 @@ func (r GetMessageResponse) StatusCode() int {
 type CreateMessageResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *ErrorOut
+	JSON200      *Error
 }
 
 // Status returns HTTPResponse.Status
@@ -3615,14 +4492,14 @@ func (r CreateMessagesAttemptsResponse) StatusCode() int {
 	return 0
 }
 
-type GetStatsResponse struct {
+type GetSecretResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *StatisticsOut
+	JSON200      *Secret
 }
 
 // Status returns HTTPResponse.Status
-func (r GetStatsResponse) Status() string {
+func (r GetSecretResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -3630,11 +4507,207 @@ func (r GetStatsResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r GetStatsResponse) StatusCode() int {
+func (r GetSecretResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
+}
+
+type RotateSecretResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Error
+}
+
+// Status returns HTTPResponse.Status
+func (r RotateSecretResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r RotateSecretResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// DeleteApplicationsWithBodyWithResponse request with arbitrary body returning *DeleteApplicationsResponse
+func (c *ClientWithResponses) DeleteApplicationsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*DeleteApplicationsResponse, error) {
+	rsp, err := c.DeleteApplicationsWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteApplicationsResponse(rsp)
+}
+
+func (c *ClientWithResponses) DeleteApplicationsWithResponse(ctx context.Context, body DeleteApplicationsJSONRequestBody, reqEditors ...RequestEditorFn) (*DeleteApplicationsResponse, error) {
+	rsp, err := c.DeleteApplications(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteApplicationsResponse(rsp)
+}
+
+// GetApplicationsWithResponse request returning *GetApplicationsResponse
+func (c *ClientWithResponses) GetApplicationsWithResponse(ctx context.Context, params *GetApplicationsParams, reqEditors ...RequestEditorFn) (*GetApplicationsResponse, error) {
+	rsp, err := c.GetApplications(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetApplicationsResponse(rsp)
+}
+
+// CreateApplicationsWithBodyWithResponse request with arbitrary body returning *CreateApplicationsResponse
+func (c *ClientWithResponses) CreateApplicationsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateApplicationsResponse, error) {
+	rsp, err := c.CreateApplicationsWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateApplicationsResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateApplicationsWithResponse(ctx context.Context, body CreateApplicationsJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateApplicationsResponse, error) {
+	rsp, err := c.CreateApplications(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateApplicationsResponse(rsp)
+}
+
+// DeleteApplicationWithResponse request returning *DeleteApplicationResponse
+func (c *ClientWithResponses) DeleteApplicationWithResponse(ctx context.Context, applicationId ApplicationId, params *DeleteApplicationParams, reqEditors ...RequestEditorFn) (*DeleteApplicationResponse, error) {
+	rsp, err := c.DeleteApplication(ctx, applicationId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteApplicationResponse(rsp)
+}
+
+// GetApplicationWithResponse request returning *GetApplicationResponse
+func (c *ClientWithResponses) GetApplicationWithResponse(ctx context.Context, applicationId ApplicationId, reqEditors ...RequestEditorFn) (*GetApplicationResponse, error) {
+	rsp, err := c.GetApplication(ctx, applicationId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetApplicationResponse(rsp)
+}
+
+// UpdateApplicationWithResponse request returning *UpdateApplicationResponse
+func (c *ClientWithResponses) UpdateApplicationWithResponse(ctx context.Context, applicationId ApplicationId, params *UpdateApplicationParams, reqEditors ...RequestEditorFn) (*UpdateApplicationResponse, error) {
+	rsp, err := c.UpdateApplication(ctx, applicationId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateApplicationResponse(rsp)
+}
+
+// DisableEndpointsWithBodyWithResponse request with arbitrary body returning *DisableEndpointsResponse
+func (c *ClientWithResponses) DisableEndpointsWithBodyWithResponse(ctx context.Context, applicationId ApplicationId, params *DisableEndpointsParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*DisableEndpointsResponse, error) {
+	rsp, err := c.DisableEndpointsWithBody(ctx, applicationId, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDisableEndpointsResponse(rsp)
+}
+
+func (c *ClientWithResponses) DisableEndpointsWithResponse(ctx context.Context, applicationId ApplicationId, params *DisableEndpointsParams, body DisableEndpointsJSONRequestBody, reqEditors ...RequestEditorFn) (*DisableEndpointsResponse, error) {
+	rsp, err := c.DisableEndpoints(ctx, applicationId, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDisableEndpointsResponse(rsp)
+}
+
+// ListEndpointsWithResponse request returning *ListEndpointsResponse
+func (c *ClientWithResponses) ListEndpointsWithResponse(ctx context.Context, applicationId ApplicationId, params *ListEndpointsParams, reqEditors ...RequestEditorFn) (*ListEndpointsResponse, error) {
+	rsp, err := c.ListEndpoints(ctx, applicationId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListEndpointsResponse(rsp)
+}
+
+// CreateEndpointsWithBodyWithResponse request with arbitrary body returning *CreateEndpointsResponse
+func (c *ClientWithResponses) CreateEndpointsWithBodyWithResponse(ctx context.Context, applicationId ApplicationId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateEndpointsResponse, error) {
+	rsp, err := c.CreateEndpointsWithBody(ctx, applicationId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateEndpointsResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateEndpointsWithResponse(ctx context.Context, applicationId ApplicationId, body CreateEndpointsJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateEndpointsResponse, error) {
+	rsp, err := c.CreateEndpoints(ctx, applicationId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateEndpointsResponse(rsp)
+}
+
+// DeleteMessagesWithBodyWithResponse request with arbitrary body returning *DeleteMessagesResponse
+func (c *ClientWithResponses) DeleteMessagesWithBodyWithResponse(ctx context.Context, applicationId ApplicationId, params *DeleteMessagesParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*DeleteMessagesResponse, error) {
+	rsp, err := c.DeleteMessagesWithBody(ctx, applicationId, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteMessagesResponse(rsp)
+}
+
+func (c *ClientWithResponses) DeleteMessagesWithResponse(ctx context.Context, applicationId ApplicationId, params *DeleteMessagesParams, body DeleteMessagesJSONRequestBody, reqEditors ...RequestEditorFn) (*DeleteMessagesResponse, error) {
+	rsp, err := c.DeleteMessages(ctx, applicationId, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteMessagesResponse(rsp)
+}
+
+// ListMessagesWithResponse request returning *ListMessagesResponse
+func (c *ClientWithResponses) ListMessagesWithResponse(ctx context.Context, applicationId ApplicationId, params *ListMessagesParams, reqEditors ...RequestEditorFn) (*ListMessagesResponse, error) {
+	rsp, err := c.ListMessages(ctx, applicationId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListMessagesResponse(rsp)
+}
+
+// CreateMessagesWithBodyWithResponse request with arbitrary body returning *CreateMessagesResponse
+func (c *ClientWithResponses) CreateMessagesWithBodyWithResponse(ctx context.Context, applicationId ApplicationId, params *CreateMessagesParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateMessagesResponse, error) {
+	rsp, err := c.CreateMessagesWithBody(ctx, applicationId, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateMessagesResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateMessagesWithResponse(ctx context.Context, applicationId ApplicationId, params *CreateMessagesParams, body CreateMessagesJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateMessagesResponse, error) {
+	rsp, err := c.CreateMessages(ctx, applicationId, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateMessagesResponse(rsp)
+}
+
+// ListApplicationSecretsWithResponse request returning *ListApplicationSecretsResponse
+func (c *ClientWithResponses) ListApplicationSecretsWithResponse(ctx context.Context, applicationId ApplicationId, reqEditors ...RequestEditorFn) (*ListApplicationSecretsResponse, error) {
+	rsp, err := c.ListApplicationSecrets(ctx, applicationId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListApplicationSecretsResponse(rsp)
+}
+
+// GetStatsWithResponse request returning *GetStatsResponse
+func (c *ClientWithResponses) GetStatsWithResponse(ctx context.Context, applicationId ApplicationId, reqEditors ...RequestEditorFn) (*GetStatsResponse, error) {
+	rsp, err := c.GetStats(ctx, applicationId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetStatsResponse(rsp)
 }
 
 // DeleteAttemptsWithBodyWithResponse request with arbitrary body returning *DeleteAttemptsResponse
@@ -3715,51 +4788,17 @@ func (c *ClientWithResponses) CreateAttemptWithResponse(ctx context.Context, att
 	return ParseCreateAttemptResponse(rsp)
 }
 
-// DisableEndpointsWithBodyWithResponse request with arbitrary body returning *DisableEndpointsResponse
-func (c *ClientWithResponses) DisableEndpointsWithBodyWithResponse(ctx context.Context, params *DisableEndpointsParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*DisableEndpointsResponse, error) {
-	rsp, err := c.DisableEndpointsWithBody(ctx, params, contentType, body, reqEditors...)
+// ListChannelsWithResponse request returning *ListChannelsResponse
+func (c *ClientWithResponses) ListChannelsWithResponse(ctx context.Context, params *ListChannelsParams, reqEditors ...RequestEditorFn) (*ListChannelsResponse, error) {
+	rsp, err := c.ListChannels(ctx, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseDisableEndpointsResponse(rsp)
-}
-
-func (c *ClientWithResponses) DisableEndpointsWithResponse(ctx context.Context, params *DisableEndpointsParams, body DisableEndpointsJSONRequestBody, reqEditors ...RequestEditorFn) (*DisableEndpointsResponse, error) {
-	rsp, err := c.DisableEndpoints(ctx, params, body, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseDisableEndpointsResponse(rsp)
-}
-
-// ListEndpointsWithResponse request returning *ListEndpointsResponse
-func (c *ClientWithResponses) ListEndpointsWithResponse(ctx context.Context, params *ListEndpointsParams, reqEditors ...RequestEditorFn) (*ListEndpointsResponse, error) {
-	rsp, err := c.ListEndpoints(ctx, params, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseListEndpointsResponse(rsp)
-}
-
-// CreateEndpointsWithBodyWithResponse request with arbitrary body returning *CreateEndpointsResponse
-func (c *ClientWithResponses) CreateEndpointsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateEndpointsResponse, error) {
-	rsp, err := c.CreateEndpointsWithBody(ctx, contentType, body, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseCreateEndpointsResponse(rsp)
-}
-
-func (c *ClientWithResponses) CreateEndpointsWithResponse(ctx context.Context, body CreateEndpointsJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateEndpointsResponse, error) {
-	rsp, err := c.CreateEndpoints(ctx, body, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseCreateEndpointsResponse(rsp)
+	return ParseListChannelsResponse(rsp)
 }
 
 // DeleteEndpointWithResponse request returning *DeleteEndpointResponse
-func (c *ClientWithResponses) DeleteEndpointWithResponse(ctx context.Context, endpointId EndpointId, params *DeleteEndpointParams, reqEditors ...RequestEditorFn) (*DeleteEndpointResponse, error) {
+func (c *ClientWithResponses) DeleteEndpointWithResponse(ctx context.Context, endpointId string, params *DeleteEndpointParams, reqEditors ...RequestEditorFn) (*DeleteEndpointResponse, error) {
 	rsp, err := c.DeleteEndpoint(ctx, endpointId, params, reqEditors...)
 	if err != nil {
 		return nil, err
@@ -3768,7 +4807,7 @@ func (c *ClientWithResponses) DeleteEndpointWithResponse(ctx context.Context, en
 }
 
 // GetEndpointWithResponse request returning *GetEndpointResponse
-func (c *ClientWithResponses) GetEndpointWithResponse(ctx context.Context, endpointId EndpointId, reqEditors ...RequestEditorFn) (*GetEndpointResponse, error) {
+func (c *ClientWithResponses) GetEndpointWithResponse(ctx context.Context, endpointId string, reqEditors ...RequestEditorFn) (*GetEndpointResponse, error) {
 	rsp, err := c.GetEndpoint(ctx, endpointId, reqEditors...)
 	if err != nil {
 		return nil, err
@@ -3777,7 +4816,7 @@ func (c *ClientWithResponses) GetEndpointWithResponse(ctx context.Context, endpo
 }
 
 // UpdateEndpointWithResponse request returning *UpdateEndpointResponse
-func (c *ClientWithResponses) UpdateEndpointWithResponse(ctx context.Context, endpointId EndpointId, reqEditors ...RequestEditorFn) (*UpdateEndpointResponse, error) {
+func (c *ClientWithResponses) UpdateEndpointWithResponse(ctx context.Context, endpointId string, reqEditors ...RequestEditorFn) (*UpdateEndpointResponse, error) {
 	rsp, err := c.UpdateEndpoint(ctx, endpointId, reqEditors...)
 	if err != nil {
 		return nil, err
@@ -3802,13 +4841,13 @@ func (c *ClientWithResponses) DeleteEndpointAttemptsWithResponse(ctx context.Con
 	return ParseDeleteEndpointAttemptsResponse(rsp)
 }
 
-// ListEndpointAttemprWithResponse request returning *ListEndpointAttemprResponse
-func (c *ClientWithResponses) ListEndpointAttemprWithResponse(ctx context.Context, endpointId EndpointId, params *ListEndpointAttemprParams, reqEditors ...RequestEditorFn) (*ListEndpointAttemprResponse, error) {
-	rsp, err := c.ListEndpointAttempr(ctx, endpointId, params, reqEditors...)
+// ListEndpointAttemptsWithResponse request returning *ListEndpointAttemptsResponse
+func (c *ClientWithResponses) ListEndpointAttemptsWithResponse(ctx context.Context, endpointId EndpointId, params *ListEndpointAttemptsParams, reqEditors ...RequestEditorFn) (*ListEndpointAttemptsResponse, error) {
+	rsp, err := c.ListEndpointAttempts(ctx, endpointId, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseListEndpointAttemprResponse(rsp)
+	return ParseListEndpointAttemptsResponse(rsp)
 }
 
 // CreateEndpointAttemptsWithBodyWithResponse request with arbitrary body returning *CreateEndpointAttemptsResponse
@@ -3828,34 +4867,8 @@ func (c *ClientWithResponses) CreateEndpointAttemptsWithResponse(ctx context.Con
 	return ParseCreateEndpointAttemptsResponse(rsp)
 }
 
-// GetEndpointSecretWithResponse request returning *GetEndpointSecretResponse
-func (c *ClientWithResponses) GetEndpointSecretWithResponse(ctx context.Context, endpointId EndpointId, reqEditors ...RequestEditorFn) (*GetEndpointSecretResponse, error) {
-	rsp, err := c.GetEndpointSecret(ctx, endpointId, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseGetEndpointSecretResponse(rsp)
-}
-
-// RotateEndpointSecretWithBodyWithResponse request with arbitrary body returning *RotateEndpointSecretResponse
-func (c *ClientWithResponses) RotateEndpointSecretWithBodyWithResponse(ctx context.Context, endpointId EndpointId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*RotateEndpointSecretResponse, error) {
-	rsp, err := c.RotateEndpointSecretWithBody(ctx, endpointId, contentType, body, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseRotateEndpointSecretResponse(rsp)
-}
-
-func (c *ClientWithResponses) RotateEndpointSecretWithResponse(ctx context.Context, endpointId EndpointId, body RotateEndpointSecretJSONRequestBody, reqEditors ...RequestEditorFn) (*RotateEndpointSecretResponse, error) {
-	rsp, err := c.RotateEndpointSecret(ctx, endpointId, body, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseRotateEndpointSecretResponse(rsp)
-}
-
 // GetEndpointStatsWithResponse request returning *GetEndpointStatsResponse
-func (c *ClientWithResponses) GetEndpointStatsWithResponse(ctx context.Context, endpointId EndpointId, reqEditors ...RequestEditorFn) (*GetEndpointStatsResponse, error) {
+func (c *ClientWithResponses) GetEndpointStatsWithResponse(ctx context.Context, endpointId string, reqEditors ...RequestEditorFn) (*GetEndpointStatsResponse, error) {
 	rsp, err := c.GetEndpointStats(ctx, endpointId, reqEditors...)
 	if err != nil {
 		return nil, err
@@ -3879,58 +4892,6 @@ func (c *ClientWithResponses) GetHealthWithResponse(ctx context.Context, reqEdit
 		return nil, err
 	}
 	return ParseGetHealthResponse(rsp)
-}
-
-// JwksWithResponse request returning *JwksResponse
-func (c *ClientWithResponses) JwksWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*JwksResponse, error) {
-	rsp, err := c.Jwks(ctx, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseJwksResponse(rsp)
-}
-
-// DeleteMessagesWithBodyWithResponse request with arbitrary body returning *DeleteMessagesResponse
-func (c *ClientWithResponses) DeleteMessagesWithBodyWithResponse(ctx context.Context, params *DeleteMessagesParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*DeleteMessagesResponse, error) {
-	rsp, err := c.DeleteMessagesWithBody(ctx, params, contentType, body, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseDeleteMessagesResponse(rsp)
-}
-
-func (c *ClientWithResponses) DeleteMessagesWithResponse(ctx context.Context, params *DeleteMessagesParams, body DeleteMessagesJSONRequestBody, reqEditors ...RequestEditorFn) (*DeleteMessagesResponse, error) {
-	rsp, err := c.DeleteMessages(ctx, params, body, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseDeleteMessagesResponse(rsp)
-}
-
-// ListMessagesWithResponse request returning *ListMessagesResponse
-func (c *ClientWithResponses) ListMessagesWithResponse(ctx context.Context, params *ListMessagesParams, reqEditors ...RequestEditorFn) (*ListMessagesResponse, error) {
-	rsp, err := c.ListMessages(ctx, params, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseListMessagesResponse(rsp)
-}
-
-// CreateMessagesWithBodyWithResponse request with arbitrary body returning *CreateMessagesResponse
-func (c *ClientWithResponses) CreateMessagesWithBodyWithResponse(ctx context.Context, params *CreateMessagesParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateMessagesResponse, error) {
-	rsp, err := c.CreateMessagesWithBody(ctx, params, contentType, body, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseCreateMessagesResponse(rsp)
-}
-
-func (c *ClientWithResponses) CreateMessagesWithResponse(ctx context.Context, params *CreateMessagesParams, body CreateMessagesJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateMessagesResponse, error) {
-	rsp, err := c.CreateMessages(ctx, params, body, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseCreateMessagesResponse(rsp)
 }
 
 // DeleteMessageWithResponse request returning *DeleteMessageResponse
@@ -4011,13 +4972,354 @@ func (c *ClientWithResponses) CreateMessagesAttemptsWithResponse(ctx context.Con
 	return ParseCreateMessagesAttemptsResponse(rsp)
 }
 
-// GetStatsWithResponse request returning *GetStatsResponse
-func (c *ClientWithResponses) GetStatsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetStatsResponse, error) {
-	rsp, err := c.GetStats(ctx, reqEditors...)
+// GetSecretWithResponse request returning *GetSecretResponse
+func (c *ClientWithResponses) GetSecretWithResponse(ctx context.Context, secretId SecretId, reqEditors ...RequestEditorFn) (*GetSecretResponse, error) {
+	rsp, err := c.GetSecret(ctx, secretId, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseGetStatsResponse(rsp)
+	return ParseGetSecretResponse(rsp)
+}
+
+// RotateSecretWithBodyWithResponse request with arbitrary body returning *RotateSecretResponse
+func (c *ClientWithResponses) RotateSecretWithBodyWithResponse(ctx context.Context, secretId SecretId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*RotateSecretResponse, error) {
+	rsp, err := c.RotateSecretWithBody(ctx, secretId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseRotateSecretResponse(rsp)
+}
+
+func (c *ClientWithResponses) RotateSecretWithResponse(ctx context.Context, secretId SecretId, body RotateSecretJSONRequestBody, reqEditors ...RequestEditorFn) (*RotateSecretResponse, error) {
+	rsp, err := c.RotateSecret(ctx, secretId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseRotateSecretResponse(rsp)
+}
+
+// ParseDeleteApplicationsResponse parses an HTTP response from a DeleteApplicationsWithResponse call
+func ParseDeleteApplicationsResponse(rsp *http.Response) (*DeleteApplicationsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteApplicationsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseGetApplicationsResponse parses an HTTP response from a GetApplicationsWithResponse call
+func ParseGetApplicationsResponse(rsp *http.Response) (*GetApplicationsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetApplicationsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ApplicationList
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateApplicationsResponse parses an HTTP response from a CreateApplicationsWithResponse call
+func ParseCreateApplicationsResponse(rsp *http.Response) (*CreateApplicationsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateApplicationsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ErrorList
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteApplicationResponse parses an HTTP response from a DeleteApplicationWithResponse call
+func ParseDeleteApplicationResponse(rsp *http.Response) (*DeleteApplicationResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteApplicationResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseGetApplicationResponse parses an HTTP response from a GetApplicationWithResponse call
+func ParseGetApplicationResponse(rsp *http.Response) (*GetApplicationResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetApplicationResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Application
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateApplicationResponse parses an HTTP response from a UpdateApplicationWithResponse call
+func ParseUpdateApplicationResponse(rsp *http.Response) (*UpdateApplicationResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateApplicationResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDisableEndpointsResponse parses an HTTP response from a DisableEndpointsWithResponse call
+func ParseDisableEndpointsResponse(rsp *http.Response) (*DisableEndpointsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DisableEndpointsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseListEndpointsResponse parses an HTTP response from a ListEndpointsWithResponse call
+func ParseListEndpointsResponse(rsp *http.Response) (*ListEndpointsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListEndpointsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest EndpointList
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateEndpointsResponse parses an HTTP response from a CreateEndpointsWithResponse call
+func ParseCreateEndpointsResponse(rsp *http.Response) (*CreateEndpointsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateEndpointsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
+		var dest ErrorList
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON201 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteMessagesResponse parses an HTTP response from a DeleteMessagesWithResponse call
+func ParseDeleteMessagesResponse(rsp *http.Response) (*DeleteMessagesResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteMessagesResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseListMessagesResponse parses an HTTP response from a ListMessagesWithResponse call
+func ParseListMessagesResponse(rsp *http.Response) (*ListMessagesResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListMessagesResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest MessageList
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateMessagesResponse parses an HTTP response from a CreateMessagesWithResponse call
+func ParseCreateMessagesResponse(rsp *http.Response) (*CreateMessagesResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateMessagesResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 202:
+		var dest ErrorList
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON202 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListApplicationSecretsResponse parses an HTTP response from a ListApplicationSecretsWithResponse call
+func ParseListApplicationSecretsResponse(rsp *http.Response) (*ListApplicationSecretsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListApplicationSecretsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest string
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetStatsResponse parses an HTTP response from a GetStatsWithResponse call
+func ParseGetStatsResponse(rsp *http.Response) (*GetStatsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetStatsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest StatisticsOut
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
 }
 
 // ParseDeleteAttemptsResponse parses an HTTP response from a DeleteAttemptsWithResponse call
@@ -4145,7 +5447,7 @@ func ParseCreateAttemptResponse(rsp *http.Response) (*CreateAttemptResponse, err
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 202:
-		var dest ErrorOut
+		var dest Error
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -4156,68 +5458,26 @@ func ParseCreateAttemptResponse(rsp *http.Response) (*CreateAttemptResponse, err
 	return response, nil
 }
 
-// ParseDisableEndpointsResponse parses an HTTP response from a DisableEndpointsWithResponse call
-func ParseDisableEndpointsResponse(rsp *http.Response) (*DisableEndpointsResponse, error) {
+// ParseListChannelsResponse parses an HTTP response from a ListChannelsWithResponse call
+func ParseListChannelsResponse(rsp *http.Response) (*ListChannelsResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &DisableEndpointsResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	return response, nil
-}
-
-// ParseListEndpointsResponse parses an HTTP response from a ListEndpointsWithResponse call
-func ParseListEndpointsResponse(rsp *http.Response) (*ListEndpointsResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &ListEndpointsResponse{
+	response := &ListChannelsResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest EndpointList
+		var dest ChannelList
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON200 = &dest
-
-	}
-
-	return response, nil
-}
-
-// ParseCreateEndpointsResponse parses an HTTP response from a CreateEndpointsWithResponse call
-func ParseCreateEndpointsResponse(rsp *http.Response) (*CreateEndpointsResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &CreateEndpointsResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
-		var dest ErrorList
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON201 = &dest
 
 	}
 
@@ -4281,7 +5541,7 @@ func ParseUpdateEndpointResponse(rsp *http.Response) (*UpdateEndpointResponse, e
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 204:
-		var dest ErrorOut
+		var dest Error
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -4308,15 +5568,15 @@ func ParseDeleteEndpointAttemptsResponse(rsp *http.Response) (*DeleteEndpointAtt
 	return response, nil
 }
 
-// ParseListEndpointAttemprResponse parses an HTTP response from a ListEndpointAttemprWithResponse call
-func ParseListEndpointAttemprResponse(rsp *http.Response) (*ListEndpointAttemprResponse, error) {
+// ParseListEndpointAttemptsResponse parses an HTTP response from a ListEndpointAttemptsWithResponse call
+func ParseListEndpointAttemptsResponse(rsp *http.Response) (*ListEndpointAttemptsResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &ListEndpointAttemprResponse{
+	response := &ListEndpointAttemptsResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -4350,58 +5610,6 @@ func ParseCreateEndpointAttemptsResponse(rsp *http.Response) (*CreateEndpointAtt
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 202:
 		var dest ErrorList
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON202 = &dest
-
-	}
-
-	return response, nil
-}
-
-// ParseGetEndpointSecretResponse parses an HTTP response from a GetEndpointSecretWithResponse call
-func ParseGetEndpointSecretResponse(rsp *http.Response) (*GetEndpointSecretResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &GetEndpointSecretResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest string
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON200 = &dest
-
-	}
-
-	return response, nil
-}
-
-// ParseRotateEndpointSecretResponse parses an HTTP response from a RotateEndpointSecretWithResponse call
-func ParseRotateEndpointSecretResponse(rsp *http.Response) (*RotateEndpointSecretResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &RotateEndpointSecretResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 202:
-		var dest ErrorOut
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -4477,97 +5685,16 @@ func ParseGetHealthResponse(rsp *http.Response) (*GetHealthResponse, error) {
 		HTTPResponse: rsp,
 	}
 
-	return response, nil
-}
-
-// ParseJwksResponse parses an HTTP response from a JwksWithResponse call
-func ParseJwksResponse(rsp *http.Response) (*JwksResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &JwksResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest map[string]interface{}
+		var dest struct {
+			Since  time.Time `json:"since"`
+			Status string    `json:"status"`
+		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON200 = &dest
-
-	}
-
-	return response, nil
-}
-
-// ParseDeleteMessagesResponse parses an HTTP response from a DeleteMessagesWithResponse call
-func ParseDeleteMessagesResponse(rsp *http.Response) (*DeleteMessagesResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &DeleteMessagesResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	return response, nil
-}
-
-// ParseListMessagesResponse parses an HTTP response from a ListMessagesWithResponse call
-func ParseListMessagesResponse(rsp *http.Response) (*ListMessagesResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &ListMessagesResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest MessageList
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON200 = &dest
-
-	}
-
-	return response, nil
-}
-
-// ParseCreateMessagesResponse parses an HTTP response from a CreateMessagesWithResponse call
-func ParseCreateMessagesResponse(rsp *http.Response) (*CreateMessagesResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &CreateMessagesResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 202:
-		var dest ErrorList
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON202 = &dest
 
 	}
 
@@ -4631,7 +5758,7 @@ func ParseCreateMessageResponse(rsp *http.Response) (*CreateMessageResponse, err
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest ErrorOut
+		var dest Error
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -4710,22 +5837,48 @@ func ParseCreateMessagesAttemptsResponse(rsp *http.Response) (*CreateMessagesAtt
 	return response, nil
 }
 
-// ParseGetStatsResponse parses an HTTP response from a GetStatsWithResponse call
-func ParseGetStatsResponse(rsp *http.Response) (*GetStatsResponse, error) {
+// ParseGetSecretResponse parses an HTTP response from a GetSecretWithResponse call
+func ParseGetSecretResponse(rsp *http.Response) (*GetSecretResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &GetStatsResponse{
+	response := &GetSecretResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest StatisticsOut
+		var dest Secret
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseRotateSecretResponse parses an HTTP response from a RotateSecretWithResponse call
+func ParseRotateSecretResponse(rsp *http.Response) (*RotateSecretResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &RotateSecretResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Error
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -4738,6 +5891,48 @@ func ParseGetStatsResponse(rsp *http.Response) (*GetStatsResponse, error) {
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
+	// Delete Applications
+	// (DELETE /applications)
+	DeleteApplications(w http.ResponseWriter, r *http.Request)
+	// List Applications
+	// (GET /applications)
+	GetApplications(w http.ResponseWriter, r *http.Request, params GetApplicationsParams)
+	// Create Applications
+	// (POST /applications)
+	CreateApplications(w http.ResponseWriter, r *http.Request)
+	// Disable or Delete Application
+	// (DELETE /applications/{applicationId})
+	DeleteApplication(w http.ResponseWriter, r *http.Request, applicationId ApplicationId, params DeleteApplicationParams)
+	// Get Application
+	// (GET /applications/{applicationId})
+	GetApplication(w http.ResponseWriter, r *http.Request, applicationId ApplicationId)
+	// Update Application
+	// (PATCH /applications/{applicationId})
+	UpdateApplication(w http.ResponseWriter, r *http.Request, applicationId ApplicationId, params UpdateApplicationParams)
+	// Disable or Delete Endpoints
+	// (DELETE /applications/{applicationId}/endpoints)
+	DisableEndpoints(w http.ResponseWriter, r *http.Request, applicationId ApplicationId, params DisableEndpointsParams)
+	// List Endpoints
+	// (GET /applications/{applicationId}/endpoints)
+	ListEndpoints(w http.ResponseWriter, r *http.Request, applicationId ApplicationId, params ListEndpointsParams)
+	// Register Endpoints
+	// (POST /applications/{applicationId}/endpoints)
+	CreateEndpoints(w http.ResponseWriter, r *http.Request, applicationId ApplicationId)
+	// Expire or Delete Endpoint Messages
+	// (DELETE /applications/{applicationId}/messages)
+	DeleteMessages(w http.ResponseWriter, r *http.Request, applicationId ApplicationId, params DeleteMessagesParams)
+	// List Messages
+	// (GET /applications/{applicationId}/messages)
+	ListMessages(w http.ResponseWriter, r *http.Request, applicationId ApplicationId, params ListMessagesParams)
+	// Send or Resend Messages
+	// (POST /applications/{applicationId}/messages)
+	CreateMessages(w http.ResponseWriter, r *http.Request, applicationId ApplicationId, params CreateMessagesParams)
+	// List Secret
+	// (GET /applications/{applicationId}/secrets)
+	ListApplicationSecrets(w http.ResponseWriter, r *http.Request, applicationId ApplicationId)
+	// Application Statistics
+	// (GET /applications/{applicationId}/stats)
+	GetStats(w http.ResponseWriter, r *http.Request, applicationId ApplicationId)
 	// Expire or Delete Message Attempts
 	// (DELETE /attempts)
 	DeleteAttempts(w http.ResponseWriter, r *http.Request, params DeleteAttemptsParams)
@@ -4756,60 +5951,36 @@ type ServerInterface interface {
 	// Send or Retry Message Attempt
 	// (POST /attempts/{attemptId})
 	CreateAttempt(w http.ResponseWriter, r *http.Request, attemptId AttemptId, params CreateAttemptParams)
-	// Disable or Delete Endpoints
-	// (DELETE /endpoints)
-	DisableEndpoints(w http.ResponseWriter, r *http.Request, params DisableEndpointsParams)
-	// List Endpoints
-	// (GET /endpoints)
-	ListEndpoints(w http.ResponseWriter, r *http.Request, params ListEndpointsParams)
-	// Register Endpoints
-	// (POST /endpoints)
-	CreateEndpoints(w http.ResponseWriter, r *http.Request)
+	// List Channels
+	// (GET /channels)
+	ListChannels(w http.ResponseWriter, r *http.Request, params ListChannelsParams)
 	// Disable or Delete Endpoint
 	// (DELETE /endpoints/{endpointId})
-	DeleteEndpoint(w http.ResponseWriter, r *http.Request, endpointId EndpointId, params DeleteEndpointParams)
+	DeleteEndpoint(w http.ResponseWriter, r *http.Request, endpointId string, params DeleteEndpointParams)
 	// Get Endpoint Configuration
 	// (GET /endpoints/{endpointId})
-	GetEndpoint(w http.ResponseWriter, r *http.Request, endpointId EndpointId)
+	GetEndpoint(w http.ResponseWriter, r *http.Request, endpointId string)
 	// Update Endpoint Configuration
 	// (PATCH /endpoints/{endpointId})
-	UpdateEndpoint(w http.ResponseWriter, r *http.Request, endpointId EndpointId)
+	UpdateEndpoint(w http.ResponseWriter, r *http.Request, endpointId string)
 	// Expire or Delete Endpoint Message Attempts
 	// (DELETE /endpoints/{endpointId}/attempts)
 	DeleteEndpointAttempts(w http.ResponseWriter, r *http.Request, endpointId EndpointId, params DeleteEndpointAttemptsParams)
 	// List Endpoint Attempts
 	// (GET /endpoints/{endpointId}/attempts)
-	ListEndpointAttempr(w http.ResponseWriter, r *http.Request, endpointId EndpointId, params ListEndpointAttemprParams)
+	ListEndpointAttempts(w http.ResponseWriter, r *http.Request, endpointId EndpointId, params ListEndpointAttemptsParams)
 	// Send or Retry Endpoint Message Attempts
 	// (POST /endpoints/{endpointId}/attempts)
 	CreateEndpointAttempts(w http.ResponseWriter, r *http.Request, endpointId EndpointId, params CreateEndpointAttemptsParams)
-	// Get Endpoint Secret
-	// (GET /endpoints/{endpointId}/secret)
-	GetEndpointSecret(w http.ResponseWriter, r *http.Request, endpointId EndpointId)
-
-	// (POST /endpoints/{endpointId}/secret)
-	RotateEndpointSecret(w http.ResponseWriter, r *http.Request, endpointId EndpointId)
 	// Get Endpoint Statistics
 	// (GET /endpoints/{endpointId}/stats)
-	GetEndpointStats(w http.ResponseWriter, r *http.Request, endpointId EndpointId)
+	GetEndpointStats(w http.ResponseWriter, r *http.Request, endpointId string)
 	// List Event Types
 	// (GET /event-types)
 	ListEventTypes(w http.ResponseWriter, r *http.Request, params ListEventTypesParams)
 	// Health Status
 	// (GET /health)
 	GetHealth(w http.ResponseWriter, r *http.Request)
-	// JSON Web Key Set
-	// (GET /jwks.json)
-	Jwks(w http.ResponseWriter, r *http.Request)
-	// Expire or Delete Endpoint Messages
-	// (DELETE /messages)
-	DeleteMessages(w http.ResponseWriter, r *http.Request, params DeleteMessagesParams)
-	// List Messages
-	// (GET /messages)
-	ListMessages(w http.ResponseWriter, r *http.Request, params ListMessagesParams)
-	// Send or Resend Messages
-	// (POST /messages)
-	CreateMessages(w http.ResponseWriter, r *http.Request, params CreateMessagesParams)
 	// Expire or Delete Message
 	// (DELETE /messages/{messageId})
 	DeleteMessage(w http.ResponseWriter, r *http.Request, messageId MessageId, params DeleteMessageParams)
@@ -4828,14 +5999,101 @@ type ServerInterface interface {
 	// Send or Retry Message's Attempts
 	// (POST /messages/{messageId}/attempts)
 	CreateMessagesAttempts(w http.ResponseWriter, r *http.Request, messageId MessageId, params CreateMessagesAttemptsParams)
-	// General Statistics
-	// (GET /stats)
-	GetStats(w http.ResponseWriter, r *http.Request)
+	// Get Secret
+	// (GET /secrets/{secretId})
+	GetSecret(w http.ResponseWriter, r *http.Request, secretId SecretId)
+	// Rotate Secret
+	// (POST /secrets/{secretId})
+	RotateSecret(w http.ResponseWriter, r *http.Request, secretId SecretId)
 }
 
 // Unimplemented server implementation that returns http.StatusNotImplemented for each endpoint.
 
 type Unimplemented struct{}
+
+// Delete Applications
+// (DELETE /applications)
+func (_ Unimplemented) DeleteApplications(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// List Applications
+// (GET /applications)
+func (_ Unimplemented) GetApplications(w http.ResponseWriter, r *http.Request, params GetApplicationsParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// Create Applications
+// (POST /applications)
+func (_ Unimplemented) CreateApplications(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// Disable or Delete Application
+// (DELETE /applications/{applicationId})
+func (_ Unimplemented) DeleteApplication(w http.ResponseWriter, r *http.Request, applicationId ApplicationId, params DeleteApplicationParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// Get Application
+// (GET /applications/{applicationId})
+func (_ Unimplemented) GetApplication(w http.ResponseWriter, r *http.Request, applicationId ApplicationId) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// Update Application
+// (PATCH /applications/{applicationId})
+func (_ Unimplemented) UpdateApplication(w http.ResponseWriter, r *http.Request, applicationId ApplicationId, params UpdateApplicationParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// Disable or Delete Endpoints
+// (DELETE /applications/{applicationId}/endpoints)
+func (_ Unimplemented) DisableEndpoints(w http.ResponseWriter, r *http.Request, applicationId ApplicationId, params DisableEndpointsParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// List Endpoints
+// (GET /applications/{applicationId}/endpoints)
+func (_ Unimplemented) ListEndpoints(w http.ResponseWriter, r *http.Request, applicationId ApplicationId, params ListEndpointsParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// Register Endpoints
+// (POST /applications/{applicationId}/endpoints)
+func (_ Unimplemented) CreateEndpoints(w http.ResponseWriter, r *http.Request, applicationId ApplicationId) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// Expire or Delete Endpoint Messages
+// (DELETE /applications/{applicationId}/messages)
+func (_ Unimplemented) DeleteMessages(w http.ResponseWriter, r *http.Request, applicationId ApplicationId, params DeleteMessagesParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// List Messages
+// (GET /applications/{applicationId}/messages)
+func (_ Unimplemented) ListMessages(w http.ResponseWriter, r *http.Request, applicationId ApplicationId, params ListMessagesParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// Send or Resend Messages
+// (POST /applications/{applicationId}/messages)
+func (_ Unimplemented) CreateMessages(w http.ResponseWriter, r *http.Request, applicationId ApplicationId, params CreateMessagesParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// List Secret
+// (GET /applications/{applicationId}/secrets)
+func (_ Unimplemented) ListApplicationSecrets(w http.ResponseWriter, r *http.Request, applicationId ApplicationId) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// Application Statistics
+// (GET /applications/{applicationId}/stats)
+func (_ Unimplemented) GetStats(w http.ResponseWriter, r *http.Request, applicationId ApplicationId) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
 
 // Expire or Delete Message Attempts
 // (DELETE /attempts)
@@ -4873,39 +6131,27 @@ func (_ Unimplemented) CreateAttempt(w http.ResponseWriter, r *http.Request, att
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
-// Disable or Delete Endpoints
-// (DELETE /endpoints)
-func (_ Unimplemented) DisableEndpoints(w http.ResponseWriter, r *http.Request, params DisableEndpointsParams) {
-	w.WriteHeader(http.StatusNotImplemented)
-}
-
-// List Endpoints
-// (GET /endpoints)
-func (_ Unimplemented) ListEndpoints(w http.ResponseWriter, r *http.Request, params ListEndpointsParams) {
-	w.WriteHeader(http.StatusNotImplemented)
-}
-
-// Register Endpoints
-// (POST /endpoints)
-func (_ Unimplemented) CreateEndpoints(w http.ResponseWriter, r *http.Request) {
+// List Channels
+// (GET /channels)
+func (_ Unimplemented) ListChannels(w http.ResponseWriter, r *http.Request, params ListChannelsParams) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
 // Disable or Delete Endpoint
 // (DELETE /endpoints/{endpointId})
-func (_ Unimplemented) DeleteEndpoint(w http.ResponseWriter, r *http.Request, endpointId EndpointId, params DeleteEndpointParams) {
+func (_ Unimplemented) DeleteEndpoint(w http.ResponseWriter, r *http.Request, endpointId string, params DeleteEndpointParams) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
 // Get Endpoint Configuration
 // (GET /endpoints/{endpointId})
-func (_ Unimplemented) GetEndpoint(w http.ResponseWriter, r *http.Request, endpointId EndpointId) {
+func (_ Unimplemented) GetEndpoint(w http.ResponseWriter, r *http.Request, endpointId string) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
 // Update Endpoint Configuration
 // (PATCH /endpoints/{endpointId})
-func (_ Unimplemented) UpdateEndpoint(w http.ResponseWriter, r *http.Request, endpointId EndpointId) {
+func (_ Unimplemented) UpdateEndpoint(w http.ResponseWriter, r *http.Request, endpointId string) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -4917,7 +6163,7 @@ func (_ Unimplemented) DeleteEndpointAttempts(w http.ResponseWriter, r *http.Req
 
 // List Endpoint Attempts
 // (GET /endpoints/{endpointId}/attempts)
-func (_ Unimplemented) ListEndpointAttempr(w http.ResponseWriter, r *http.Request, endpointId EndpointId, params ListEndpointAttemprParams) {
+func (_ Unimplemented) ListEndpointAttempts(w http.ResponseWriter, r *http.Request, endpointId EndpointId, params ListEndpointAttemptsParams) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -4927,20 +6173,9 @@ func (_ Unimplemented) CreateEndpointAttempts(w http.ResponseWriter, r *http.Req
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
-// Get Endpoint Secret
-// (GET /endpoints/{endpointId}/secret)
-func (_ Unimplemented) GetEndpointSecret(w http.ResponseWriter, r *http.Request, endpointId EndpointId) {
-	w.WriteHeader(http.StatusNotImplemented)
-}
-
-// (POST /endpoints/{endpointId}/secret)
-func (_ Unimplemented) RotateEndpointSecret(w http.ResponseWriter, r *http.Request, endpointId EndpointId) {
-	w.WriteHeader(http.StatusNotImplemented)
-}
-
 // Get Endpoint Statistics
 // (GET /endpoints/{endpointId}/stats)
-func (_ Unimplemented) GetEndpointStats(w http.ResponseWriter, r *http.Request, endpointId EndpointId) {
+func (_ Unimplemented) GetEndpointStats(w http.ResponseWriter, r *http.Request, endpointId string) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -4953,30 +6188,6 @@ func (_ Unimplemented) ListEventTypes(w http.ResponseWriter, r *http.Request, pa
 // Health Status
 // (GET /health)
 func (_ Unimplemented) GetHealth(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusNotImplemented)
-}
-
-// JSON Web Key Set
-// (GET /jwks.json)
-func (_ Unimplemented) Jwks(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusNotImplemented)
-}
-
-// Expire or Delete Endpoint Messages
-// (DELETE /messages)
-func (_ Unimplemented) DeleteMessages(w http.ResponseWriter, r *http.Request, params DeleteMessagesParams) {
-	w.WriteHeader(http.StatusNotImplemented)
-}
-
-// List Messages
-// (GET /messages)
-func (_ Unimplemented) ListMessages(w http.ResponseWriter, r *http.Request, params ListMessagesParams) {
-	w.WriteHeader(http.StatusNotImplemented)
-}
-
-// Send or Resend Messages
-// (POST /messages)
-func (_ Unimplemented) CreateMessages(w http.ResponseWriter, r *http.Request, params CreateMessagesParams) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -5016,9 +6227,15 @@ func (_ Unimplemented) CreateMessagesAttempts(w http.ResponseWriter, r *http.Req
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
-// General Statistics
-// (GET /stats)
-func (_ Unimplemented) GetStats(w http.ResponseWriter, r *http.Request) {
+// Get Secret
+// (GET /secrets/{secretId})
+func (_ Unimplemented) GetSecret(w http.ResponseWriter, r *http.Request, secretId SecretId) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// Rotate Secret
+// (POST /secrets/{secretId})
+func (_ Unimplemented) RotateSecret(w http.ResponseWriter, r *http.Request, secretId SecretId) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -5030,6 +6247,475 @@ type ServerInterfaceWrapper struct {
 }
 
 type MiddlewareFunc func(http.Handler) http.Handler
+
+// DeleteApplications operation middleware
+func (siw *ServerInterfaceWrapper) DeleteApplications(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.DeleteApplications(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r.WithContext(ctx))
+}
+
+// GetApplications operation middleware
+func (siw *ServerInterfaceWrapper) GetApplications(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetApplicationsParams
+
+	// ------------- Optional query parameter "limit" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "limit", r.URL.Query(), &params.Limit)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "limit", Err: err})
+		return
+	}
+
+	// ------------- Optional query parameter "cursor" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "cursor", r.URL.Query(), &params.Cursor)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "cursor", Err: err})
+		return
+	}
+
+	// ------------- Optional query parameter "reverse" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "reverse", r.URL.Query(), &params.Reverse)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "reverse", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetApplications(w, r, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r.WithContext(ctx))
+}
+
+// CreateApplications operation middleware
+func (siw *ServerInterfaceWrapper) CreateApplications(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.CreateApplications(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r.WithContext(ctx))
+}
+
+// DeleteApplication operation middleware
+func (siw *ServerInterfaceWrapper) DeleteApplication(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	var err error
+
+	// ------------- Path parameter "applicationId" -------------
+	var applicationId ApplicationId
+
+	err = runtime.BindStyledParameterWithOptions("simple", "applicationId", chi.URLParam(r, "applicationId"), &applicationId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "applicationId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params DeleteApplicationParams
+
+	// ------------- Optional query parameter "force" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "force", r.URL.Query(), &params.Force)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "force", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.DeleteApplication(w, r, applicationId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r.WithContext(ctx))
+}
+
+// GetApplication operation middleware
+func (siw *ServerInterfaceWrapper) GetApplication(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	var err error
+
+	// ------------- Path parameter "applicationId" -------------
+	var applicationId ApplicationId
+
+	err = runtime.BindStyledParameterWithOptions("simple", "applicationId", chi.URLParam(r, "applicationId"), &applicationId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "applicationId", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetApplication(w, r, applicationId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r.WithContext(ctx))
+}
+
+// UpdateApplication operation middleware
+func (siw *ServerInterfaceWrapper) UpdateApplication(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	var err error
+
+	// ------------- Path parameter "applicationId" -------------
+	var applicationId ApplicationId
+
+	err = runtime.BindStyledParameterWithOptions("simple", "applicationId", chi.URLParam(r, "applicationId"), &applicationId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "applicationId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params UpdateApplicationParams
+
+	// ------------- Optional query parameter "force" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "force", r.URL.Query(), &params.Force)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "force", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.UpdateApplication(w, r, applicationId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r.WithContext(ctx))
+}
+
+// DisableEndpoints operation middleware
+func (siw *ServerInterfaceWrapper) DisableEndpoints(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	var err error
+
+	// ------------- Path parameter "applicationId" -------------
+	var applicationId ApplicationId
+
+	err = runtime.BindStyledParameterWithOptions("simple", "applicationId", chi.URLParam(r, "applicationId"), &applicationId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "applicationId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params DisableEndpointsParams
+
+	// ------------- Optional query parameter "force" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "force", r.URL.Query(), &params.Force)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "force", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.DisableEndpoints(w, r, applicationId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r.WithContext(ctx))
+}
+
+// ListEndpoints operation middleware
+func (siw *ServerInterfaceWrapper) ListEndpoints(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	var err error
+
+	// ------------- Path parameter "applicationId" -------------
+	var applicationId ApplicationId
+
+	err = runtime.BindStyledParameterWithOptions("simple", "applicationId", chi.URLParam(r, "applicationId"), &applicationId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "applicationId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params ListEndpointsParams
+
+	// ------------- Optional query parameter "limit" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "limit", r.URL.Query(), &params.Limit)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "limit", Err: err})
+		return
+	}
+
+	// ------------- Optional query parameter "cursor" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "cursor", r.URL.Query(), &params.Cursor)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "cursor", Err: err})
+		return
+	}
+
+	// ------------- Optional query parameter "reverse" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "reverse", r.URL.Query(), &params.Reverse)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "reverse", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.ListEndpoints(w, r, applicationId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r.WithContext(ctx))
+}
+
+// CreateEndpoints operation middleware
+func (siw *ServerInterfaceWrapper) CreateEndpoints(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	var err error
+
+	// ------------- Path parameter "applicationId" -------------
+	var applicationId ApplicationId
+
+	err = runtime.BindStyledParameterWithOptions("simple", "applicationId", chi.URLParam(r, "applicationId"), &applicationId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "applicationId", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.CreateEndpoints(w, r, applicationId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r.WithContext(ctx))
+}
+
+// DeleteMessages operation middleware
+func (siw *ServerInterfaceWrapper) DeleteMessages(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	var err error
+
+	// ------------- Path parameter "applicationId" -------------
+	var applicationId ApplicationId
+
+	err = runtime.BindStyledParameterWithOptions("simple", "applicationId", chi.URLParam(r, "applicationId"), &applicationId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "applicationId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params DeleteMessagesParams
+
+	// ------------- Optional query parameter "force" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "force", r.URL.Query(), &params.Force)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "force", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.DeleteMessages(w, r, applicationId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r.WithContext(ctx))
+}
+
+// ListMessages operation middleware
+func (siw *ServerInterfaceWrapper) ListMessages(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	var err error
+
+	// ------------- Path parameter "applicationId" -------------
+	var applicationId ApplicationId
+
+	err = runtime.BindStyledParameterWithOptions("simple", "applicationId", chi.URLParam(r, "applicationId"), &applicationId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "applicationId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params ListMessagesParams
+
+	// ------------- Optional query parameter "limit" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "limit", r.URL.Query(), &params.Limit)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "limit", Err: err})
+		return
+	}
+
+	// ------------- Optional query parameter "cursor" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "cursor", r.URL.Query(), &params.Cursor)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "cursor", Err: err})
+		return
+	}
+
+	// ------------- Optional query parameter "reverse" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "reverse", r.URL.Query(), &params.Reverse)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "reverse", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.ListMessages(w, r, applicationId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r.WithContext(ctx))
+}
+
+// CreateMessages operation middleware
+func (siw *ServerInterfaceWrapper) CreateMessages(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	var err error
+
+	// ------------- Path parameter "applicationId" -------------
+	var applicationId ApplicationId
+
+	err = runtime.BindStyledParameterWithOptions("simple", "applicationId", chi.URLParam(r, "applicationId"), &applicationId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "applicationId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params CreateMessagesParams
+
+	// ------------- Optional query parameter "force" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "force", r.URL.Query(), &params.Force)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "force", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.CreateMessages(w, r, applicationId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r.WithContext(ctx))
+}
+
+// ListApplicationSecrets operation middleware
+func (siw *ServerInterfaceWrapper) ListApplicationSecrets(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	var err error
+
+	// ------------- Path parameter "applicationId" -------------
+	var applicationId ApplicationId
+
+	err = runtime.BindStyledParameterWithOptions("simple", "applicationId", chi.URLParam(r, "applicationId"), &applicationId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "applicationId", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.ListApplicationSecrets(w, r, applicationId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r.WithContext(ctx))
+}
+
+// GetStats operation middleware
+func (siw *ServerInterfaceWrapper) GetStats(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	var err error
+
+	// ------------- Path parameter "applicationId" -------------
+	var applicationId ApplicationId
+
+	err = runtime.BindStyledParameterWithOptions("simple", "applicationId", chi.URLParam(r, "applicationId"), &applicationId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "applicationId", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetStats(w, r, applicationId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r.WithContext(ctx))
+}
 
 // DeleteAttempts operation middleware
 func (siw *ServerInterfaceWrapper) DeleteAttempts(w http.ResponseWriter, r *http.Request) {
@@ -5073,6 +6759,22 @@ func (siw *ServerInterfaceWrapper) ListAttempts(w http.ResponseWriter, r *http.R
 	err = runtime.BindQueryParameter("form", true, false, "limit", r.URL.Query(), &params.Limit)
 	if err != nil {
 		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "limit", Err: err})
+		return
+	}
+
+	// ------------- Optional query parameter "cursor" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "cursor", r.URL.Query(), &params.Cursor)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "cursor", Err: err})
+		return
+	}
+
+	// ------------- Optional query parameter "reverse" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "reverse", r.URL.Query(), &params.Reverse)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "reverse", Err: err})
 		return
 	}
 
@@ -5215,42 +6917,14 @@ func (siw *ServerInterfaceWrapper) CreateAttempt(w http.ResponseWriter, r *http.
 	handler.ServeHTTP(w, r.WithContext(ctx))
 }
 
-// DisableEndpoints operation middleware
-func (siw *ServerInterfaceWrapper) DisableEndpoints(w http.ResponseWriter, r *http.Request) {
+// ListChannels operation middleware
+func (siw *ServerInterfaceWrapper) ListChannels(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	var err error
 
 	// Parameter object where we will unmarshal all parameters from the context
-	var params DisableEndpointsParams
-
-	// ------------- Optional query parameter "force" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "force", r.URL.Query(), &params.Force)
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "force", Err: err})
-		return
-	}
-
-	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.DisableEndpoints(w, r, params)
-	}))
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		handler = middleware(handler)
-	}
-
-	handler.ServeHTTP(w, r.WithContext(ctx))
-}
-
-// ListEndpoints operation middleware
-func (siw *ServerInterfaceWrapper) ListEndpoints(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-
-	var err error
-
-	// Parameter object where we will unmarshal all parameters from the context
-	var params ListEndpointsParams
+	var params ListChannelsParams
 
 	// ------------- Optional query parameter "limit" -------------
 
@@ -5277,22 +6951,7 @@ func (siw *ServerInterfaceWrapper) ListEndpoints(w http.ResponseWriter, r *http.
 	}
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.ListEndpoints(w, r, params)
-	}))
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		handler = middleware(handler)
-	}
-
-	handler.ServeHTTP(w, r.WithContext(ctx))
-}
-
-// CreateEndpoints operation middleware
-func (siw *ServerInterfaceWrapper) CreateEndpoints(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-
-	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.CreateEndpoints(w, r)
+		siw.Handler.ListChannels(w, r, params)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -5309,7 +6968,7 @@ func (siw *ServerInterfaceWrapper) DeleteEndpoint(w http.ResponseWriter, r *http
 	var err error
 
 	// ------------- Path parameter "endpointId" -------------
-	var endpointId EndpointId
+	var endpointId string
 
 	err = runtime.BindStyledParameterWithOptions("simple", "endpointId", chi.URLParam(r, "endpointId"), &endpointId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
 	if err != nil {
@@ -5346,7 +7005,7 @@ func (siw *ServerInterfaceWrapper) GetEndpoint(w http.ResponseWriter, r *http.Re
 	var err error
 
 	// ------------- Path parameter "endpointId" -------------
-	var endpointId EndpointId
+	var endpointId string
 
 	err = runtime.BindStyledParameterWithOptions("simple", "endpointId", chi.URLParam(r, "endpointId"), &endpointId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
 	if err != nil {
@@ -5372,7 +7031,7 @@ func (siw *ServerInterfaceWrapper) UpdateEndpoint(w http.ResponseWriter, r *http
 	var err error
 
 	// ------------- Path parameter "endpointId" -------------
-	var endpointId EndpointId
+	var endpointId string
 
 	err = runtime.BindStyledParameterWithOptions("simple", "endpointId", chi.URLParam(r, "endpointId"), &endpointId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
 	if err != nil {
@@ -5428,8 +7087,8 @@ func (siw *ServerInterfaceWrapper) DeleteEndpointAttempts(w http.ResponseWriter,
 	handler.ServeHTTP(w, r.WithContext(ctx))
 }
 
-// ListEndpointAttempr operation middleware
-func (siw *ServerInterfaceWrapper) ListEndpointAttempr(w http.ResponseWriter, r *http.Request) {
+// ListEndpointAttempts operation middleware
+func (siw *ServerInterfaceWrapper) ListEndpointAttempts(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	var err error
@@ -5444,7 +7103,7 @@ func (siw *ServerInterfaceWrapper) ListEndpointAttempr(w http.ResponseWriter, r 
 	}
 
 	// Parameter object where we will unmarshal all parameters from the context
-	var params ListEndpointAttemprParams
+	var params ListEndpointAttemptsParams
 
 	// ------------- Optional query parameter "limit" -------------
 
@@ -5471,7 +7130,7 @@ func (siw *ServerInterfaceWrapper) ListEndpointAttempr(w http.ResponseWriter, r 
 	}
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.ListEndpointAttempr(w, r, endpointId, params)
+		siw.Handler.ListEndpointAttempts(w, r, endpointId, params)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -5518,58 +7177,6 @@ func (siw *ServerInterfaceWrapper) CreateEndpointAttempts(w http.ResponseWriter,
 	handler.ServeHTTP(w, r.WithContext(ctx))
 }
 
-// GetEndpointSecret operation middleware
-func (siw *ServerInterfaceWrapper) GetEndpointSecret(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-
-	var err error
-
-	// ------------- Path parameter "endpointId" -------------
-	var endpointId EndpointId
-
-	err = runtime.BindStyledParameterWithOptions("simple", "endpointId", chi.URLParam(r, "endpointId"), &endpointId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "endpointId", Err: err})
-		return
-	}
-
-	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.GetEndpointSecret(w, r, endpointId)
-	}))
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		handler = middleware(handler)
-	}
-
-	handler.ServeHTTP(w, r.WithContext(ctx))
-}
-
-// RotateEndpointSecret operation middleware
-func (siw *ServerInterfaceWrapper) RotateEndpointSecret(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-
-	var err error
-
-	// ------------- Path parameter "endpointId" -------------
-	var endpointId EndpointId
-
-	err = runtime.BindStyledParameterWithOptions("simple", "endpointId", chi.URLParam(r, "endpointId"), &endpointId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "endpointId", Err: err})
-		return
-	}
-
-	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.RotateEndpointSecret(w, r, endpointId)
-	}))
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		handler = middleware(handler)
-	}
-
-	handler.ServeHTTP(w, r.WithContext(ctx))
-}
-
 // GetEndpointStats operation middleware
 func (siw *ServerInterfaceWrapper) GetEndpointStats(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
@@ -5577,7 +7184,7 @@ func (siw *ServerInterfaceWrapper) GetEndpointStats(w http.ResponseWriter, r *ht
 	var err error
 
 	// ------------- Path parameter "endpointId" -------------
-	var endpointId EndpointId
+	var endpointId string
 
 	err = runtime.BindStyledParameterWithOptions("simple", "endpointId", chi.URLParam(r, "endpointId"), &endpointId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
 	if err != nil {
@@ -5646,121 +7253,6 @@ func (siw *ServerInterfaceWrapper) GetHealth(w http.ResponseWriter, r *http.Requ
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.GetHealth(w, r)
-	}))
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		handler = middleware(handler)
-	}
-
-	handler.ServeHTTP(w, r.WithContext(ctx))
-}
-
-// Jwks operation middleware
-func (siw *ServerInterfaceWrapper) Jwks(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-
-	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.Jwks(w, r)
-	}))
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		handler = middleware(handler)
-	}
-
-	handler.ServeHTTP(w, r.WithContext(ctx))
-}
-
-// DeleteMessages operation middleware
-func (siw *ServerInterfaceWrapper) DeleteMessages(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-
-	var err error
-
-	// Parameter object where we will unmarshal all parameters from the context
-	var params DeleteMessagesParams
-
-	// ------------- Optional query parameter "force" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "force", r.URL.Query(), &params.Force)
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "force", Err: err})
-		return
-	}
-
-	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.DeleteMessages(w, r, params)
-	}))
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		handler = middleware(handler)
-	}
-
-	handler.ServeHTTP(w, r.WithContext(ctx))
-}
-
-// ListMessages operation middleware
-func (siw *ServerInterfaceWrapper) ListMessages(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-
-	var err error
-
-	// Parameter object where we will unmarshal all parameters from the context
-	var params ListMessagesParams
-
-	// ------------- Optional query parameter "limit" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "limit", r.URL.Query(), &params.Limit)
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "limit", Err: err})
-		return
-	}
-
-	// ------------- Optional query parameter "cursor" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "cursor", r.URL.Query(), &params.Cursor)
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "cursor", Err: err})
-		return
-	}
-
-	// ------------- Optional query parameter "reverse" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "reverse", r.URL.Query(), &params.Reverse)
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "reverse", Err: err})
-		return
-	}
-
-	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.ListMessages(w, r, params)
-	}))
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		handler = middleware(handler)
-	}
-
-	handler.ServeHTTP(w, r.WithContext(ctx))
-}
-
-// CreateMessages operation middleware
-func (siw *ServerInterfaceWrapper) CreateMessages(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-
-	var err error
-
-	// Parameter object where we will unmarshal all parameters from the context
-	var params CreateMessagesParams
-
-	// ------------- Optional query parameter "force" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "force", r.URL.Query(), &params.Force)
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "force", Err: err})
-		return
-	}
-
-	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.CreateMessages(w, r, params)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -5997,12 +7489,49 @@ func (siw *ServerInterfaceWrapper) CreateMessagesAttempts(w http.ResponseWriter,
 	handler.ServeHTTP(w, r.WithContext(ctx))
 }
 
-// GetStats operation middleware
-func (siw *ServerInterfaceWrapper) GetStats(w http.ResponseWriter, r *http.Request) {
+// GetSecret operation middleware
+func (siw *ServerInterfaceWrapper) GetSecret(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
+	var err error
+
+	// ------------- Path parameter "secretId" -------------
+	var secretId SecretId
+
+	err = runtime.BindStyledParameterWithOptions("simple", "secretId", chi.URLParam(r, "secretId"), &secretId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "secretId", Err: err})
+		return
+	}
+
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.GetStats(w, r)
+		siw.Handler.GetSecret(w, r, secretId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r.WithContext(ctx))
+}
+
+// RotateSecret operation middleware
+func (siw *ServerInterfaceWrapper) RotateSecret(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	var err error
+
+	// ------------- Path parameter "secretId" -------------
+	var secretId SecretId
+
+	err = runtime.BindStyledParameterWithOptions("simple", "secretId", chi.URLParam(r, "secretId"), &secretId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "secretId", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.RotateSecret(w, r, secretId)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -6126,6 +7655,48 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 	}
 
 	r.Group(func(r chi.Router) {
+		r.Delete(options.BaseURL+"/applications", wrapper.DeleteApplications)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/applications", wrapper.GetApplications)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/applications", wrapper.CreateApplications)
+	})
+	r.Group(func(r chi.Router) {
+		r.Delete(options.BaseURL+"/applications/{applicationId}", wrapper.DeleteApplication)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/applications/{applicationId}", wrapper.GetApplication)
+	})
+	r.Group(func(r chi.Router) {
+		r.Patch(options.BaseURL+"/applications/{applicationId}", wrapper.UpdateApplication)
+	})
+	r.Group(func(r chi.Router) {
+		r.Delete(options.BaseURL+"/applications/{applicationId}/endpoints", wrapper.DisableEndpoints)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/applications/{applicationId}/endpoints", wrapper.ListEndpoints)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/applications/{applicationId}/endpoints", wrapper.CreateEndpoints)
+	})
+	r.Group(func(r chi.Router) {
+		r.Delete(options.BaseURL+"/applications/{applicationId}/messages", wrapper.DeleteMessages)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/applications/{applicationId}/messages", wrapper.ListMessages)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/applications/{applicationId}/messages", wrapper.CreateMessages)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/applications/{applicationId}/secrets", wrapper.ListApplicationSecrets)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/applications/{applicationId}/stats", wrapper.GetStats)
+	})
+	r.Group(func(r chi.Router) {
 		r.Delete(options.BaseURL+"/attempts", wrapper.DeleteAttempts)
 	})
 	r.Group(func(r chi.Router) {
@@ -6144,13 +7715,7 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 		r.Post(options.BaseURL+"/attempts/{attemptId}", wrapper.CreateAttempt)
 	})
 	r.Group(func(r chi.Router) {
-		r.Delete(options.BaseURL+"/endpoints", wrapper.DisableEndpoints)
-	})
-	r.Group(func(r chi.Router) {
-		r.Get(options.BaseURL+"/endpoints", wrapper.ListEndpoints)
-	})
-	r.Group(func(r chi.Router) {
-		r.Post(options.BaseURL+"/endpoints", wrapper.CreateEndpoints)
+		r.Get(options.BaseURL+"/channels", wrapper.ListChannels)
 	})
 	r.Group(func(r chi.Router) {
 		r.Delete(options.BaseURL+"/endpoints/{endpointId}", wrapper.DeleteEndpoint)
@@ -6165,16 +7730,10 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 		r.Delete(options.BaseURL+"/endpoints/{endpointId}/attempts", wrapper.DeleteEndpointAttempts)
 	})
 	r.Group(func(r chi.Router) {
-		r.Get(options.BaseURL+"/endpoints/{endpointId}/attempts", wrapper.ListEndpointAttempr)
+		r.Get(options.BaseURL+"/endpoints/{endpointId}/attempts", wrapper.ListEndpointAttempts)
 	})
 	r.Group(func(r chi.Router) {
 		r.Post(options.BaseURL+"/endpoints/{endpointId}/attempts", wrapper.CreateEndpointAttempts)
-	})
-	r.Group(func(r chi.Router) {
-		r.Get(options.BaseURL+"/endpoints/{endpointId}/secret", wrapper.GetEndpointSecret)
-	})
-	r.Group(func(r chi.Router) {
-		r.Post(options.BaseURL+"/endpoints/{endpointId}/secret", wrapper.RotateEndpointSecret)
 	})
 	r.Group(func(r chi.Router) {
 		r.Get(options.BaseURL+"/endpoints/{endpointId}/stats", wrapper.GetEndpointStats)
@@ -6184,18 +7743,6 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 	})
 	r.Group(func(r chi.Router) {
 		r.Get(options.BaseURL+"/health", wrapper.GetHealth)
-	})
-	r.Group(func(r chi.Router) {
-		r.Get(options.BaseURL+"/jwks.json", wrapper.Jwks)
-	})
-	r.Group(func(r chi.Router) {
-		r.Delete(options.BaseURL+"/messages", wrapper.DeleteMessages)
-	})
-	r.Group(func(r chi.Router) {
-		r.Get(options.BaseURL+"/messages", wrapper.ListMessages)
-	})
-	r.Group(func(r chi.Router) {
-		r.Post(options.BaseURL+"/messages", wrapper.CreateMessages)
 	})
 	r.Group(func(r chi.Router) {
 		r.Delete(options.BaseURL+"/messages/{messageId}", wrapper.DeleteMessage)
@@ -6216,7 +7763,10 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 		r.Post(options.BaseURL+"/messages/{messageId}/attempts", wrapper.CreateMessagesAttempts)
 	})
 	r.Group(func(r chi.Router) {
-		r.Get(options.BaseURL+"/stats", wrapper.GetStats)
+		r.Get(options.BaseURL+"/secrets/{secretId}", wrapper.GetSecret)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/secrets/{secretId}", wrapper.RotateSecret)
 	})
 
 	return r

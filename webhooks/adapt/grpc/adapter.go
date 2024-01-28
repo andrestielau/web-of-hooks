@@ -4,6 +4,7 @@ import (
 	"woh/package/actor"
 	"woh/package/actor/net/grpc/server"
 	"woh/webhooks"
+	"woh/webhooks/adapt/grpc/handle"
 	webhooksv1 "woh/webhooks/adapt/grpc/v1"
 
 	"github.com/google/wire"
@@ -11,7 +12,7 @@ import (
 )
 
 type Options struct {
-	Handler *Handler
+	Handler *handle.Handler
 }
 type Adapter struct {
 	*server.Adapter
@@ -33,7 +34,7 @@ func New(opts Options) *Adapter {
 }
 
 var Set = wire.NewSet(
-	wire.Struct(new(Handler), "*"),
+	wire.Struct(new(handle.Handler), "*"),
 	wire.Struct(new(Options), "*"),
 	New,
 )

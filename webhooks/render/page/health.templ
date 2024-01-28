@@ -5,11 +5,12 @@ import (
     "woh/webhooks/render/layout"
 )
 
-templ Health(status string) {
+templ Health(status, since string) {
     @layout.Html(nil) {
         @layout.Shell(nil) {
             <h1 class={C("capitalize")}>health</h1>
             <h2 class={C("italic")}>Status: {status}</h2>
+            <h2 class={C("italic")}>Since: {since}</h2>
         }
     }
 }

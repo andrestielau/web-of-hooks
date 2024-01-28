@@ -11,16 +11,6 @@ servers:
   - url: 'http://localhost:3000'
     description: Local
 paths:
-  /stats:
-    get:
-      summary: General Statistics
-      responses:
-        '200':
-          $ref: '#/components/responses/StatisticsOut'
-      operationId: get-stats
-      description: Get Overall Statistics for all
-      tags:
-        - utils
   /health:
     get:
       summary: Health Status
@@ -29,25 +19,23 @@ paths:
       responses:
         '200':
           description: OK
-        '401':
-          description: Unauthorized
-      operationId: get-health
-      description: Get the health status for the WebHooks API
-  /jwks.json:
-    get:
-      summary: JSON Web Key Set
-      tags: 
-        - utils
-      responses:
-        '200':
-          description: OK
           content:
             application/json:
               schema:
                 type: object
-                properties: {}
-      operationId: jwks
-      description: Set of Keys you can used to sign.
+                properties:
+                  status:
+                    type: string
+                  since:
+                    type: string
+                    format: date-time
+                required:
+                  - status
+                  - since
+        '401':
+          description: Unauthorized
+      operationId: get-health
+      description: Get the health status for the WebHooks API and your applications
   /event-types:
     get:
       summary: List Event Types
@@ -62,11 +50,128 @@ paths:
         - $ref: '#/components/parameters/limit'
         - $ref: '#/components/parameters/cursor'
         - $ref: '#/components/parameters/reverse'
-  /endpoints:
+  /channels:
+    get:
+      summary: List Channels
+      tags:
+        - event-types
+      responses:
+        '200':
+          $ref: '#/components/responses/ChannelList'
+      operationId: list-channels
+      parameters:
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/cursor'
+        - $ref: '#/components/parameters/reverse'
+      description: List Channels
+  /applications:
+    get:
+      summary: List Applications
+      tags:
+        - applications
+      responses:
+        '200':
+          $ref: '#/components/responses/ApplicationList'
+      operationId: get-applications
+      parameters:
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/cursor'
+        - $ref: '#/components/parameters/reverse'
+      description: List Applications
+    post:
+      summary: Create Applications
+      operationId: create-applications
+      responses:
+        '200':
+          $ref: '#/components/responses/ErrorList'
+      requestBody:
+        $ref: '#/components/requestBodies/CreateApplicationsPayload'
+      tags:
+        - applications
+      description: Create Applications
+    delete:
+      summary: Delete Applications
+      operationId: delete-applications
+      description: Delete Applications
+      tags:
+        - applications
+      requestBody:
+        $ref: '#/components/requestBodies/DeleteApplicationsPayload'
+      responses:
+        '204':
+          description: No Content
+  '/applications/{applicationId}':
+    get:
+      summary: Get Application
+      tags:
+        - applications
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Application'
+      operationId: get-application
+      description: Get Application
+    parameters:
+      - $ref: '#/components/parameters/applicationId'
+    delete:
+      summary: Disable or Delete Application
+      operationId: delete-application
+      description: Disable or Delete Application
+      parameters:
+        - $ref: '#/components/parameters/force'
+      tags:
+        - applications
+      responses:
+        '204':
+          description: No Content
+    patch:
+      summary: Update Application
+      operationId: update-application
+      responses:
+        '200':
+          $ref: '#/components/responses/Error'
+      parameters:
+        - $ref: '#/components/parameters/force'
+      description: Update Application
+      tags:
+        - applications
+  '/applications/{applicationId}/stats':
+    get:
+      summary: Application Statistics
+      responses:
+        '200':
+          $ref: '#/components/responses/StatisticsOut'
+      operationId: get-stats
+      description: Get Overall Statistics for your application's endpoints
+      tags:
+        - applications
+    parameters:
+      - $ref: '#/components/parameters/applicationId'
+  '/applications/{applicationId}/secrets':
+    get:
+      summary: List Secret
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: string
+      operationId: list-application-secrets
+      description: Get the secret
+      tags:
+        - applications
+    parameters:
+      - $ref: '#/components/parameters/applicationId'
+  '/applications/{applicationId}/endpoints':
     get:
       summary: List Endpoints
       tags:
         - endpoints
+        - applications
       responses:
         '200':
           $ref: '#/components/responses/EndpointList'
@@ -100,135 +205,14 @@ paths:
         - $ref: '#/components/parameters/force'
       tags:
         - endpoints
-  '/endpoints/{endpointId}':
     parameters:
-      - $ref: '#/components/parameters/endpointId'
-    get:
-      summary: Get Endpoint Configuration
-      tags:
-        - endpoints
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Endpoint'
-      operationId: get-endpoint
-      description: Get the configurations for your Endpoint
-    delete:
-      summary: Disable or Delete Endpoint
-      operationId: delete-endpoint
-      responses:
-        '204':
-          description: No Content
-      parameters:
-        - $ref: '#/components/parameters/force'
-      description: Disable or Delete your Endpoint
-      tags:
-        - endpoints
-    patch:
-      summary: Update Endpoint Configuration
-      operationId: update-endpoint
-      responses:
-        '204':
-          $ref: '#/components/responses/ErrorOut'
-      description: Update the configurations for your Endpoint
-      tags:
-        - endpoints
-  '/endpoints/{endpointId}/stats':
-    get:
-      summary: Get Endpoint Statistics
-      tags:
-        - endpoints
-        - utils
-      responses:
-        '200':
-          $ref: '#/components/responses/StatisticsOut'
-      operationId: get-endpoint-stats
-      description: Get the statistics for your endpoint's requests.
-    parameters:
-      - $ref: '#/components/parameters/endpointId'
-  '/endpoints/{endpointId}/secret':
-    get:
-      summary: Get Endpoint Secret
-      tags:
-        - endpoints
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: string
-      operationId: get-endpoint-secret
-      description: Get the secret for your endpoint.
-    parameters:
-      - $ref: '#/components/parameters/endpointId'
-    post:
-      summary: ''
-      operationId: rotate-endpoint-secret
-      responses:
-        '202':
-          $ref: '#/components/responses/ErrorOut'
-      description: Update the security secret of your endpoint.
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: string
-      tags:
-        - endpoints
-  '/endpoints/{endpointId}/attempts':
-    get:
-      summary: List Endpoint Attempts
-      tags:
-        - attempts
-        - endpoints
-      responses:
-        '200':
-          $ref: '#/components/responses/AttemptList'
-      operationId: list-endpoint-attempr
-      description: List the Message Attempts directed at your Endpoint
-      parameters:
-        - $ref: '#/components/parameters/limit'
-        - $ref: '#/components/parameters/cursor'
-        - $ref: '#/components/parameters/reverse'
-    parameters:
-      - $ref: '#/components/parameters/endpointId'
-    post:
-      summary: Send or Retry Endpoint Message Attempts
-      operationId: create-endpoint-attempts
-      responses:
-        '202':
-          $ref: '#/components/responses/ErrorList'
-      parameters:
-        - $ref: '#/components/parameters/force'
-      description: Send or Retry Endpoint Message Attempts
-      tags:
-        - attempts
-        - endpoints
-      requestBody:
-        $ref: '#/components/requestBodies/CreateAttemptsPayload'
-    delete:
-      summary: Expire or Delete Endpoint Message Attempts
-      operationId: delete-endpoint-attempts
-      responses:
-        '204':
-          description: No Content
-      parameters:
-        - $ref: '#/components/parameters/force'
-      description: Delete or Expire Message Attempts
-      requestBody:
-        $ref: '#/components/requestBodies/DeleteAttemptsPayload'
-      tags:
-        - attempts
-        - endpoints
-  /messages:
+      - $ref: '#/components/parameters/applicationId'
+  '/applications/{applicationId}/messages':
     get:
       summary: List Messages
       tags:
         - messages
+        - applications
       responses:
         '200':
           $ref: '#/components/responses/MessageList'
@@ -264,6 +248,139 @@ paths:
       description: Expire or Delete Endpoint Messages
       tags:
         - messages
+    parameters:
+      - $ref: '#/components/parameters/applicationId'
+  '/secrets/{secretId}':
+    parameters:
+      - $ref: '#/components/parameters/secretId'
+    get:
+      summary: Get Secret
+      tags:
+        - utils
+      operationId: get-secret
+      description: Get Secret
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Secret'
+    post:
+      summary: Rotate Secret
+      operationId: rotate-secret
+      responses:
+        '200':
+          $ref: '#/components/responses/Error'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewSecret'
+      description: Update secret.
+      tags:
+        - utils
+  '/endpoints/{endpointId}':
+    parameters:
+      - name: endpointId
+        in: path
+        required: true
+        schema:
+          type: string
+    get:
+      summary: Get Endpoint Configuration
+      tags:
+        - endpoints
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Endpoint'
+      operationId: get-endpoint
+      description: Get the configurations for your Endpoint
+    delete:
+      summary: Disable or Delete Endpoint
+      operationId: delete-endpoint
+      responses:
+        '204':
+          description: No Content
+      parameters:
+        - $ref: '#/components/parameters/force'
+      description: Disable or Delete your Endpoint
+      tags:
+        - endpoints
+    patch:
+      summary: Update Endpoint Configuration
+      operationId: update-endpoint
+      responses:
+        '204':
+          $ref: '#/components/responses/Error'
+      description: Update the configurations for your Endpoint
+      tags:
+        - endpoints
+  '/endpoints/{endpointId}/stats':
+    get:
+      summary: Get Endpoint Statistics
+      tags:
+        - endpoints
+      responses:
+        '200':
+          $ref: '#/components/responses/StatisticsOut'
+      operationId: get-endpoint-stats
+      description: Get the statistics for your endpoint's requests.
+    parameters:
+      - name: endpointId
+        in: path
+        required: true
+        schema:
+          type: string
+  '/endpoints/{endpointId}/attempts':
+    get:
+      summary: List Endpoint Attempts
+      tags:
+        - attempts
+        - endpoints
+      responses:
+        '200':
+          $ref: '#/components/responses/AttemptList'
+      operationId: list-endpoint-attempts
+      description: List the Message Attempts directed at your Endpoint
+      parameters:
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/cursor'
+        - $ref: '#/components/parameters/reverse'
+    parameters:
+      - $ref: '#/components/parameters/endpointId'
+    post:
+      summary: Send or Retry Endpoint Message Attempts
+      operationId: create-endpoint-attempts
+      responses:
+        '202':
+          $ref: '#/components/responses/ErrorList'
+      parameters:
+        - $ref: '#/components/parameters/force'
+      description: Send or Retry Endpoint Message Attempts
+      tags:
+        - attempts
+        - endpoints
+      requestBody:
+        $ref: '#/components/requestBodies/CreateAttemptsPayload'
+    delete:
+      summary: Expire or Delete Endpoint Message Attempts
+      operationId: delete-endpoint-attempts
+      responses:
+        '204':
+          description: No Content
+      parameters:
+        - $ref: '#/components/parameters/force'
+      description: Delete or Expire Message Attempts
+      requestBody:
+        $ref: '#/components/requestBodies/DeleteAttemptsPayload'
+      tags:
+        - attempts
+        - endpoints
   '/messages/{messageId}':
     parameters:
       - $ref: '#/components/parameters/messageId'
@@ -295,7 +412,7 @@ paths:
               $ref: '#/components/schemas/NewMessage'
       responses:
         '200':
-          $ref: '#/components/responses/ErrorOut'
+          $ref: '#/components/responses/Error'
     delete:
       summary: Expire or Delete Message
       description: Expire or Delete Message
@@ -364,6 +481,8 @@ paths:
       operationId: list-attempts
       parameters:
         - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/cursor'
+        - $ref: '#/components/parameters/reverse'
     post:
       summary: Send or Retry Message Attempts
       operationId: create-attempts
@@ -409,7 +528,7 @@ paths:
       operationId: create-attempt
       responses:
         '202':
-          $ref: '#/components/responses/ErrorOut'
+          $ref: '#/components/responses/Error'
       parameters:
         - $ref: '#/components/parameters/force'
       requestBody:
@@ -440,20 +559,113 @@ components:
       x-stoplight:
         id: 4xqvb44f7uj5c
       type: object
+      description: Type of Messages that you can receive in your Endpoints.
       properties:
         id:
           type: string
-      description: Type of Messages that you can receive in your Endpoints.
+        key:
+          type: string
+        createdAt:
+          type: string
+      required:
+        - id
+        - key
+        - createdAt
+    Channel:
+      title: Channel
+      x-stoplight:
+        id: qajwf65q13jcw
+      type: object
+      properties:
+        id:
+          type: string
+        key:
+          type: string
+        createdAt:
+          type: string
+      required:
+        - id
+        - key
+        - createdAt
+    NewApplication:
+      title: NewApplication
+      x-stoplight:
+        id: 9dn0k20qxfpcu
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        rateLimit:
+          type: integer
+      examples: []
+    Application:
+      type: object
+      x-examples:
+        example-1:
+          id: string
+          name: string
+          rateLimit: 0
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        rateLimit:
+          type: integer
+        createdAt:
+          type: string
+      required:
+        - id
+    NewSecret:
+      title: NewSecret
+      x-stoplight:
+        id: y7yazj136bti3
+      type: object
+      properties:
+        id:
+          type: string
+        value:
+          type: string
+      required:
+        - value
+    Secret:
+      title: Secret
+      x-stoplight:
+        id: 4dt8yk6o8zgxn
+      type: object
+      properties:
+        id:
+          type: string
+        value:
+          type: string
+        createdAt:
+          type: string
+      required:
+        - id
+        - value
     NewEndpoint:
       title: Endpoint
       x-stoplight:
         id: qzgkhrzd8q64j
       type: object
       description: 'The URL you can receive WebHooks at.read '
+      examples:
+        - url: string
+          uid: string
+          name: string
+          description: string
+          rateLimit: 0
+          secret: string
+          filterTypes:
+            - string
+          channels:
+            - string
       properties:
         url:
           type: string
-        uid:
+        id:
           type: string
         name:
           type: string
@@ -475,17 +687,6 @@ components:
             type: string
       required:
         - url
-      examples:
-        - url: string
-          uid: string
-          name: string
-          description: string
-          rateLimit: 0
-          secret: string
-          filterTypes:
-            - string
-          channels:
-            - string
     Endpoint:
       type: object
       x-examples:
@@ -503,7 +704,7 @@ components:
       properties:
         url:
           type: string
-        uid:
+        id:
           type: string
         name:
           type: string
@@ -521,15 +722,24 @@ components:
             type: string
       required:
         - url
-        - uid
+        - id
     NewMessage:
-      title: NewMessage
-      x-stoplight:
-        id: vnwci1ve4rpwa
       type: object
       properties:
         id:
           type: string
+        payload:
+          type: string
+        eventId:
+          type: string
+        eventTypeId:
+          type: string
+      x-examples:
+        example-1:
+          id: string
+          payload: string
+          eventId: string
+          eventTypeId: string
     Message:
       title: Message
       x-stoplight:
@@ -538,14 +748,39 @@ components:
       properties:
         id:
           type: string
+        payload:
+          type: string
+        eventId:
+          type: string
+        eventTypeId:
+          type: string
+        createdAt:
+          type: string
+      required:
+        - id
+        - payload
+        - eventId
     NewAttempt:
       title: NewAttempt
       x-stoplight:
         id: cgk6y7ie7xyba
       type: object
+      examples: []
       properties:
         id:
           type: string
+        payload:
+          type: string
+        eventId:
+          type: string
+        eventTypeId:
+          type: string
+        endpointId:
+          type: string
+      required:
+        - id
+        - payload
+        - eventId
     Attempt:
       title: Attempt
       x-stoplight:
@@ -553,6 +788,16 @@ components:
       type: object
       properties:
         id:
+          type: string
+        messageId:
+          type: string
+        endpointId:
+          type: string
+        status:
+          type: string
+        responseStatus:
+          type: integer
+        response:
           type: string
     Statistics:
       title: Statistics
@@ -576,21 +821,6 @@ components:
           type: boolean
       required:
         - done
-    Error:
-      title: Error
-      x-stoplight:
-        id: x5td3tsuri0qx
-      type: object
-      properties:
-        index:
-          type: string
-        cause:
-          type: string
-        code:
-          type: integer
-      required:
-        - cause
-        - code
   requestBodies:
     CreateEndpointsPayload:
       content:
@@ -638,6 +868,23 @@ components:
                 id:
                   type: string
                 secret:
+                  type: string
+    CreateApplicationsPayload:
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/NewApplication'
+    DeleteApplicationsPayload:
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              type: object
+              properties:
+                id:
                   type: string
   responses:
     EndpointList:
@@ -710,28 +957,60 @@ components:
             required:
               - data
               - page
-    ErrorOut:
+    Error:
       description: Example response
       content:
         application/json:
           schema:
             type: object
             properties:
-              error:
-                $ref: '#/components/schemas/Error'
+              cause:
+                type: string
+              code:
+                type: integer
+            x-examples:
+              example-1:
+                cause: string
+                code: 0
     ErrorList:
       description: Example response
       content:
         application/json:
           schema:
+            type: array
+            items:
+              type: object
+              properties:
+                index:
+                  type: string
+                cause:
+                  type: string
+                code:
+                  type: integer
+            x-examples:
+              example-1:
+                - index: string
+                  cause: string
+                  code: 0
+    ChannelList:
+      description: Example response
+      content:
+        application/json:
+          schema:
             type: object
             properties:
-              errors:
+              data:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Error'
-            required:
-              - errors
+                  $ref: '#/components/schemas/Channel'
+    ApplicationList:
+      description: Example response
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/Application'
   parameters:
     endpointId:
       name: endpointId
@@ -775,12 +1054,25 @@ components:
       required: false
       schema:
         type: boolean
+    applicationId:
+      name: applicationId
+      in: path
+      required: true
+      schema:
+        type: string
+    secretId:
+      name: secretId
+      in: path
+      required: true
+      schema:
+        type: string
   securitySchemes:
     API-Key:
       name: API Key
       type: apiKey
       in: header
 tags:
+  - name: applications
   - name: attempts
   - name: endpoints
   - name: event-types

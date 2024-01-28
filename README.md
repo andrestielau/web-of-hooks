@@ -125,10 +125,11 @@ erDiagram
     Message }o--|| Application : "has one"
     Attempt }o--|| Message : "has one"
     Attempt }o--|| Endpoint : "has one"
+    Application ||--o{ Secret : "has"
     Endpoint }o--|| Application : "has one"
     Endpoint }o--o{ Channel : "has many"
     Endpoint }o--o{ EventType : "filter"
-    Endpoint }o--o| Secret : "uses"
+    Endpoint }o--o| Secret : "use"
 ```
 
 # Tools
