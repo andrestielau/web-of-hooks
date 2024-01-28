@@ -36,3 +36,15 @@ RETURNING
     metadata,
     created_at;
 
+
+-- ListEventTypes lists event-types
+-- name: ListEventTypes :many
+SELECT
+    id,
+    uid,
+    key,
+    created_at
+FROM webhooks.event_type
+ORDER BY uid
+LIMIT pggen.arg('limit')
+OFFSET pggen.arg('offset');

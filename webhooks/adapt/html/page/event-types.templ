@@ -1,12 +1,12 @@
 package page
-
-type EventTypeViewModel struct {
-
+import (
+	"woh/webhooks/provide/repo/queries"
+)
+type EventTypesViewModel struct {
+    Data []queries.ListEventTypesRow
+    Err error
 }
-func EventTypesView() EventTypeViewModel {
-    return EventTypeViewModel{}
-}
 
-templ EventTypes(v EventTypeViewModel) {
+templ EventTypes(v EventTypesViewModel) {
     <h1>EventTypes</h1>
 }

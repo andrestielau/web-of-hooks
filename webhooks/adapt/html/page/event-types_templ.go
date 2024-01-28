@@ -10,14 +10,16 @@ import "context"
 import "io"
 import "bytes"
 
-type EventTypeViewModel struct {
+import (
+	"woh/webhooks/provide/repo/queries"
+)
+
+type EventTypesViewModel struct {
+	Data []queries.ListEventTypesRow
+	Err  error
 }
 
-func EventTypesView() EventTypeViewModel {
-	return EventTypeViewModel{}
-}
-
-func EventTypes(v EventTypeViewModel) templ.Component {
+func EventTypes(v EventTypesViewModel) templ.Component {
 	return templ.ComponentFunc(func(ctx context.Context, templ_7745c5c3_W io.Writer) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templ_7745c5c3_W.(*bytes.Buffer)
 		if !templ_7745c5c3_IsBuffer {

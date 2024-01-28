@@ -168,7 +168,7 @@ An HTML templating language for Go that has great developer tooling
 - Clone: `git clone https://woh`
 - Enter: `cd web-of-hooks`
 - Bootstrap: `make` (yes, just `make`)
-- Run: `go run . serve`
+- Run: `make dev` Unless migrations change, you only need to change this.
 - Test `https://port3000.[your-name].anchorlabs.dev/health`
 
 ## Tasks:

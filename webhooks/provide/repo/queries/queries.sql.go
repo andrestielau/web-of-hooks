@@ -18,6 +18,9 @@ type Querier interface {
 
 	// CreateApplications inserts applications into the database
 	CreateApplications(ctx context.Context, eventTypes []NewApplication) ([]CreateApplicationsRow, error)
+
+	// ListEventTypes lists event-types
+	ListEventTypes(ctx context.Context, limit int, offset int) ([]ListEventTypesRow, error)
 }
 
 var _ Querier = &DBQuerier{}
@@ -309,6 +312,45 @@ func (q *DBQuerier) CreateApplications(ctx context.Context, eventTypes []NewAppl
 	}
 	if err := rows.Err(); err != nil {
 		return nil, fmt.Errorf("close CreateApplications rows: %w", err)
+	}
+	return items, err
+}
+
+const listEventTypesSQL = `SELECT
+    id,
+    uid,
+    key,
+    created_at
+FROM webhooks.event_type
+ORDER BY uid
+LIMIT $1
+OFFSET $2;`
+
+type ListEventTypesRow struct {
+	ID        *int32    `json:"id"`
+	Uid       string    `json:"uid"`
+	Key       string    `json:"key"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
+// ListEventTypes implements Querier.ListEventTypes.
+func (q *DBQuerier) ListEventTypes(ctx context.Context, limit int, offset int) ([]ListEventTypesRow, error) {
+	ctx = context.WithValue(ctx, "pggen_query_name", "ListEventTypes")
+	rows, err := q.conn.Query(ctx, listEventTypesSQL, limit, offset)
+	if err != nil {
+		return nil, fmt.Errorf("query ListEventTypes: %w", err)
+	}
+	defer rows.Close()
+	items := []ListEventTypesRow{}
+	for rows.Next() {
+		var item ListEventTypesRow
+		if err := rows.Scan(&item.ID, &item.Uid, &item.Key, &item.CreatedAt); err != nil {
+			return nil, fmt.Errorf("scan ListEventTypes row: %w", err)
+		}
+		items = append(items, item)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("close ListEventTypes rows: %w", err)
 	}
 	return items, err
 }

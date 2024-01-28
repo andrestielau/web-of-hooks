@@ -166,12 +166,19 @@ func (h *Handler) ListEndpoints(w http.ResponseWriter, r *http.Request, params w
 
 // ListEventTypes implements webhooksv1.ServerInterface.
 func (h *Handler) ListEventTypes(w http.ResponseWriter, r *http.Request, params webhooksv1.ListEventTypesParams) {
-	//h.Manager.Repo().ListEventTypes(r.Context())
+	eventTypes, err := h.Repo.ListEventTypes(r.Context(), 100, 0)
 	if strings.Contains(r.Header.Get("Accept"), "text/html") {
-		page.EventTypes(page.EventTypesView()).Render(r.Context(), w)
+		page.EventTypes(page.EventTypesViewModel{
+			Data: eventTypes,
+			Err:  err,
+		}).Render(r.Context(), w)
 		return
 	}
-	utils.JsonRes(w, []string{})
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	utils.JsonRes(w, eventTypes)
 }
 
 // ListMessageAttempts implements webhooksv1.ServerInterface.
