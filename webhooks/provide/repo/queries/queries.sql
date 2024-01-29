@@ -14,7 +14,6 @@ RETURNING
     key,
     created_at;
 
-
 -- CreateApplications inserts applications into the database
 -- name: CreateApplications :many
  INSERT INTO webhooks.application (

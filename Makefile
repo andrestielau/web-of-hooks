@@ -1,7 +1,14 @@
 include .env
 export
 
-all: down db gen
+all: boot down db gen
+
+boot:
+	go install github.com/cosmtrek/air@latest
+	go install github.com/a-h/templ/cmd/templ@latest
+	go install github.com/google/wire/cmd/wire@latest
+	go install github.com/jschaf/pggen/cmd/pggen@latest
+	go install github.com/deepmap/oapi-codegen/v2/cmd/oapi-codegen@latest
 
 run: 
 	go run . serve
