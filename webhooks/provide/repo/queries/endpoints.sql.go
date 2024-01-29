@@ -5,6 +5,7 @@ package queries
 import (
 	"context"
 	"fmt"
+	"github.com/jackc/pgconn"
 	"github.com/jackc/pgtype"
 	"time"
 )
@@ -64,6 +65,18 @@ func (q *DBQuerier) CreateEndpoints(ctx context.Context, endpoints []NewEndpoint
 		return nil, fmt.Errorf("close CreateEndpoints rows: %w", err)
 	}
 	return items, err
+}
+
+const deleteEndpointsSQL = `DELETE FROM webhooks.endpoint WHERE uid = ANY($1::UUID[]);`
+
+// DeleteEndpoints implements Querier.DeleteEndpoints.
+func (q *DBQuerier) DeleteEndpoints(ctx context.Context, ids []string) (pgconn.CommandTag, error) {
+	ctx = context.WithValue(ctx, "pggen_query_name", "DeleteEndpoints")
+	cmdTag, err := q.conn.Exec(ctx, deleteEndpointsSQL, ids)
+	if err != nil {
+		return cmdTag, fmt.Errorf("exec query DeleteEndpoints: %w", err)
+	}
+	return cmdTag, err
 }
 
 const listEndpointsSQL = `SELECT 

@@ -5,6 +5,7 @@ package queries
 import (
 	"context"
 	"fmt"
+	"github.com/jackc/pgconn"
 	"github.com/jackc/pgtype"
 	"time"
 )
@@ -57,6 +58,18 @@ func (q *DBQuerier) CreateApplications(ctx context.Context, applications []NewAp
 		return nil, fmt.Errorf("close CreateApplications rows: %w", err)
 	}
 	return items, err
+}
+
+const deleteApplicationsSQL = `DELETE FROM webhooks.application WHERE uid = ANY($1::UUID[]);`
+
+// DeleteApplications implements Querier.DeleteApplications.
+func (q *DBQuerier) DeleteApplications(ctx context.Context, ids []string) (pgconn.CommandTag, error) {
+	ctx = context.WithValue(ctx, "pggen_query_name", "DeleteApplications")
+	cmdTag, err := q.conn.Exec(ctx, deleteApplicationsSQL, ids)
+	if err != nil {
+		return cmdTag, fmt.Errorf("exec query DeleteApplications: %w", err)
+	}
+	return cmdTag, err
 }
 
 const listApplicationsSQL = `SELECT

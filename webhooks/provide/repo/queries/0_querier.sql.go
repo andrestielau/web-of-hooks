@@ -15,14 +15,23 @@ type Querier interface {
 	// CreateApplications inserts applications into the database
 	CreateApplications(ctx context.Context, applications []NewApplication) ([]CreateApplicationsRow, error)
 
+	// DeleteApplications deletes application by uid
+	DeleteApplications(ctx context.Context, ids []string) (pgconn.CommandTag, error)
+
 	// ListApplications lists registered applications
 	ListApplications(ctx context.Context, limit int, offset int) ([]ListApplicationsRow, error)
+
+	// DeleteAttempts deletes attempts by uid
+	DeleteAttempts(ctx context.Context, ids []string) (pgconn.CommandTag, error)
 
 	// ListMessages lists event-types
 	ListMessages(ctx context.Context, limit int, offset int) ([]ListMessagesRow, error)
 
 	// CreateEndpoints inserts endpoints into the database
 	CreateEndpoints(ctx context.Context, endpoints []NewEndpoint) ([]CreateEndpointsRow, error)
+
+	// DeleteEndpoints deletes endpoints by uid
+	DeleteEndpoints(ctx context.Context, ids []string) (pgconn.CommandTag, error)
 
 	// ListEndpoints lists endpoints
 	ListEndpoints(ctx context.Context, limit int, offset int) ([]ListEndpointsRow, error)
@@ -33,8 +42,14 @@ type Querier interface {
 	// ListEventTypes lists event-types
 	ListEventTypes(ctx context.Context, limit int, offset int) ([]ListEventTypesRow, error)
 
+	// DeleteMessages deletes messages by uid
+	DeleteMessages(ctx context.Context, ids []string) (pgconn.CommandTag, error)
+
 	// ListMessages lists event-types
 	ListMessages(ctx context.Context, limit int, offset int) ([]ListMessagesRow, error)
+
+	// DeleteSecrets deletes secrets by uid
+	DeleteSecrets(ctx context.Context, ids []string) (pgconn.CommandTag, error)
 
 	// ListSecrets lists secrets
 	ListMesListSecretssages(ctx context.Context, limit int, offset int) ([]ListMesListSecretssagesRow, error)

@@ -5,7 +5,20 @@ package queries
 import (
 	"context"
 	"fmt"
+	"github.com/jackc/pgconn"
 )
+
+const deleteSecretsSQL = `DELETE FROM webhooks.secret WHERE uid = ANY($1::UUID[]);`
+
+// DeleteSecrets implements Querier.DeleteSecrets.
+func (q *DBQuerier) DeleteSecrets(ctx context.Context, ids []string) (pgconn.CommandTag, error) {
+	ctx = context.WithValue(ctx, "pggen_query_name", "DeleteSecrets")
+	cmdTag, err := q.conn.Exec(ctx, deleteSecretsSQL, ids)
+	if err != nil {
+		return cmdTag, fmt.Errorf("exec query DeleteSecrets: %w", err)
+	}
+	return cmdTag, err
+}
 
 const listMesListSecretssagesSQL = `SELECT
     id,

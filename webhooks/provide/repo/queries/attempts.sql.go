@@ -5,8 +5,21 @@ package queries
 import (
 	"context"
 	"fmt"
+	"github.com/jackc/pgconn"
 	"time"
 )
+
+const deleteAttemptsSQL = `DELETE FROM webhooks.message_attempt WHERE uid = ANY($1::UUID[]);`
+
+// DeleteAttempts implements Querier.DeleteAttempts.
+func (q *DBQuerier) DeleteAttempts(ctx context.Context, ids []string) (pgconn.CommandTag, error) {
+	ctx = context.WithValue(ctx, "pggen_query_name", "DeleteAttempts")
+	cmdTag, err := q.conn.Exec(ctx, deleteAttemptsSQL, ids)
+	if err != nil {
+		return cmdTag, fmt.Errorf("exec query DeleteAttempts: %w", err)
+	}
+	return cmdTag, err
+}
 
 const listMessagesSQL = `SELECT
     id,
