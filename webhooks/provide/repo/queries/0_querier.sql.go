@@ -15,6 +15,12 @@ type Querier interface {
 	// CreateApplications inserts applications into the database
 	CreateApplications(ctx context.Context, applications []NewApplication) ([]CreateApplicationsRow, error)
 
+	// ListApplications lists registered applications
+	ListApplications(ctx context.Context, limit int, offset int) ([]ListApplicationsRow, error)
+
+	// ListMessages lists event-types
+	ListMessages(ctx context.Context, limit int, offset int) ([]ListMessagesRow, error)
+
 	// CreateEndpoints inserts endpoints into the database
 	CreateEndpoints(ctx context.Context, endpoints []NewEndpoint) ([]CreateEndpointsRow, error)
 
@@ -26,6 +32,9 @@ type Querier interface {
 
 	// ListEventTypes lists event-types
 	ListEventTypes(ctx context.Context, limit int, offset int) ([]ListEventTypesRow, error)
+
+	// ListMessages lists event-types
+	ListMessages(ctx context.Context, limit int, offset int) ([]ListMessagesRow, error)
 }
 
 var _ Querier = &DBQuerier{}

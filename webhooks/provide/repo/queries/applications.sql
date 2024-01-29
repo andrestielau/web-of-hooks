@@ -2,7 +2,7 @@
 
 -- CreateApplications inserts applications into the database
 -- name: CreateApplications :many
- INSERT INTO webhooks.application (
+INSERT INTO webhooks.application (
     tenant_id,
     rate_limit,
     metadata
@@ -20,3 +20,19 @@ RETURNING
     rate_limit,
     metadata,
     created_at;
+
+
+-- ListApplications lists registered applications
+-- name: ListApplications :many
+SELECT
+    id,
+    uid,
+    tenant_id,
+    rate_limit,
+    metadata,
+    created_at,
+    updated_at
+FROM webhooks.application
+ORDER BY uid
+LIMIT pggen.arg('limit')
+OFFSET pggen.arg('offset');
