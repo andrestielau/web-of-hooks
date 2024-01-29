@@ -1,4 +1,8 @@
 
+-- DeleteMessages deletes messages by uid
+-- name: DeleteMessages :exec
+DELETE FROM webhooks.message WHERE uid = ANY(pggen.arg('ids')::UUID[]);
+
 -- ListMessages lists event-types
 -- name: ListMessages :many
 SELECT

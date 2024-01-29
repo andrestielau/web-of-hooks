@@ -1,4 +1,9 @@
 
+
+-- DeleteAttempts deletes attempts by uid
+-- name: DeleteAttempts :exec
+DELETE FROM webhooks.attempt WHERE uid = ANY(pggen.arg('ids')::UUID[]);
+
 -- ListMessages lists event-types
 -- name: ListMessages :many
 SELECT

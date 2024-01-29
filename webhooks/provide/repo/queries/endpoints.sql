@@ -1,6 +1,4 @@
 
-
-
 -- CreateEndpoints inserts endpoints into the database
 -- name: CreateEndpoints :many
  INSERT INTO webhooks.endpoint (
@@ -28,6 +26,10 @@ RETURNING
     rate_limit,
     metadata,
     created_at;
+
+-- DeleteEndpoints deletes endpoints by uid
+-- name: DeleteEndpoints :exec
+DELETE FROM webhooks.endpoint WHERE uid = ANY(pggen.arg('ids')::UUID[]);
 
 -- ListEndpoints lists endpoints
 -- name: ListEndpoints :many

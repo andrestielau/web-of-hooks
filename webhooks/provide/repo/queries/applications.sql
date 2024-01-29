@@ -21,6 +21,9 @@ RETURNING
     metadata,
     created_at;
 
+-- DeleteApplications deletes application by uid
+-- name: DeleteApplications :exec
+DELETE FROM webhooks.application WHERE uid = ANY(pggen.arg('ids')::UUID[]);
 
 -- ListApplications lists registered applications
 -- name: ListApplications :many
