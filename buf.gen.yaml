@@ -2,6 +2,9 @@ version: v1
 managed:
   enabled: true
 plugins:
+  - plugin: doc
+    out: ./docs
+    opt: markdown,index.md
   - plugin: go
     out: .
     opt: paths=source_relative

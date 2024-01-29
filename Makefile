@@ -9,6 +9,7 @@ boot:
 	go install github.com/google/wire/cmd/wire@latest
 	go install github.com/jschaf/pggen/cmd/pggen@latest
 	go install github.com/deepmap/oapi-codegen/v2/cmd/oapi-codegen@latest
+	go install github.com/pseudomuto/protoc-gen-doc/cmd/protoc-gen-doc@latest
 	go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
 
 run: 
