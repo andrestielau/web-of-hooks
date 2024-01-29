@@ -5,5 +5,6 @@ CREATE TYPE webhooks.new_secret AS (
 CREATE TABLE webhooks.secret (
     uid UUID UNIQUE NOT NULL,
     id SERIAL PRIMARY KEY,
-    tenant_id TEXT
+    tenant_id TEXT,
+    value TEXT
 );
