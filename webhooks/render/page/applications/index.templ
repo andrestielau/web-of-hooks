@@ -1,0 +1,25 @@
+package applications
+
+import (
+    . "woh/webhooks/render/style"
+    "woh/webhooks/render/layout"
+)
+type ApplicationsViewModel struct {
+    Data any
+}
+templ Applications(vm ApplicationsViewModel, err error) {
+    @layout.Html(nil) {
+        @layout.Shell(nil) {
+            <h1 class={C("capitalize")}>applications</h1>
+            
+            if err != nil {
+                @ApplicationsError(err)
+            }
+        }
+    }
+}
+
+templ ApplicationsError(err error) {
+    <h1>An error has occured</h1>
+    <p>{err.Error()}</p>
+} 

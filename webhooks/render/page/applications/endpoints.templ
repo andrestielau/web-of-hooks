@@ -47,8 +47,8 @@ templ EndpointList(data []queries.ListEndpointsRow) {
 
 templ EndpointInput() {
     <div>
-        <label for="url.0">Url</label>
-        <input id="url.0" />
+        <label for="0">Url</label>
+        <input id="0" name="0.url" form="endpoint-form"/>
     </div>
 }
 
@@ -59,7 +59,7 @@ script AddEndpoint() {
 }
 
 templ EndpointForm(applicationId string) {
-    <form action={templ.SafeURL("/applications/"+applicationId+"/endpoints")} method="POST" id="endpoint-form">
+    <form action={templ.SafeURL("/applications/"+applicationId+"/endpoints")} method="POST" id="endpoint-form" enctype="multipart/form-data">
         @EndpointInput()
         <button type="button" onclick={AddEndpoint()}>Add</button>
         <button type="reset">Reset</button>

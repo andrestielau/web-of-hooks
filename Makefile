@@ -32,7 +32,7 @@ wait:
 	done; 
 
 # Generator Commands
-gen: gen/db gen/grpc gen/api gen/go
+gen: gen/ui gen/db gen/grpc gen/api gen/go
 
 gen/grpc: ${GRPC_DIR}/webhooks.proto buf.gen.yaml 
 	@echo Generating gRPC
@@ -45,6 +45,9 @@ gen/api: ${API_DIR}/webhooks.yaml api.gen.yaml
 gen/db:
 	@echo Generating DB
 	@pggen gen go --query-glob '${REPO_DIR}/queries/*.sql' --postgres-connection ${DB_URL} ${PGGEN_MAP}
+
+gen/ui:
+	templ generate
 
 gen/go:
 	@go mod tidy

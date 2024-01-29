@@ -15,6 +15,7 @@ func (h *Handler) CreateEndpoints(w http.ResponseWriter, r *http.Request, applic
 	var req webhooksv1.CreateEndpointsPayload
 	var err error
 	if strings.Contains(r.Header.Get("Content-Type"), "") {
+		r.ParseMultipartForm(10000)
 		req, err = utils.FormReq[webhooksv1.CreateEndpointsPayload](w, r)
 	} else {
 		req, err = utils.JsonReq[webhooksv1.CreateEndpointsPayload](w, r)
