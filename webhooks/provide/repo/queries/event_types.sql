@@ -14,6 +14,10 @@ RETURNING
     key,
     created_at;
 
+-- DeleteEventTypes deletes endpoints by uid
+-- name: DeleteEventTypes :exec
+DELETE FROM webhooks.event_type WHERE key = ANY(pggen.arg('keys')::TEXT[]);
+
 -- ListEventTypes lists event-types
 -- name: ListEventTypes :many
 SELECT

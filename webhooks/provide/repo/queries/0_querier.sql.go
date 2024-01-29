@@ -24,8 +24,8 @@ type Querier interface {
 	// DeleteAttempts deletes attempts by uid
 	DeleteAttempts(ctx context.Context, ids []string) (pgconn.CommandTag, error)
 
-	// ListMessages lists event-types
-	ListMessages(ctx context.Context, limit int, offset int) ([]ListMessagesRow, error)
+	// ListAttempts lists message attempts
+	ListAttempts(ctx context.Context, limit int, offset int) ([]ListAttemptsRow, error)
 
 	// CreateEndpoints inserts endpoints into the database
 	CreateEndpoints(ctx context.Context, endpoints []NewEndpoint) ([]CreateEndpointsRow, error)
@@ -38,6 +38,9 @@ type Querier interface {
 
 	// CreateEventTypes inserts event types into the database
 	CreateEventTypes(ctx context.Context, eventTypes []NewEventType) ([]CreateEventTypesRow, error)
+
+	// DeleteEventTypes deletes endpoints by uid
+	DeleteEventTypes(ctx context.Context, keys []string) (pgconn.CommandTag, error)
 
 	// ListEventTypes lists event-types
 	ListEventTypes(ctx context.Context, limit int, offset int) ([]ListEventTypesRow, error)

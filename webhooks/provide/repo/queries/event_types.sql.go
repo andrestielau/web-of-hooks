@@ -5,6 +5,7 @@ package queries
 import (
 	"context"
 	"fmt"
+	"github.com/jackc/pgconn"
 	"time"
 )
 
@@ -48,6 +49,18 @@ func (q *DBQuerier) CreateEventTypes(ctx context.Context, eventTypes []NewEventT
 		return nil, fmt.Errorf("close CreateEventTypes rows: %w", err)
 	}
 	return items, err
+}
+
+const deleteEventTypesSQL = `DELETE FROM webhooks.event_type WHERE key = ANY($1::TEXT[]);`
+
+// DeleteEventTypes implements Querier.DeleteEventTypes.
+func (q *DBQuerier) DeleteEventTypes(ctx context.Context, keys []string) (pgconn.CommandTag, error) {
+	ctx = context.WithValue(ctx, "pggen_query_name", "DeleteEventTypes")
+	cmdTag, err := q.conn.Exec(ctx, deleteEventTypesSQL, keys)
+	if err != nil {
+		return cmdTag, fmt.Errorf("exec query DeleteEventTypes: %w", err)
+	}
+	return cmdTag, err
 }
 
 const listEventTypesSQL = `SELECT

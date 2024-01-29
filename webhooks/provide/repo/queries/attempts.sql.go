@@ -21,7 +21,7 @@ func (q *DBQuerier) DeleteAttempts(ctx context.Context, ids []string) (pgconn.Co
 	return cmdTag, err
 }
 
-const listMessagesSQL = `SELECT
+const listAttemptsSQL = `SELECT
     id,
     uid,
     created_at
@@ -30,30 +30,30 @@ ORDER BY uid
 LIMIT $1
 OFFSET $2;`
 
-type ListMessagesRow struct {
+type ListAttemptsRow struct {
 	ID        *int32    `json:"id"`
 	Uid       string    `json:"uid"`
 	CreatedAt time.Time `json:"created_at"`
 }
 
-// ListMessages implements Querier.ListMessages.
-func (q *DBQuerier) ListMessages(ctx context.Context, limit int, offset int) ([]ListMessagesRow, error) {
-	ctx = context.WithValue(ctx, "pggen_query_name", "ListMessages")
-	rows, err := q.conn.Query(ctx, listMessagesSQL, limit, offset)
+// ListAttempts implements Querier.ListAttempts.
+func (q *DBQuerier) ListAttempts(ctx context.Context, limit int, offset int) ([]ListAttemptsRow, error) {
+	ctx = context.WithValue(ctx, "pggen_query_name", "ListAttempts")
+	rows, err := q.conn.Query(ctx, listAttemptsSQL, limit, offset)
 	if err != nil {
-		return nil, fmt.Errorf("query ListMessages: %w", err)
+		return nil, fmt.Errorf("query ListAttempts: %w", err)
 	}
 	defer rows.Close()
-	items := []ListMessagesRow{}
+	items := []ListAttemptsRow{}
 	for rows.Next() {
-		var item ListMessagesRow
+		var item ListAttemptsRow
 		if err := rows.Scan(&item.ID, &item.Uid, &item.CreatedAt); err != nil {
-			return nil, fmt.Errorf("scan ListMessages row: %w", err)
+			return nil, fmt.Errorf("scan ListAttempts row: %w", err)
 		}
 		items = append(items, item)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("close ListMessages rows: %w", err)
+		return nil, fmt.Errorf("close ListAttempts rows: %w", err)
 	}
 	return items, err
 }
