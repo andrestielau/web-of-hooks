@@ -165,7 +165,7 @@ An HTML templating language for Go that has great developer tooling
 
 # Develop
 
-- Clone: `git clone https://woh`
+- Clone: `git clone https://github.com/andrestielau/web-of-hooks`
 - Enter: `cd web-of-hooks`
 - Bootstrap: `make` (yes, just `make`)
 - Run: `make dev` Unless migrations change, you only need to change this.

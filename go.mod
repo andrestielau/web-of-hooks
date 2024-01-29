@@ -1,4 +1,4 @@
-module woh
+module github.com/andrestielau/web-of-hooks
 
 go 1.21.6
 
@@ -29,6 +29,7 @@ require (
 	golang.org/x/image v0.15.0
 	google.golang.org/grpc v1.59.0
 	google.golang.org/protobuf v1.31.0
+	woh v0.0.0-00010101000000-000000000000
 )
 
 require (
@@ -38,7 +39,6 @@ require (
 	cloud.google.com/go/iam v1.1.5 // indirect
 	cloud.google.com/go/pubsub v1.33.0 // indirect
 	dario.cat/mergo v1.0.0 // indirect
-	github.com/Azure/go-ansiterm v0.0.0-20230124172434-306776ec8161 // indirect
 	github.com/Microsoft/go-winio v0.6.1 // indirect
 	github.com/a-h/lexical v0.0.53 // indirect
 	github.com/a-h/parse v0.0.0-20230402144745-e6c8bc86e846 // indirect
