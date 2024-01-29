@@ -8,25 +8,24 @@ import (
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgtype"
 	"github.com/jackc/pgx/v4"
-	"time"
 )
 
 // Querier is a typesafe Go interface backed by SQL queries.
 type Querier interface {
-	// CreateEventTypes inserts event types into the database
-	CreateEventTypes(ctx context.Context, eventTypes []NewEventType) ([]CreateEventTypesRow, error)
-
 	// CreateApplications inserts applications into the database
 	CreateApplications(ctx context.Context, applications []NewApplication) ([]CreateApplicationsRow, error)
 
 	// CreateEndpoints inserts endpoints into the database
 	CreateEndpoints(ctx context.Context, endpoints []NewEndpoint) ([]CreateEndpointsRow, error)
 
-	// ListEventTypes lists event-types
-	ListEventTypes(ctx context.Context, limit int, offset int) ([]ListEventTypesRow, error)
-
 	// ListEndpoints lists endpoints
 	ListEndpoints(ctx context.Context, limit int, offset int) ([]ListEndpointsRow, error)
+
+	// CreateEventTypes inserts event types into the database
+	CreateEventTypes(ctx context.Context, eventTypes []NewEventType) ([]CreateEventTypesRow, error)
+
+	// ListEventTypes lists event-types
+	ListEventTypes(ctx context.Context, limit int, offset int) ([]ListEventTypesRow, error)
 }
 
 var _ Querier = &DBQuerier{}
@@ -297,247 +296,6 @@ func (tr *typeResolver) newNewEventTypeArrayRaw(vs []NewEventType) []interface{}
 		elems[i] = tr.newNewEventTypeRaw(v)
 	}
 	return elems
-}
-
-const createEventTypesSQL = `INSERT INTO webhooks.event_type (
-    key
-) 
-SELECT 
-    u.key
-FROM unnest($1::webhooks.new_event_type[]) u
-ON CONFLICT DO NOTHING
-RETURNING 
-    id,
-    uid,
-    key,
-    created_at;`
-
-type CreateEventTypesRow struct {
-	ID        int32     `json:"id"`
-	Uid       string    `json:"uid"`
-	Key       string    `json:"key"`
-	CreatedAt time.Time `json:"created_at"`
-}
-
-// CreateEventTypes implements Querier.CreateEventTypes.
-func (q *DBQuerier) CreateEventTypes(ctx context.Context, eventTypes []NewEventType) ([]CreateEventTypesRow, error) {
-	ctx = context.WithValue(ctx, "pggen_query_name", "CreateEventTypes")
-	rows, err := q.conn.Query(ctx, createEventTypesSQL, q.types.newNewEventTypeArrayInit(eventTypes))
-	if err != nil {
-		return nil, fmt.Errorf("query CreateEventTypes: %w", err)
-	}
-	defer rows.Close()
-	items := []CreateEventTypesRow{}
-	for rows.Next() {
-		var item CreateEventTypesRow
-		if err := rows.Scan(&item.ID, &item.Uid, &item.Key, &item.CreatedAt); err != nil {
-			return nil, fmt.Errorf("scan CreateEventTypes row: %w", err)
-		}
-		items = append(items, item)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("close CreateEventTypes rows: %w", err)
-	}
-	return items, err
-}
-
-const createApplicationsSQL = `INSERT INTO webhooks.application (
-    tenant_id,
-    rate_limit,
-    metadata
-) 
-SELECT 
-    u.tenant_id,
-    u.rate_limit,
-    u.metadata
-FROM unnest($1::webhooks.new_application[]) u
-ON CONFLICT DO NOTHING
-RETURNING 
-    id,
-    uid,
-    tenant_id,
-    rate_limit,
-    metadata,
-    created_at;`
-
-type CreateApplicationsRow struct {
-	ID        int32        `json:"id"`
-	Uid       string       `json:"uid"`
-	TenantID  string       `json:"tenant_id"`
-	RateLimit int32        `json:"rate_limit"`
-	Metadata  pgtype.JSONB `json:"metadata"`
-	CreatedAt time.Time    `json:"created_at"`
-}
-
-// CreateApplications implements Querier.CreateApplications.
-func (q *DBQuerier) CreateApplications(ctx context.Context, applications []NewApplication) ([]CreateApplicationsRow, error) {
-	ctx = context.WithValue(ctx, "pggen_query_name", "CreateApplications")
-	rows, err := q.conn.Query(ctx, createApplicationsSQL, q.types.newNewApplicationArrayInit(applications))
-	if err != nil {
-		return nil, fmt.Errorf("query CreateApplications: %w", err)
-	}
-	defer rows.Close()
-	items := []CreateApplicationsRow{}
-	for rows.Next() {
-		var item CreateApplicationsRow
-		if err := rows.Scan(&item.ID, &item.Uid, &item.TenantID, &item.RateLimit, &item.Metadata, &item.CreatedAt); err != nil {
-			return nil, fmt.Errorf("scan CreateApplications row: %w", err)
-		}
-		items = append(items, item)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("close CreateApplications rows: %w", err)
-	}
-	return items, err
-}
-
-const createEndpointsSQL = `INSERT INTO webhooks.endpoint (
-    application_id,
-    url,
-    name,
-    rate_limit,
-    metadata,
-    description
-) 
-SELECT 
-    a.id,
-    u.url,
-    u.name,
-    u.rate_limit,
-    u.metadata,
-    u.description
-FROM unnest($1::webhooks.new_endpoint[]) u
-JOIN webhooks.application a ON u.application_id = a.uid
-ON CONFLICT DO NOTHING
-RETURNING 
-    id,
-    uid,
-        application_id,
-    rate_limit,
-    metadata,
-    created_at;`
-
-type CreateEndpointsRow struct {
-	ID            int32        `json:"id"`
-	Uid           string       `json:"uid"`
-	ApplicationID int32        `json:"application_id"`
-	RateLimit     int32        `json:"rate_limit"`
-	Metadata      pgtype.JSONB `json:"metadata"`
-	CreatedAt     time.Time    `json:"created_at"`
-}
-
-// CreateEndpoints implements Querier.CreateEndpoints.
-func (q *DBQuerier) CreateEndpoints(ctx context.Context, endpoints []NewEndpoint) ([]CreateEndpointsRow, error) {
-	ctx = context.WithValue(ctx, "pggen_query_name", "CreateEndpoints")
-	rows, err := q.conn.Query(ctx, createEndpointsSQL, q.types.newNewEndpointArrayInit(endpoints))
-	if err != nil {
-		return nil, fmt.Errorf("query CreateEndpoints: %w", err)
-	}
-	defer rows.Close()
-	items := []CreateEndpointsRow{}
-	for rows.Next() {
-		var item CreateEndpointsRow
-		if err := rows.Scan(&item.ID, &item.Uid, &item.ApplicationID, &item.RateLimit, &item.Metadata, &item.CreatedAt); err != nil {
-			return nil, fmt.Errorf("scan CreateEndpoints row: %w", err)
-		}
-		items = append(items, item)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("close CreateEndpoints rows: %w", err)
-	}
-	return items, err
-}
-
-const listEventTypesSQL = `SELECT
-    id,
-    uid,
-    key,
-    created_at
-FROM webhooks.event_type
-ORDER BY uid
-LIMIT $1
-OFFSET $2;`
-
-type ListEventTypesRow struct {
-	ID        *int32    `json:"id"`
-	Uid       string    `json:"uid"`
-	Key       string    `json:"key"`
-	CreatedAt time.Time `json:"created_at"`
-}
-
-// ListEventTypes implements Querier.ListEventTypes.
-func (q *DBQuerier) ListEventTypes(ctx context.Context, limit int, offset int) ([]ListEventTypesRow, error) {
-	ctx = context.WithValue(ctx, "pggen_query_name", "ListEventTypes")
-	rows, err := q.conn.Query(ctx, listEventTypesSQL, limit, offset)
-	if err != nil {
-		return nil, fmt.Errorf("query ListEventTypes: %w", err)
-	}
-	defer rows.Close()
-	items := []ListEventTypesRow{}
-	for rows.Next() {
-		var item ListEventTypesRow
-		if err := rows.Scan(&item.ID, &item.Uid, &item.Key, &item.CreatedAt); err != nil {
-			return nil, fmt.Errorf("scan ListEventTypes row: %w", err)
-		}
-		items = append(items, item)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("close ListEventTypes rows: %w", err)
-	}
-	return items, err
-}
-
-const listEndpointsSQL = `SELECT 
-    id,
-    uid,
-    url,
-    name,
-    metadata,
-    disabled,
-    rate_limit,
-    created_at,
-    updated_at,
-    description,
-    application_id
-FROM webhooks.endpoint
-ORDER BY uid
-LIMIT $1
-OFFSET $2;`
-
-type ListEndpointsRow struct {
-	ID            *int32       `json:"id"`
-	Uid           string       `json:"uid"`
-	Url           string       `json:"url"`
-	Name          string       `json:"name"`
-	Metadata      pgtype.JSONB `json:"metadata"`
-	Disabled      *bool        `json:"disabled"`
-	RateLimit     *int32       `json:"rate_limit"`
-	CreatedAt     time.Time    `json:"created_at"`
-	UpdatedAt     time.Time    `json:"updated_at"`
-	Description   string       `json:"description"`
-	ApplicationID *int32       `json:"application_id"`
-}
-
-// ListEndpoints implements Querier.ListEndpoints.
-func (q *DBQuerier) ListEndpoints(ctx context.Context, limit int, offset int) ([]ListEndpointsRow, error) {
-	ctx = context.WithValue(ctx, "pggen_query_name", "ListEndpoints")
-	rows, err := q.conn.Query(ctx, listEndpointsSQL, limit, offset)
-	if err != nil {
-		return nil, fmt.Errorf("query ListEndpoints: %w", err)
-	}
-	defer rows.Close()
-	items := []ListEndpointsRow{}
-	for rows.Next() {
-		var item ListEndpointsRow
-		if err := rows.Scan(&item.ID, &item.Uid, &item.Url, &item.Name, &item.Metadata, &item.Disabled, &item.RateLimit, &item.CreatedAt, &item.UpdatedAt, &item.Description, &item.ApplicationID); err != nil {
-			return nil, fmt.Errorf("scan ListEndpoints row: %w", err)
-		}
-		items = append(items, item)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("close ListEndpoints rows: %w", err)
-	}
-	return items, err
 }
 
 // textPreferrer wraps a pgtype.ValueTranscoder and sets the preferred encoding

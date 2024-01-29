@@ -44,7 +44,7 @@ gen/api: ${API_DIR}/webhooks.yaml api.gen.yaml
 
 gen/db:
 	@echo Generating DB
-	@pggen gen go --query-glob ${REPO_DIR}/queries/queries.sql --postgres-connection ${DB_URL} ${PGGEN_MAP}
+	@pggen gen go --query-glob '${REPO_DIR}/queries/*.sql' --postgres-connection ${DB_URL} ${PGGEN_MAP}
 
 gen/go:
 	@go mod tidy
