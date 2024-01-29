@@ -8,8 +8,8 @@ boot:
 	go install github.com/a-h/templ/cmd/templ@latest
 	go install github.com/google/wire/cmd/wire@latest
 	go install github.com/jschaf/pggen/cmd/pggen@latest
-	go install https://github.com/golang-migrate/migrate@latest
 	go install github.com/deepmap/oapi-codegen/v2/cmd/oapi-codegen@latest
+	go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
 
 run: 
 	go run . serve
