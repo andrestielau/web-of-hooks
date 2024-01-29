@@ -20,7 +20,6 @@ type Handler struct {
 	Secrets webhooks.Secrets
 }
 
-var sessionManager *scs.SessionManager
 var _ webhooksv1.ServerInterface = &Handler{}
 
 const status = "ok"
@@ -30,8 +29,8 @@ var start = time.Now()
 // GetHealth implements webhooksv1.ServerInterface.
 func (h *Handler) GetHealth(w http.ResponseWriter, r *http.Request) {
 	if strings.Contains(r.Header.Get("Accept"), "text/html") {
-		currentCount := sessionManager.GetInt(r.Context(), "count")
-		sessionManager.Put(r.Context(), "count", currentCount+1)
+		currentCount := h.Session.GetInt(r.Context(), "count")
+		h.Session.Put(r.Context(), "count", currentCount+1)
 		t := "dark"
 		if currentCount%2 == 1 {
 			t = "light"
