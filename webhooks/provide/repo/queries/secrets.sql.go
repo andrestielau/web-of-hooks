@@ -6,3 +6,38 @@ import (
 	"context"
 	"fmt"
 )
+
+const listMesListSecretssagesSQL = `SELECT
+    id,
+    uid
+FROM webhooks.secret
+ORDER BY uid
+LIMIT $1
+OFFSET $2;`
+
+type ListMesListSecretssagesRow struct {
+	ID  *int32 `json:"id"`
+	Uid string `json:"uid"`
+}
+
+// ListMesListSecretssages implements Querier.ListMesListSecretssages.
+func (q *DBQuerier) ListMesListSecretssages(ctx context.Context, limit int, offset int) ([]ListMesListSecretssagesRow, error) {
+	ctx = context.WithValue(ctx, "pggen_query_name", "ListMesListSecretssages")
+	rows, err := q.conn.Query(ctx, listMesListSecretssagesSQL, limit, offset)
+	if err != nil {
+		return nil, fmt.Errorf("query ListMesListSecretssages: %w", err)
+	}
+	defer rows.Close()
+	items := []ListMesListSecretssagesRow{}
+	for rows.Next() {
+		var item ListMesListSecretssagesRow
+		if err := rows.Scan(&item.ID, &item.Uid); err != nil {
+			return nil, fmt.Errorf("scan ListMesListSecretssages row: %w", err)
+		}
+		items = append(items, item)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("close ListMesListSecretssages rows: %w", err)
+	}
+	return items, err
+}

@@ -35,6 +35,9 @@ type Querier interface {
 
 	// ListMessages lists event-types
 	ListMessages(ctx context.Context, limit int, offset int) ([]ListMessagesRow, error)
+
+	// ListSecrets lists secrets
+	ListMesListSecretssages(ctx context.Context, limit int, offset int) ([]ListMesListSecretssagesRow, error)
 }
 
 var _ Querier = &DBQuerier{}
