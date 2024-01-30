@@ -1,13 +1,13 @@
 package page
 
 import (
-	"woh/webhooks/provide/repo/queries"
+	"woh/webhooks"
     . "woh/webhooks/render/style"
     "woh/webhooks/render/layout"
 )
 
 type EventTypesViewModel struct {
-    Data []queries.ListEventTypesRow
+    Data []webhooks.EventType
 }
 
 templ EventTypes(vm EventTypesViewModel, err error) {
@@ -28,7 +28,7 @@ templ EventTypesError(err error) {
     <p>{err.Error()}</p>
 } 
 
-templ EventTypeList(data []queries.ListEventTypesRow) {
+templ EventTypeList(data []webhooks.EventType) {
     if len(data) == 0 {
         <h2>No Event Type was found</h2>
     } else {

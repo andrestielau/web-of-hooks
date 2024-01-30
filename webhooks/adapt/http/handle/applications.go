@@ -18,14 +18,14 @@ func (h *Handler) CreateApplications(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	if res, err := h.Repo.CreateApplications(r.Context(), h.Convert.Application.New(req)); err != nil {
+	if res, err := h.Repo.CreateApplications(r.Context(), h.Convert.NewApplications(req)); err != nil {
 		errs, stop := convert.Errors(w, err)
 		if stop {
 			return
 		}
 		ret.Errors = errs
 	} else {
-		ret.Data = h.Convert.Application.Created(res)
+		ret.Data = h.Convert.Applications(res)
 	}
 	if media.ShouldRender(r) {
 		// TODO: partial
@@ -50,7 +50,7 @@ func (h *Handler) GetApplication(w http.ResponseWriter, r *http.Request, applica
 	if res, err := h.Repo.GetApplications(r.Context(), []string{applicationId}); convert.Error(w, err) {
 		return
 	} else if len(res) == 1 {
-		ret = h.Convert.Application.GotItem(res[0])
+		ret = h.Convert.Application(res[0])
 	}
 	if media.ShouldRender(r) {
 		// TODO: partial

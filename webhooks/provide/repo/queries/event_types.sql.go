@@ -6,7 +6,6 @@ import (
 	"context"
 	"fmt"
 	"github.com/jackc/pgconn"
-	"time"
 )
 
 const createEventTypesSQL = `INSERT INTO webhooks.event_type (
@@ -16,32 +15,30 @@ SELECT
     u.key
 FROM unnest($1::webhooks.new_event_type[]) u
 ON CONFLICT DO NOTHING
-RETURNING 
+RETURNING (
     id,
     uid,
     key,
-    created_at;`
-
-type CreateEventTypesRow struct {
-	ID        int32     `json:"id"`
-	Uid       string    `json:"uid"`
-	Key       string    `json:"key"`
-	CreatedAt time.Time `json:"created_at"`
-}
+    created_at
+):: webhooks.event_type;`
 
 // CreateEventTypes implements Querier.CreateEventTypes.
-func (q *DBQuerier) CreateEventTypes(ctx context.Context, eventTypes []NewEventType) ([]CreateEventTypesRow, error) {
+func (q *DBQuerier) CreateEventTypes(ctx context.Context, eventTypes []NewEventType) ([]EventType, error) {
 	ctx = context.WithValue(ctx, "pggen_query_name", "CreateEventTypes")
 	rows, err := q.conn.Query(ctx, createEventTypesSQL, q.types.newNewEventTypeArrayInit(eventTypes))
 	if err != nil {
 		return nil, fmt.Errorf("query CreateEventTypes: %w", err)
 	}
 	defer rows.Close()
-	items := []CreateEventTypesRow{}
+	items := []EventType{}
+	rowRow := q.types.newEventType()
 	for rows.Next() {
-		var item CreateEventTypesRow
-		if err := rows.Scan(&item.ID, &item.Uid, &item.Key, &item.CreatedAt); err != nil {
+		var item EventType
+		if err := rows.Scan(rowRow); err != nil {
 			return nil, fmt.Errorf("scan CreateEventTypes row: %w", err)
+		}
+		if err := rowRow.AssignTo(&item); err != nil {
+			return nil, fmt.Errorf("assign CreateEventTypes row: %w", err)
 		}
 		items = append(items, item)
 	}
@@ -63,34 +60,32 @@ func (q *DBQuerier) DeleteEventTypes(ctx context.Context, keys []string) (pgconn
 	return cmdTag, err
 }
 
-const getEventTypesSQL = `SELECT 
+const getEventTypesSQL = `SELECT (
     id,
     uid,
     key,
     created_at
+):: webhooks.event_type
 FROM webhooks.event_type
 WHERE uid = ANY($1::uuid[]);`
 
-type GetEventTypesRow struct {
-	ID        *int32    `json:"id"`
-	Uid       string    `json:"uid"`
-	Key       string    `json:"key"`
-	CreatedAt time.Time `json:"created_at"`
-}
-
 // GetEventTypes implements Querier.GetEventTypes.
-func (q *DBQuerier) GetEventTypes(ctx context.Context, ids []string) ([]GetEventTypesRow, error) {
+func (q *DBQuerier) GetEventTypes(ctx context.Context, ids []string) ([]EventType, error) {
 	ctx = context.WithValue(ctx, "pggen_query_name", "GetEventTypes")
 	rows, err := q.conn.Query(ctx, getEventTypesSQL, ids)
 	if err != nil {
 		return nil, fmt.Errorf("query GetEventTypes: %w", err)
 	}
 	defer rows.Close()
-	items := []GetEventTypesRow{}
+	items := []EventType{}
+	rowRow := q.types.newEventType()
 	for rows.Next() {
-		var item GetEventTypesRow
-		if err := rows.Scan(&item.ID, &item.Uid, &item.Key, &item.CreatedAt); err != nil {
+		var item EventType
+		if err := rows.Scan(rowRow); err != nil {
 			return nil, fmt.Errorf("scan GetEventTypes row: %w", err)
+		}
+		if err := rowRow.AssignTo(&item); err != nil {
+			return nil, fmt.Errorf("assign GetEventTypes row: %w", err)
 		}
 		items = append(items, item)
 	}
@@ -100,36 +95,34 @@ func (q *DBQuerier) GetEventTypes(ctx context.Context, ids []string) ([]GetEvent
 	return items, err
 }
 
-const listEventTypesSQL = `SELECT
+const listEventTypesSQL = `SELECT (
     id,
     uid,
     key,
     created_at
+):: webhooks.event_type
 FROM webhooks.event_type
 ORDER BY uid
 LIMIT $1
 OFFSET $2;`
 
-type ListEventTypesRow struct {
-	ID        *int32    `json:"id"`
-	Uid       string    `json:"uid"`
-	Key       string    `json:"key"`
-	CreatedAt time.Time `json:"created_at"`
-}
-
 // ListEventTypes implements Querier.ListEventTypes.
-func (q *DBQuerier) ListEventTypes(ctx context.Context, limit int, offset int) ([]ListEventTypesRow, error) {
+func (q *DBQuerier) ListEventTypes(ctx context.Context, limit int, offset int) ([]EventType, error) {
 	ctx = context.WithValue(ctx, "pggen_query_name", "ListEventTypes")
 	rows, err := q.conn.Query(ctx, listEventTypesSQL, limit, offset)
 	if err != nil {
 		return nil, fmt.Errorf("query ListEventTypes: %w", err)
 	}
 	defer rows.Close()
-	items := []ListEventTypesRow{}
+	items := []EventType{}
+	rowRow := q.types.newEventType()
 	for rows.Next() {
-		var item ListEventTypesRow
-		if err := rows.Scan(&item.ID, &item.Uid, &item.Key, &item.CreatedAt); err != nil {
+		var item EventType
+		if err := rows.Scan(rowRow); err != nil {
 			return nil, fmt.Errorf("scan ListEventTypes row: %w", err)
+		}
+		if err := rowRow.AssignTo(&item); err != nil {
+			return nil, fmt.Errorf("assign ListEventTypes row: %w", err)
 		}
 		items = append(items, item)
 	}

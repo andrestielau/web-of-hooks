@@ -1,14 +1,14 @@
 package applications
 
 import (
-	"woh/webhooks/provide/repo/queries"
     . "woh/webhooks/render/style"
     "woh/webhooks/render/layout"
+	"woh/webhooks"
 )
 
 type EndpointsViewModel struct {
     ApplicationId string
-    Data []queries.ListEndpointsRow
+    Data []webhooks.Endpoint
 }
 
 templ Endpoints(vm EndpointsViewModel, err error) {
@@ -33,7 +33,7 @@ templ EndpointItem(id, url string) {
     <li>{id}: {url}</li>
 }
 // TODO: map to generic input before calling
-templ EndpointList(data []queries.ListEndpointsRow) {
+templ EndpointList(data []webhooks.Endpoint) {
     if len(data) == 0 {
         <h2>No Endpoint was found</h2>
     } else {

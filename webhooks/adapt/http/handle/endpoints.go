@@ -17,14 +17,14 @@ func (h *Handler) CreateEndpoints(w http.ResponseWriter, r *http.Request, applic
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	if res, err := h.Repo.CreateEndpoints(r.Context(), h.Convert.Endpoint.New(req)); err != nil {
+	if res, err := h.Repo.CreateEndpoints(r.Context(), h.Convert.NewEndpoints(req)); err != nil {
 		errs, stop := convert.Errors(w, err)
 		if stop {
 			return
 		}
 		ret.Errors = errs
 	} else {
-		ret.Data = h.Convert.Endpoint.Created(res)
+		ret.Data = h.Convert.Endpoints(res)
 	}
 	if media.ShouldRender(r) {
 		// TODO: partial
@@ -49,7 +49,7 @@ func (h *Handler) GetEndpoint(w http.ResponseWriter, r *http.Request, endpointId
 	if res, err := h.Repo.GetEndpoints(r.Context(), []string{endpointId}); convert.Error(w, err) {
 		return
 	} else if len(res) == 1 {
-		ret = h.Convert.Endpoint.GotItem(res[0])
+		ret = h.Convert.Endpoint(res[0])
 	}
 	if media.ShouldRender(r) {
 		// TODO: partial
@@ -70,7 +70,7 @@ func (h *Handler) ListEndpoints(w http.ResponseWriter, r *http.Request, applicat
 	} else if media.ShouldRender(r) {
 		applications.Endpoints(applications.EndpointsViewModel{ // Todo decouple from DB
 			ApplicationId: applicationId,
-			Data:          res,
+			Data:          nil,
 		}, nil).Render(r.Context(), w)
 	} else {
 		media.Res(w, media.Accept(r), res)

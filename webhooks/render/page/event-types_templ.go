@@ -11,13 +11,13 @@ import "io"
 import "bytes"
 
 import (
-	"woh/webhooks/provide/repo/queries"
+	"woh/webhooks"
 	"woh/webhooks/render/layout"
 	. "woh/webhooks/render/style"
 )
 
 type EventTypesViewModel struct {
-	Data []queries.ListEventTypesRow
+	Data []webhooks.EventType
 }
 
 func EventTypes(vm EventTypesViewModel, err error) templ.Component {
@@ -135,7 +135,7 @@ func EventTypesError(err error) templ.Component {
 	})
 }
 
-func EventTypeList(data []queries.ListEventTypesRow) templ.Component {
+func EventTypeList(data []webhooks.EventType) templ.Component {
 	return templ.ComponentFunc(func(ctx context.Context, templ_7745c5c3_W io.Writer) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templ_7745c5c3_W.(*bytes.Buffer)
 		if !templ_7745c5c3_IsBuffer {

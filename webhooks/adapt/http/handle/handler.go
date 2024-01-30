@@ -20,22 +20,7 @@ type Handler struct {
 	Session *scs.SessionManager
 	Repo    webhooks.Repository
 	Secrets webhooks.Secrets
-	Convert Converters
-}
-type Converters struct {
-	Application *convert.ApplicationConverterImpl
-	Endpoint    *convert.EndpointConverterImpl
-	Secret      *convert.SecretConverterImpl
-	Message     *convert.MessageConverterImpl
-}
-
-func Convert() Converters {
-	return Converters{
-		Application: &convert.ApplicationConverterImpl{},
-		Endpoint:    &convert.EndpointConverterImpl{},
-		Secret:      &convert.SecretConverterImpl{},
-		Message:     &convert.MessageConverterImpl{},
-	}
+	Convert convert.Converter
 }
 
 var _ webhooksv1.ServerInterface = &Handler{}

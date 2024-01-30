@@ -11,14 +11,14 @@ import "io"
 import "bytes"
 
 import (
-	"woh/webhooks/provide/repo/queries"
+	"woh/webhooks"
 	"woh/webhooks/render/layout"
 	. "woh/webhooks/render/style"
 )
 
 type EndpointsViewModel struct {
 	ApplicationId string
-	Data          []queries.ListEndpointsRow
+	Data          []webhooks.Endpoint
 }
 
 func Endpoints(vm EndpointsViewModel, err error) templ.Component {
@@ -198,7 +198,7 @@ func EndpointItem(id, url string) templ.Component {
 }
 
 // TODO: map to generic input before calling
-func EndpointList(data []queries.ListEndpointsRow) templ.Component {
+func EndpointList(data []webhooks.Endpoint) templ.Component {
 	return templ.ComponentFunc(func(ctx context.Context, templ_7745c5c3_W io.Writer) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templ_7745c5c3_W.(*bytes.Buffer)
 		if !templ_7745c5c3_IsBuffer {

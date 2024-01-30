@@ -9,16 +9,21 @@ SELECT
     u.tenant_id
 FROM unnest(pggen.arg('secrets')::webhooks.new_secret[]) u
 ON CONFLICT DO NOTHING
-RETURNING 
-    id,
+RETURNING (
     uid,
-    tenant_id;
+    id ,
+    tenant_id,
+    value
+)::webhooks.secret;
 
 -- GetSecrets gets secrets by id
 -- name: GetSecrets :many
-SELECT 
-    id,
-    uid
+SELECT (
+    uid,
+    id ,
+    tenant_id,
+    value
+)::webhooks.secret
 FROM webhooks.secret
 WHERE uid = ANY(pggen.arg('ids')::uuid[]);
 
@@ -28,9 +33,12 @@ DELETE FROM webhooks.secret WHERE uid = ANY(pggen.arg('ids')::UUID[]);
 
 -- ListSecrets lists secrets
 -- name: ListSecrets :many
-SELECT
-    id,
-    uid
+SELECT (
+    uid,
+    id ,
+    tenant_id,
+    value
+)::webhooks.secret
 FROM webhooks.secret
 ORDER BY uid
 LIMIT pggen.arg('limit')

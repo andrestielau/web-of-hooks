@@ -7,19 +7,31 @@ DELETE FROM webhooks.message_attempt WHERE uid = ANY(pggen.arg('ids')::UUID[]);
 
 -- GetAttempts gets attempts by id
 -- name: GetAttempts :many
-SELECT 
+SELECT (
     id,
     uid,
-    created_at
+    endpoint_id ,
+    message_id ,
+    created_at,
+    status,
+    response_status,
+    response
+)::webhooks.message_attempt
 FROM webhooks.message_attempt
 WHERE uid = ANY(pggen.arg('ids')::uuid[]);
 
 -- ListAttempts lists message attempts
 -- name: ListAttempts :many
-SELECT
+SELECT (
     id,
     uid,
-    created_at
+    endpoint_id ,
+    message_id ,
+    created_at,
+    status,
+    response_status,
+    response
+)::webhooks.message_attempt
 FROM webhooks.message_attempt
 ORDER BY uid
 LIMIT pggen.arg('limit')

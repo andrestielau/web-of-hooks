@@ -8,78 +8,81 @@ import (
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgtype"
 	"github.com/jackc/pgx/v4"
+	"time"
 )
 
 // Querier is a typesafe Go interface backed by SQL queries.
 type Querier interface {
+	Now(ctx context.Context) (time.Time, error)
+
 	// CreateApplications inserts applications into the database
-	CreateApplications(ctx context.Context, applications []NewApplication) ([]CreateApplicationsRow, error)
+	CreateApplications(ctx context.Context, applications []NewApplication) ([]Application, error)
 
 	// DeleteApplications deletes application by uid
 	DeleteApplications(ctx context.Context, ids []string) (pgconn.CommandTag, error)
 
 	// GetApplications gets applications by id
-	GetApplications(ctx context.Context, ids []string) ([]GetApplicationsRow, error)
+	GetApplications(ctx context.Context, ids []string) ([]Application, error)
 
 	// ListApplications lists registered applications
-	ListApplications(ctx context.Context, limit int, offset int) ([]ListApplicationsRow, error)
+	ListApplications(ctx context.Context, params ListApplicationsParams) ([]Application, error)
 
 	// DeleteAttempts deletes attempts by uid
 	DeleteAttempts(ctx context.Context, ids []string) (pgconn.CommandTag, error)
 
 	// GetAttempts gets attempts by id
-	GetAttempts(ctx context.Context, ids []string) ([]GetAttemptsRow, error)
+	GetAttempts(ctx context.Context, ids []string) ([]MessageAttempt, error)
 
 	// ListAttempts lists message attempts
-	ListAttempts(ctx context.Context, limit int, offset int) ([]ListAttemptsRow, error)
+	ListAttempts(ctx context.Context, limit int, offset int) ([]MessageAttempt, error)
 
 	// CreateEndpoints inserts endpoints into the database
-	CreateEndpoints(ctx context.Context, endpoints []NewEndpoint) ([]CreateEndpointsRow, error)
+	CreateEndpoints(ctx context.Context, endpoints []NewEndpoint) ([]Endpoint, error)
 
 	// DeleteEndpoints deletes endpoints by uid
 	DeleteEndpoints(ctx context.Context, ids []string) (pgconn.CommandTag, error)
 
 	// GetEndpoints gets endpoints by id
-	GetEndpoints(ctx context.Context, ids []string) ([]GetEndpointsRow, error)
+	GetEndpoints(ctx context.Context, ids []string) ([]Endpoint, error)
 
 	// ListEndpoints lists endpoints
-	ListEndpoints(ctx context.Context, limit int, offset int) ([]ListEndpointsRow, error)
+	ListEndpoints(ctx context.Context, limit int, offset int) ([]Endpoint, error)
 
 	// CreateEventTypes inserts event types into the database
-	CreateEventTypes(ctx context.Context, eventTypes []NewEventType) ([]CreateEventTypesRow, error)
+	CreateEventTypes(ctx context.Context, eventTypes []NewEventType) ([]EventType, error)
 
 	// DeleteEventTypes deletes endpoints by uid
 	DeleteEventTypes(ctx context.Context, keys []string) (pgconn.CommandTag, error)
 
 	// GetEventTypes gets event-types by id
-	GetEventTypes(ctx context.Context, ids []string) ([]GetEventTypesRow, error)
+	GetEventTypes(ctx context.Context, ids []string) ([]EventType, error)
 
 	// ListEventTypes lists event-types
-	ListEventTypes(ctx context.Context, limit int, offset int) ([]ListEventTypesRow, error)
+	ListEventTypes(ctx context.Context, limit int, offset int) ([]EventType, error)
 
 	// CreateMessages inserts messages into the database
-	CreateMessages(ctx context.Context, messages []NewMessage) ([]CreateMessagesRow, error)
+	CreateMessages(ctx context.Context, messages []NewMessage) ([]Message, error)
 
 	// DeleteMessages deletes messages by uid
 	DeleteMessages(ctx context.Context, ids []string) (pgconn.CommandTag, error)
 
 	// GetMessages gets messages by id
-	GetMessages(ctx context.Context, ids []string) ([]GetMessagesRow, error)
+	GetMessages(ctx context.Context, ids []string) ([]Message, error)
 
 	// ListMessages lists event-types
-	ListMessages(ctx context.Context, limit int, offset int) ([]ListMessagesRow, error)
+	ListMessages(ctx context.Context, limit int, offset int) ([]Message, error)
 
 	// CreateSecrets creates secrets
-	CreateSecrets(ctx context.Context, secrets []NewSecret) ([]CreateSecretsRow, error)
+	CreateSecrets(ctx context.Context, secrets []NewSecret) ([]Secret, error)
 
 	// GetSecrets gets secrets by id
-	GetSecrets(ctx context.Context, ids []string) ([]GetSecretsRow, error)
+	GetSecrets(ctx context.Context, ids []string) ([]Secret, error)
 
 	// DeleteSecrets deletes secrets by uid
 	DeleteSecrets(ctx context.Context, ids []string) (pgconn.CommandTag, error)
 
 	// ListSecrets lists secrets
-	ListSecrets(ctx context.Context, limit int, offset int) ([]ListSecretsRow, error)
+	ListSecrets(ctx context.Context, limit int, offset int) ([]Secret, error)
 }
 
 var _ Querier = &DBQuerier{}
@@ -99,6 +102,64 @@ type genericConn interface {
 // NewQuerier creates a DBQuerier that implements Querier.
 func NewQuerier(conn genericConn) *DBQuerier {
 	return &DBQuerier{conn: conn, types: newTypeResolver()}
+}
+
+// Application represents the Postgres composite type "application".
+type Application struct {
+	ID        *int32       `json:"id"`
+	Name      string       `json:"name"`
+	Uid       string       `json:"uid"`
+	TenantID  string       `json:"tenant_id"`
+	RateLimit *int32       `json:"rate_limit"`
+	Metadata  pgtype.JSONB `json:"metadata"`
+	CreatedAt time.Time    `json:"created_at"`
+	UpdatedAt time.Time    `json:"updated_at"`
+}
+
+// Endpoint represents the Postgres composite type "endpoint".
+type Endpoint struct {
+	ID            *int32       `json:"id"`
+	Url           string       `json:"url"`
+	Name          string       `json:"name"`
+	ApplicationID *int32       `json:"application_id"`
+	Uid           string       `json:"uid"`
+	RateLimit     *int32       `json:"rate_limit"`
+	Metadata      pgtype.JSONB `json:"metadata"`
+	Disabled      *bool        `json:"disabled"`
+	Description   string       `json:"description"`
+	CreatedAt     time.Time    `json:"created_at"`
+	UpdatedAt     time.Time    `json:"updated_at"`
+}
+
+// EventType represents the Postgres composite type "event_type".
+type EventType struct {
+	ID        *int32    `json:"id"`
+	Key       string    `json:"key"`
+	Uid       string    `json:"uid"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
+// Message represents the Postgres composite type "message".
+type Message struct {
+	ID            *int32    `json:"id"`
+	ApplicationID *int32    `json:"application_id"`
+	EventTypeID   *int32    `json:"event_type_id"`
+	Uid           string    `json:"uid"`
+	CreatedAt     time.Time `json:"created_at"`
+	EventID       string    `json:"event_id"`
+	Payload       string    `json:"payload"`
+}
+
+// MessageAttempt represents the Postgres composite type "message_attempt".
+type MessageAttempt struct {
+	ID             *int32    `json:"id"`
+	Uid            string    `json:"uid"`
+	EndpointID     *int32    `json:"endpoint_id"`
+	MessageID      *int32    `json:"message_id"`
+	CreatedAt      time.Time `json:"created_at"`
+	Status         *int32    `json:"status"`
+	ResponseStatus *int32    `json:"response_status"`
+	Response       string    `json:"response"`
 }
 
 // NewApplication represents the Postgres composite type "new_application".
@@ -139,6 +200,14 @@ type NewMessage struct {
 type NewSecret struct {
 	TenantID string `json:"tenant_id"`
 	ID       string `json:"id"`
+}
+
+// Secret represents the Postgres composite type "secret".
+type Secret struct {
+	Uid      string `json:"uid"`
+	ID       *int32 `json:"id"`
+	TenantID string `json:"tenant_id"`
+	Value    string `json:"value"`
 }
 
 // typeResolver looks up the pgtype.ValueTranscoder by Postgres type name.
@@ -219,6 +288,84 @@ func (tr *typeResolver) newArrayValue(name, elemName string, defaultVal func() p
 		return textPreferrer{ValueTranscoder: typ, typeName: name}
 	}
 	return typ
+}
+
+// newApplication creates a new pgtype.ValueTranscoder for the Postgres
+// composite type 'application'.
+func (tr *typeResolver) newApplication() pgtype.ValueTranscoder {
+	return tr.newCompositeValue(
+		"application",
+		compositeField{name: "id", typeName: "int4", defaultVal: &pgtype.Int4{}},
+		compositeField{name: "name", typeName: "text", defaultVal: &pgtype.Text{}},
+		compositeField{name: "uid", typeName: "uuid", defaultVal: &pgtype.UUID{}},
+		compositeField{name: "tenant_id", typeName: "text", defaultVal: &pgtype.Text{}},
+		compositeField{name: "rate_limit", typeName: "int4", defaultVal: &pgtype.Int4{}},
+		compositeField{name: "metadata", typeName: "jsonb", defaultVal: &pgtype.JSONB{}},
+		compositeField{name: "created_at", typeName: "timestamptz", defaultVal: &pgtype.Timestamptz{}},
+		compositeField{name: "updated_at", typeName: "timestamptz", defaultVal: &pgtype.Timestamptz{}},
+	)
+}
+
+// newEndpoint creates a new pgtype.ValueTranscoder for the Postgres
+// composite type 'endpoint'.
+func (tr *typeResolver) newEndpoint() pgtype.ValueTranscoder {
+	return tr.newCompositeValue(
+		"endpoint",
+		compositeField{name: "id", typeName: "int4", defaultVal: &pgtype.Int4{}},
+		compositeField{name: "url", typeName: "text", defaultVal: &pgtype.Text{}},
+		compositeField{name: "name", typeName: "text", defaultVal: &pgtype.Text{}},
+		compositeField{name: "application_id", typeName: "int4", defaultVal: &pgtype.Int4{}},
+		compositeField{name: "uid", typeName: "uuid", defaultVal: &pgtype.UUID{}},
+		compositeField{name: "rate_limit", typeName: "int4", defaultVal: &pgtype.Int4{}},
+		compositeField{name: "metadata", typeName: "jsonb", defaultVal: &pgtype.JSONB{}},
+		compositeField{name: "disabled", typeName: "bool", defaultVal: &pgtype.Bool{}},
+		compositeField{name: "description", typeName: "text", defaultVal: &pgtype.Text{}},
+		compositeField{name: "created_at", typeName: "timestamptz", defaultVal: &pgtype.Timestamptz{}},
+		compositeField{name: "updated_at", typeName: "timestamptz", defaultVal: &pgtype.Timestamptz{}},
+	)
+}
+
+// newEventType creates a new pgtype.ValueTranscoder for the Postgres
+// composite type 'event_type'.
+func (tr *typeResolver) newEventType() pgtype.ValueTranscoder {
+	return tr.newCompositeValue(
+		"event_type",
+		compositeField{name: "id", typeName: "int4", defaultVal: &pgtype.Int4{}},
+		compositeField{name: "key", typeName: "text", defaultVal: &pgtype.Text{}},
+		compositeField{name: "uid", typeName: "uuid", defaultVal: &pgtype.UUID{}},
+		compositeField{name: "created_at", typeName: "timestamptz", defaultVal: &pgtype.Timestamptz{}},
+	)
+}
+
+// newMessageAttempt creates a new pgtype.ValueTranscoder for the Postgres
+// composite type 'message_attempt'.
+func (tr *typeResolver) newMessageAttempt() pgtype.ValueTranscoder {
+	return tr.newCompositeValue(
+		"message_attempt",
+		compositeField{name: "id", typeName: "int4", defaultVal: &pgtype.Int4{}},
+		compositeField{name: "uid", typeName: "uuid", defaultVal: &pgtype.UUID{}},
+		compositeField{name: "endpoint_id", typeName: "int4", defaultVal: &pgtype.Int4{}},
+		compositeField{name: "message_id", typeName: "int4", defaultVal: &pgtype.Int4{}},
+		compositeField{name: "created_at", typeName: "timestamptz", defaultVal: &pgtype.Timestamptz{}},
+		compositeField{name: "status", typeName: "int4", defaultVal: &pgtype.Int4{}},
+		compositeField{name: "response_status", typeName: "int4", defaultVal: &pgtype.Int4{}},
+		compositeField{name: "response", typeName: "text", defaultVal: &pgtype.Text{}},
+	)
+}
+
+// newMessage creates a new pgtype.ValueTranscoder for the Postgres
+// composite type 'message'.
+func (tr *typeResolver) newMessage() pgtype.ValueTranscoder {
+	return tr.newCompositeValue(
+		"message",
+		compositeField{name: "id", typeName: "int4", defaultVal: &pgtype.Int4{}},
+		compositeField{name: "application_id", typeName: "int4", defaultVal: &pgtype.Int4{}},
+		compositeField{name: "event_type_id", typeName: "int4", defaultVal: &pgtype.Int4{}},
+		compositeField{name: "uid", typeName: "uuid", defaultVal: &pgtype.UUID{}},
+		compositeField{name: "created_at", typeName: "timestamptz", defaultVal: &pgtype.Timestamptz{}},
+		compositeField{name: "event_id", typeName: "text", defaultVal: &pgtype.Text{}},
+		compositeField{name: "payload", typeName: "text", defaultVal: &pgtype.Text{}},
+	)
 }
 
 // newNewApplication creates a new pgtype.ValueTranscoder for the Postgres
@@ -334,6 +481,18 @@ func (tr *typeResolver) newNewSecretRaw(v NewSecret) []interface{} {
 		v.TenantID,
 		v.ID,
 	}
+}
+
+// newSecret creates a new pgtype.ValueTranscoder for the Postgres
+// composite type 'secret'.
+func (tr *typeResolver) newSecret() pgtype.ValueTranscoder {
+	return tr.newCompositeValue(
+		"secret",
+		compositeField{name: "uid", typeName: "uuid", defaultVal: &pgtype.UUID{}},
+		compositeField{name: "id", typeName: "int4", defaultVal: &pgtype.Int4{}},
+		compositeField{name: "tenant_id", typeName: "text", defaultVal: &pgtype.Text{}},
+		compositeField{name: "value", typeName: "text", defaultVal: &pgtype.Text{}},
+	)
 }
 
 // newNewApplicationArray creates a new pgtype.ValueTranscoder for the Postgres
@@ -464,6 +623,19 @@ func (tr *typeResolver) newNewSecretArrayRaw(vs []NewSecret) []interface{} {
 		elems[i] = tr.newNewSecretRaw(v)
 	}
 	return elems
+}
+
+const nowSQL = `SELECT now();`
+
+// Now implements Querier.Now.
+func (q *DBQuerier) Now(ctx context.Context) (time.Time, error) {
+	ctx = context.WithValue(ctx, "pggen_query_name", "Now")
+	row := q.conn.QueryRow(ctx, nowSQL)
+	var item time.Time
+	if err := row.Scan(&item); err != nil {
+		return item, fmt.Errorf("query Now: %w", err)
+	}
+	return item, nil
 }
 
 // textPreferrer wraps a pgtype.ValueTranscoder and sets the preferred encoding

@@ -52,6 +52,7 @@ gen/ui:
 
 gen/conv:
 	@goverter gen ./webhooks/adapt/http/convert/...
+	@goverter gen ./webhooks/provide/repo/convert/...
 	
 gen/go:
 	@go mod tidy

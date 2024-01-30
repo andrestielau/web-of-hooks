@@ -6,8 +6,6 @@ import (
 	"context"
 	"fmt"
 	"github.com/jackc/pgconn"
-	"github.com/jackc/pgtype"
-	"time"
 )
 
 const createEndpointsSQL = `INSERT INTO webhooks.endpoint (
@@ -28,42 +26,37 @@ SELECT
 FROM unnest($1::webhooks.new_endpoint[]) u
 JOIN webhooks.application a ON u.application_id = a.uid
 ON CONFLICT DO NOTHING
-RETURNING 
+RETURNING (
     id,
-    uid,
     url,
     name,
     application_id,
+    uid,
     rate_limit,
     metadata,
+    disabled,
     description,
-    created_at;`
-
-type CreateEndpointsRow struct {
-	ID            int32        `json:"id"`
-	Uid           string       `json:"uid"`
-	Url           string       `json:"url"`
-	Name          string       `json:"name"`
-	ApplicationID int32        `json:"application_id"`
-	RateLimit     int32        `json:"rate_limit"`
-	Metadata      pgtype.JSONB `json:"metadata"`
-	Description   string       `json:"description"`
-	CreatedAt     time.Time    `json:"created_at"`
-}
+    created_at,
+    updated_at
+)::webhooks.endpoint;`
 
 // CreateEndpoints implements Querier.CreateEndpoints.
-func (q *DBQuerier) CreateEndpoints(ctx context.Context, endpoints []NewEndpoint) ([]CreateEndpointsRow, error) {
+func (q *DBQuerier) CreateEndpoints(ctx context.Context, endpoints []NewEndpoint) ([]Endpoint, error) {
 	ctx = context.WithValue(ctx, "pggen_query_name", "CreateEndpoints")
 	rows, err := q.conn.Query(ctx, createEndpointsSQL, q.types.newNewEndpointArrayInit(endpoints))
 	if err != nil {
 		return nil, fmt.Errorf("query CreateEndpoints: %w", err)
 	}
 	defer rows.Close()
-	items := []CreateEndpointsRow{}
+	items := []Endpoint{}
+	rowRow := q.types.newEndpoint()
 	for rows.Next() {
-		var item CreateEndpointsRow
-		if err := rows.Scan(&item.ID, &item.Uid, &item.Url, &item.Name, &item.ApplicationID, &item.RateLimit, &item.Metadata, &item.Description, &item.CreatedAt); err != nil {
+		var item Endpoint
+		if err := rows.Scan(rowRow); err != nil {
 			return nil, fmt.Errorf("scan CreateEndpoints row: %w", err)
+		}
+		if err := rowRow.AssignTo(&item); err != nil {
+			return nil, fmt.Errorf("assign CreateEndpoints row: %w", err)
 		}
 		items = append(items, item)
 	}
@@ -85,48 +78,39 @@ func (q *DBQuerier) DeleteEndpoints(ctx context.Context, ids []string) (pgconn.C
 	return cmdTag, err
 }
 
-const getEndpointsSQL = `SELECT 
+const getEndpointsSQL = `SELECT (
     id,
-    uid,
     url,
     name,
+    application_id,
+    uid,
+    rate_limit,
     metadata,
     disabled,
-    rate_limit,
-    created_at,
-    updated_at,
     description,
-    application_id
+    created_at,
+    updated_at
+)::webhooks.endpoint
 FROM webhooks.endpoint
 WHERE uid = ANY($1::uuid[]);`
 
-type GetEndpointsRow struct {
-	ID            *int32       `json:"id"`
-	Uid           string       `json:"uid"`
-	Url           string       `json:"url"`
-	Name          string       `json:"name"`
-	Metadata      pgtype.JSONB `json:"metadata"`
-	Disabled      *bool        `json:"disabled"`
-	RateLimit     *int32       `json:"rate_limit"`
-	CreatedAt     time.Time    `json:"created_at"`
-	UpdatedAt     time.Time    `json:"updated_at"`
-	Description   string       `json:"description"`
-	ApplicationID *int32       `json:"application_id"`
-}
-
 // GetEndpoints implements Querier.GetEndpoints.
-func (q *DBQuerier) GetEndpoints(ctx context.Context, ids []string) ([]GetEndpointsRow, error) {
+func (q *DBQuerier) GetEndpoints(ctx context.Context, ids []string) ([]Endpoint, error) {
 	ctx = context.WithValue(ctx, "pggen_query_name", "GetEndpoints")
 	rows, err := q.conn.Query(ctx, getEndpointsSQL, ids)
 	if err != nil {
 		return nil, fmt.Errorf("query GetEndpoints: %w", err)
 	}
 	defer rows.Close()
-	items := []GetEndpointsRow{}
+	items := []Endpoint{}
+	rowRow := q.types.newEndpoint()
 	for rows.Next() {
-		var item GetEndpointsRow
-		if err := rows.Scan(&item.ID, &item.Uid, &item.Url, &item.Name, &item.Metadata, &item.Disabled, &item.RateLimit, &item.CreatedAt, &item.UpdatedAt, &item.Description, &item.ApplicationID); err != nil {
+		var item Endpoint
+		if err := rows.Scan(rowRow); err != nil {
 			return nil, fmt.Errorf("scan GetEndpoints row: %w", err)
+		}
+		if err := rowRow.AssignTo(&item); err != nil {
+			return nil, fmt.Errorf("assign GetEndpoints row: %w", err)
 		}
 		items = append(items, item)
 	}
@@ -136,50 +120,41 @@ func (q *DBQuerier) GetEndpoints(ctx context.Context, ids []string) ([]GetEndpoi
 	return items, err
 }
 
-const listEndpointsSQL = `SELECT 
+const listEndpointsSQL = `SELECT (
     id,
-    uid,
     url,
     name,
+    application_id,
+    uid,
+    rate_limit,
     metadata,
     disabled,
-    rate_limit,
-    created_at,
-    updated_at,
     description,
-    application_id
+    created_at,
+    updated_at
+)::webhooks.endpoint
 FROM webhooks.endpoint
 ORDER BY uid
 LIMIT $1
 OFFSET $2;`
 
-type ListEndpointsRow struct {
-	ID            *int32       `json:"id"`
-	Uid           string       `json:"uid"`
-	Url           string       `json:"url"`
-	Name          string       `json:"name"`
-	Metadata      pgtype.JSONB `json:"metadata"`
-	Disabled      *bool        `json:"disabled"`
-	RateLimit     *int32       `json:"rate_limit"`
-	CreatedAt     time.Time    `json:"created_at"`
-	UpdatedAt     time.Time    `json:"updated_at"`
-	Description   string       `json:"description"`
-	ApplicationID *int32       `json:"application_id"`
-}
-
 // ListEndpoints implements Querier.ListEndpoints.
-func (q *DBQuerier) ListEndpoints(ctx context.Context, limit int, offset int) ([]ListEndpointsRow, error) {
+func (q *DBQuerier) ListEndpoints(ctx context.Context, limit int, offset int) ([]Endpoint, error) {
 	ctx = context.WithValue(ctx, "pggen_query_name", "ListEndpoints")
 	rows, err := q.conn.Query(ctx, listEndpointsSQL, limit, offset)
 	if err != nil {
 		return nil, fmt.Errorf("query ListEndpoints: %w", err)
 	}
 	defer rows.Close()
-	items := []ListEndpointsRow{}
+	items := []Endpoint{}
+	rowRow := q.types.newEndpoint()
 	for rows.Next() {
-		var item ListEndpointsRow
-		if err := rows.Scan(&item.ID, &item.Uid, &item.Url, &item.Name, &item.Metadata, &item.Disabled, &item.RateLimit, &item.CreatedAt, &item.UpdatedAt, &item.Description, &item.ApplicationID); err != nil {
+		var item Endpoint
+		if err := rows.Scan(rowRow); err != nil {
 			return nil, fmt.Errorf("scan ListEndpoints row: %w", err)
+		}
+		if err := rowRow.AssignTo(&item); err != nil {
+			return nil, fmt.Errorf("assign ListEndpoints row: %w", err)
 		}
 		items = append(items, item)
 	}

@@ -17,8 +17,8 @@ func (h *Handler) ListEventTypes(w http.ResponseWriter, r *http.Request, params 
 	//	h.Repo.CreateEventTypes(r.Context(), []queries.NewEventType{{"test-" + uuid.NewString()}}) uncomment to test types
 	eventTypes, err := h.Repo.ListEventTypes(r.Context(), 100, 0)
 	if media.ShouldRender(r) {
-		page.EventTypes(page.EventTypesViewModel{ // Todo decouple from DB
-			Data: eventTypes,
+		page.EventTypes(page.EventTypesViewModel{
+			Data: nil,
 		}, err).Render(r.Context(), w)
 		return
 	}

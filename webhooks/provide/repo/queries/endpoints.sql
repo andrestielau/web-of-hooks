@@ -19,16 +19,19 @@ SELECT
 FROM unnest(pggen.arg('endpoints')::webhooks.new_endpoint[]) u
 JOIN webhooks.application a ON u.application_id = a.uid
 ON CONFLICT DO NOTHING
-RETURNING 
+RETURNING (
     id,
-    uid,
     url,
     name,
     application_id,
+    uid,
     rate_limit,
     metadata,
+    disabled,
     description,
-    created_at;
+    created_at,
+    updated_at
+)::webhooks.endpoint;
 
 -- DeleteEndpoints deletes endpoints by uid
 -- name: DeleteEndpoints :exec
@@ -36,35 +39,37 @@ DELETE FROM webhooks.endpoint WHERE uid = ANY(pggen.arg('ids')::UUID[]);
 
 -- GetEndpoints gets endpoints by id
 -- name: GetEndpoints :many
-SELECT 
+SELECT (
     id,
-    uid,
     url,
     name,
+    application_id,
+    uid,
+    rate_limit,
     metadata,
     disabled,
-    rate_limit,
-    created_at,
-    updated_at,
     description,
-    application_id
+    created_at,
+    updated_at
+)::webhooks.endpoint
 FROM webhooks.endpoint
 WHERE uid = ANY(pggen.arg('ids')::uuid[]);
 
 -- ListEndpoints lists endpoints
 -- name: ListEndpoints :many
-SELECT 
+SELECT (
     id,
-    uid,
     url,
     name,
+    application_id,
+    uid,
+    rate_limit,
     metadata,
     disabled,
-    rate_limit,
-    created_at,
-    updated_at,
     description,
-    application_id
+    created_at,
+    updated_at
+)::webhooks.endpoint
 FROM webhooks.endpoint
 ORDER BY uid
 LIMIT pggen.arg('limit')

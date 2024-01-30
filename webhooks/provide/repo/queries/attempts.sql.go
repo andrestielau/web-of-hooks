@@ -6,7 +6,6 @@ import (
 	"context"
 	"fmt"
 	"github.com/jackc/pgconn"
-	"time"
 )
 
 const deleteAttemptsSQL = `DELETE FROM webhooks.message_attempt WHERE uid = ANY($1::UUID[]);`
@@ -21,32 +20,36 @@ func (q *DBQuerier) DeleteAttempts(ctx context.Context, ids []string) (pgconn.Co
 	return cmdTag, err
 }
 
-const getAttemptsSQL = `SELECT 
+const getAttemptsSQL = `SELECT (
     id,
     uid,
-    created_at
+    endpoint_id ,
+    message_id ,
+    created_at,
+    status,
+    response_status,
+    response
+)::webhooks.message_attempt
 FROM webhooks.message_attempt
 WHERE uid = ANY($1::uuid[]);`
 
-type GetAttemptsRow struct {
-	ID        *int32    `json:"id"`
-	Uid       string    `json:"uid"`
-	CreatedAt time.Time `json:"created_at"`
-}
-
 // GetAttempts implements Querier.GetAttempts.
-func (q *DBQuerier) GetAttempts(ctx context.Context, ids []string) ([]GetAttemptsRow, error) {
+func (q *DBQuerier) GetAttempts(ctx context.Context, ids []string) ([]MessageAttempt, error) {
 	ctx = context.WithValue(ctx, "pggen_query_name", "GetAttempts")
 	rows, err := q.conn.Query(ctx, getAttemptsSQL, ids)
 	if err != nil {
 		return nil, fmt.Errorf("query GetAttempts: %w", err)
 	}
 	defer rows.Close()
-	items := []GetAttemptsRow{}
+	items := []MessageAttempt{}
+	rowRow := q.types.newMessageAttempt()
 	for rows.Next() {
-		var item GetAttemptsRow
-		if err := rows.Scan(&item.ID, &item.Uid, &item.CreatedAt); err != nil {
+		var item MessageAttempt
+		if err := rows.Scan(rowRow); err != nil {
 			return nil, fmt.Errorf("scan GetAttempts row: %w", err)
+		}
+		if err := rowRow.AssignTo(&item); err != nil {
+			return nil, fmt.Errorf("assign GetAttempts row: %w", err)
 		}
 		items = append(items, item)
 	}
@@ -56,34 +59,38 @@ func (q *DBQuerier) GetAttempts(ctx context.Context, ids []string) ([]GetAttempt
 	return items, err
 }
 
-const listAttemptsSQL = `SELECT
+const listAttemptsSQL = `SELECT (
     id,
     uid,
-    created_at
+    endpoint_id ,
+    message_id ,
+    created_at,
+    status,
+    response_status,
+    response
+)::webhooks.message_attempt
 FROM webhooks.message_attempt
 ORDER BY uid
 LIMIT $1
 OFFSET $2;`
 
-type ListAttemptsRow struct {
-	ID        *int32    `json:"id"`
-	Uid       string    `json:"uid"`
-	CreatedAt time.Time `json:"created_at"`
-}
-
 // ListAttempts implements Querier.ListAttempts.
-func (q *DBQuerier) ListAttempts(ctx context.Context, limit int, offset int) ([]ListAttemptsRow, error) {
+func (q *DBQuerier) ListAttempts(ctx context.Context, limit int, offset int) ([]MessageAttempt, error) {
 	ctx = context.WithValue(ctx, "pggen_query_name", "ListAttempts")
 	rows, err := q.conn.Query(ctx, listAttemptsSQL, limit, offset)
 	if err != nil {
 		return nil, fmt.Errorf("query ListAttempts: %w", err)
 	}
 	defer rows.Close()
-	items := []ListAttemptsRow{}
+	items := []MessageAttempt{}
+	rowRow := q.types.newMessageAttempt()
 	for rows.Next() {
-		var item ListAttemptsRow
-		if err := rows.Scan(&item.ID, &item.Uid, &item.CreatedAt); err != nil {
+		var item MessageAttempt
+		if err := rows.Scan(rowRow); err != nil {
 			return nil, fmt.Errorf("scan ListAttempts row: %w", err)
+		}
+		if err := rowRow.AssignTo(&item); err != nil {
+			return nil, fmt.Errorf("assign ListAttempts row: %w", err)
 		}
 		items = append(items, item)
 	}

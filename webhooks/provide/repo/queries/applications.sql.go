@@ -6,7 +6,6 @@ import (
 	"context"
 	"fmt"
 	"github.com/jackc/pgconn"
-	"github.com/jackc/pgtype"
 	"time"
 )
 
@@ -23,38 +22,34 @@ SELECT
     u.metadata
 FROM unnest($1::webhooks.new_application[]) u
 ON CONFLICT DO NOTHING
-RETURNING 
+RETURNING (
     id,
     uid,
     name,
     tenant_id,
     rate_limit,
     metadata,
-    created_at;`
-
-type CreateApplicationsRow struct {
-	ID        int32        `json:"id"`
-	Uid       string       `json:"uid"`
-	Name      string       `json:"name"`
-	TenantID  string       `json:"tenant_id"`
-	RateLimit int32        `json:"rate_limit"`
-	Metadata  pgtype.JSONB `json:"metadata"`
-	CreatedAt time.Time    `json:"created_at"`
-}
+    created_at,
+    updated_at
+)::webhooks.application;`
 
 // CreateApplications implements Querier.CreateApplications.
-func (q *DBQuerier) CreateApplications(ctx context.Context, applications []NewApplication) ([]CreateApplicationsRow, error) {
+func (q *DBQuerier) CreateApplications(ctx context.Context, applications []NewApplication) ([]Application, error) {
 	ctx = context.WithValue(ctx, "pggen_query_name", "CreateApplications")
 	rows, err := q.conn.Query(ctx, createApplicationsSQL, q.types.newNewApplicationArrayInit(applications))
 	if err != nil {
 		return nil, fmt.Errorf("query CreateApplications: %w", err)
 	}
 	defer rows.Close()
-	items := []CreateApplicationsRow{}
+	items := []Application{}
+	rowRow := q.types.newApplication()
 	for rows.Next() {
-		var item CreateApplicationsRow
-		if err := rows.Scan(&item.ID, &item.Uid, &item.Name, &item.TenantID, &item.RateLimit, &item.Metadata, &item.CreatedAt); err != nil {
+		var item Application
+		if err := rows.Scan(rowRow); err != nil {
 			return nil, fmt.Errorf("scan CreateApplications row: %w", err)
+		}
+		if err := rowRow.AssignTo(&item); err != nil {
+			return nil, fmt.Errorf("assign CreateApplications row: %w", err)
 		}
 		items = append(items, item)
 	}
@@ -76,7 +71,7 @@ func (q *DBQuerier) DeleteApplications(ctx context.Context, ids []string) (pgcon
 	return cmdTag, err
 }
 
-const getApplicationsSQL = `SELECT 
+const getApplicationsSQL = `SELECT (
     id,
     uid,
     name,
@@ -85,33 +80,27 @@ const getApplicationsSQL = `SELECT
     metadata,
     created_at,
     updated_at
+)::webhooks.application
 FROM webhooks.application
 WHERE uid = ANY($1::uuid[]);`
 
-type GetApplicationsRow struct {
-	ID        *int32       `json:"id"`
-	Uid       string       `json:"uid"`
-	Name      string       `json:"name"`
-	TenantID  string       `json:"tenant_id"`
-	RateLimit *int32       `json:"rate_limit"`
-	Metadata  pgtype.JSONB `json:"metadata"`
-	CreatedAt time.Time    `json:"created_at"`
-	UpdatedAt time.Time    `json:"updated_at"`
-}
-
 // GetApplications implements Querier.GetApplications.
-func (q *DBQuerier) GetApplications(ctx context.Context, ids []string) ([]GetApplicationsRow, error) {
+func (q *DBQuerier) GetApplications(ctx context.Context, ids []string) ([]Application, error) {
 	ctx = context.WithValue(ctx, "pggen_query_name", "GetApplications")
 	rows, err := q.conn.Query(ctx, getApplicationsSQL, ids)
 	if err != nil {
 		return nil, fmt.Errorf("query GetApplications: %w", err)
 	}
 	defer rows.Close()
-	items := []GetApplicationsRow{}
+	items := []Application{}
+	rowRow := q.types.newApplication()
 	for rows.Next() {
-		var item GetApplicationsRow
-		if err := rows.Scan(&item.ID, &item.Uid, &item.Name, &item.TenantID, &item.RateLimit, &item.Metadata, &item.CreatedAt, &item.UpdatedAt); err != nil {
+		var item Application
+		if err := rows.Scan(rowRow); err != nil {
 			return nil, fmt.Errorf("scan GetApplications row: %w", err)
+		}
+		if err := rowRow.AssignTo(&item); err != nil {
+			return nil, fmt.Errorf("assign GetApplications row: %w", err)
 		}
 		items = append(items, item)
 	}
@@ -121,7 +110,7 @@ func (q *DBQuerier) GetApplications(ctx context.Context, ids []string) ([]GetApp
 	return items, err
 }
 
-const listApplicationsSQL = `SELECT
+const listApplicationsSQL = `SELECT (
     id,
     uid,
     name,
@@ -130,35 +119,36 @@ const listApplicationsSQL = `SELECT
     metadata,
     created_at,
     updated_at
+)::webhooks.application
 FROM webhooks.application
+WHERE created_at > $1
 ORDER BY uid
-LIMIT $1
-OFFSET $2;`
+LIMIT $2
+OFFSET $3;`
 
-type ListApplicationsRow struct {
-	ID        *int32       `json:"id"`
-	Uid       string       `json:"uid"`
-	Name      string       `json:"name"`
-	TenantID  string       `json:"tenant_id"`
-	RateLimit *int32       `json:"rate_limit"`
-	Metadata  pgtype.JSONB `json:"metadata"`
-	CreatedAt time.Time    `json:"created_at"`
-	UpdatedAt time.Time    `json:"updated_at"`
+type ListApplicationsParams struct {
+	CreatedAfter time.Time `json:"created_after"`
+	Limit        int       `json:"limit"`
+	Offset       int       `json:"offset"`
 }
 
 // ListApplications implements Querier.ListApplications.
-func (q *DBQuerier) ListApplications(ctx context.Context, limit int, offset int) ([]ListApplicationsRow, error) {
+func (q *DBQuerier) ListApplications(ctx context.Context, params ListApplicationsParams) ([]Application, error) {
 	ctx = context.WithValue(ctx, "pggen_query_name", "ListApplications")
-	rows, err := q.conn.Query(ctx, listApplicationsSQL, limit, offset)
+	rows, err := q.conn.Query(ctx, listApplicationsSQL, params.CreatedAfter, params.Limit, params.Offset)
 	if err != nil {
 		return nil, fmt.Errorf("query ListApplications: %w", err)
 	}
 	defer rows.Close()
-	items := []ListApplicationsRow{}
+	items := []Application{}
+	rowRow := q.types.newApplication()
 	for rows.Next() {
-		var item ListApplicationsRow
-		if err := rows.Scan(&item.ID, &item.Uid, &item.Name, &item.TenantID, &item.RateLimit, &item.Metadata, &item.CreatedAt, &item.UpdatedAt); err != nil {
+		var item Application
+		if err := rows.Scan(rowRow); err != nil {
 			return nil, fmt.Errorf("scan ListApplications row: %w", err)
+		}
+		if err := rowRow.AssignTo(&item); err != nil {
+			return nil, fmt.Errorf("assign ListApplications row: %w", err)
 		}
 		items = append(items, item)
 	}

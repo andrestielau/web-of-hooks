@@ -16,6 +16,7 @@ import (
 	"woh/webhooks/adapt/grpc"
 	handle2 "woh/webhooks/adapt/grpc/handle"
 	"woh/webhooks/adapt/http"
+	"woh/webhooks/adapt/http/convert"
 	"woh/webhooks/adapt/http/handle"
 	"woh/webhooks/adapt/subs"
 	"woh/webhooks/provide/repo"
@@ -29,12 +30,12 @@ func Adapters() actor.Actors {
 	options := pgx.ProvideOptions()
 	provider := repo.New(options)
 	secretsProvider := secrets.New()
-	converters := handle.Convert()
+	converterImpl := _wireConverterImplValue
 	handler := &handle.Handler{
 		Session: sessionManager,
 		Repo:    provider,
 		Secrets: secretsProvider,
-		Convert: converters,
+		Convert: converterImpl,
 	}
 	httpOptions := http.Options{
 		Handler: handler,
@@ -74,3 +75,7 @@ func Adapters() actor.Actors {
 	actors := ChooseAdapters(adapter, grpcAdapter, subsAdapter, cronAdapter)
 	return actors
 }
+
+var (
+	_wireConverterImplValue = &convert.ConverterImpl{}
+)

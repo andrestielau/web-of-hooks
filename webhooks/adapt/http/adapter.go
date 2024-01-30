@@ -4,6 +4,7 @@ import (
 	"woh/package/actor"
 	"woh/package/actor/net/http/server"
 	"woh/webhooks"
+	"woh/webhooks/adapt/http/convert"
 	"woh/webhooks/adapt/http/handle"
 	webhooksv1 "woh/webhooks/adapt/http/v1"
 
@@ -35,9 +36,10 @@ func New(opts Options) *Adapter {
 }
 
 var Set = wire.NewSet(
+	wire.Bind(new(convert.Converter), new(*convert.ConverterImpl)),
 	wire.Struct(new(handle.Handler), "*"),
+	wire.Value(&convert.ConverterImpl{}),
 	wire.Struct(new(Options), "*"),
-	handle.Convert,
 	scs.New,
 	New,
 )
