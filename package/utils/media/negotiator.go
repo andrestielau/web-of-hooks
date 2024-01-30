@@ -28,9 +28,8 @@ func Req(r *http.Request, ret any) (err error) {
 func ShouldRender(r *http.Request) bool { return strings.Contains(r.Header.Get("Accept"), "text/html") }
 func Res(w http.ResponseWriter, ct string, t any) (err error) {
 	switch {
-	case strings.Contains(ct, "json"):
-		err = json.NewEncoder(w).Encode(t)
 	default:
+		err = json.NewEncoder(w).Encode(t)
 	}
 	return
 }
