@@ -239,7 +239,7 @@ func (c *EndpointConverterImpl) NewItem(source v1.NewEndpoint) queries.NewEndpoi
 
 type MessageConverterImpl struct{}
 
-func (c *MessageConverterImpl) Got(source []queries.CreateMessagesRow) []v1.Message {
+func (c *MessageConverterImpl) Created(source []queries.CreateMessagesRow) []v1.Message {
 	var webhooksv1MessageList []v1.Message
 	if source != nil {
 		webhooksv1MessageList = make([]v1.Message, len(source))
