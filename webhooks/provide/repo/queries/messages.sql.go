@@ -8,43 +8,77 @@ import (
 	"github.com/jackc/pgconn"
 )
 
-const createMessagesSQL = `INSERT INTO webhooks.message (
-    application_id,
-    event_type_id,
-    event_id,
-    payload
-) 
-SELECT 
-    a.id,
-    e.id,
-    u.event_id,
-    u.payload
-FROM unnest($1::webhooks.new_message[]) u
-JOIN webhooks.application a ON u.application_id = a.uid
-JOIN webhooks.event_type e ON u.event_type_id = e.uid
-ON CONFLICT DO NOTHING
-RETURNING (
-    id ,
-    application_id ,
-    event_type_id ,
-    uid ,
-    created_at,
-    event_id,
-    payload
-)::webhooks.message;`
+const createMessagesSQL = `WITH new_messages AS (
+    INSERT INTO webhooks.message (
+        application_id,
+        event_type_id,
+        event_id,
+        payload
+    ) SELECT 
+        a.id,
+        e.id,
+        u.event_id,
+        u.payload
+    FROM unnest($1::webhooks.new_message[]) u
+    JOIN webhooks.application a ON u.application_id = a.uid
+    JOIN webhooks.event_type e ON u.event_type_id = e.uid
+    ON CONFLICT DO NOTHING
+    RETURNING 
+        id,
+        application_id,
+        event_type_id,
+        uid,
+        created_at,
+        event_id,
+        payload
+), new_attempts AS (
+    INSERT INTO webhooks.message_attempt (
+        uid,
+        endpoint_id,
+        message_id
+    ) SELECT
+        generate_ulid(),
+        e.id,
+        n.id
+    FROM new_messages n
+    INNER JOIN webhooks.endpoint_filter f 
+        ON f.event_type_id = n.event_type_id
+    INNER JOIN webhooks.endpoint e 
+        ON e.id = f.endpoint_id 
+            AND e.application_id = n.application_id
+    RETURNING 
+        id,
+        uid, 
+        endpoint_id,
+        message_id,
+        created_at,
+        status,
+        response_status,
+        response
+) SELECT ((
+        id,
+        application_id,
+        event_type_id,
+        uid,
+        created_at,
+        event_id,
+        payload
+    )::webhooks.message,
+    (SELECT ARRAY_AGG(a::webhooks.message_attempt) FROM new_attempts a WHERE id = a.message_id)
+)::webhooks.message_details FROM new_messages;`
 
 // CreateMessages implements Querier.CreateMessages.
-func (q *DBQuerier) CreateMessages(ctx context.Context, messages []NewMessage) ([]Message, error) {
+func (q *DBQuerier) CreateMessages(ctx context.Context, messages []NewMessage) ([]MessageDetails, error) {
 	ctx = context.WithValue(ctx, "pggen_query_name", "CreateMessages")
 	rows, err := q.conn.Query(ctx, createMessagesSQL, q.types.newNewMessageArrayInit(messages))
 	if err != nil {
 		return nil, fmt.Errorf("query CreateMessages: %w", err)
 	}
 	defer rows.Close()
-	items := []Message{}
-	rowRow := q.types.newMessage()
+	items := []MessageDetails{}
+	rowRow := q.types.newMessageDetails()
 	for rows.Next() {
-		var item Message
+		var item MessageDetails
 		if err := rows.Scan(rowRow); err != nil {
 			return nil, fmt.Errorf("scan CreateMessages row: %w", err)
 		}
@@ -71,30 +105,31 @@ func (q *DBQuerier) DeleteMessages(ctx context.Context, ids []string) (pgconn.Co
 	return cmdTag, err
 }
 
-const getMessagesSQL = `SELECT (
-    id ,
-    application_id ,
-    event_type_id ,
-    uid ,
-    created_at,
-    event_id,
-    payload
-)::webhooks.message
-FROM webhooks.message
+const getMessagesSQL = `SELECT ((
+        id,
+        application_id,
+        event_type_id,
+        uid,
+        created_at,
+        event_id,
+        payload
+    )::webhooks.message,
+    (SELECT ARRAY_AGG(a::webhooks.message_attempt) FROM webhooks.message_attempt a WHERE id = a.message_id)
+)::webhooks.message_details FROM webhooks.message
 WHERE uid = ANY($1::uuid[]);`
 
 // GetMessages implements Querier.GetMessages.
-func (q *DBQuerier) GetMessages(ctx context.Context, ids []string) ([]Message, error) {
+func (q *DBQuerier) GetMessages(ctx context.Context, ids []string) ([]MessageDetails, error) {
 	ctx = context.WithValue(ctx, "pggen_query_name", "GetMessages")
 	rows, err := q.conn.Query(ctx, getMessagesSQL, ids)
 	if err != nil {
 		return nil, fmt.Errorf("query GetMessages: %w", err)
 	}
 	defer rows.Close()
-	items := []Message{}
-	rowRow := q.types.newMessage()
+	items := []MessageDetails{}
+	rowRow := q.types.newMessageDetails()
 	for rows.Next() {
-		var item Message
+		var item MessageDetails
 		if err := rows.Scan(rowRow); err != nil {
 			return nil, fmt.Errorf("scan GetMessages row: %w", err)
 		}

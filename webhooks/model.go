@@ -46,9 +46,9 @@ type Repository interface {
 	DeleteEventTypes(context.Context, []string) error
 	GetEventTypes(context.Context, []string) ([]EventType, error)
 	ListEventTypes(context.Context, EventTypeQuery) ([]EventType, error)
-	CreateMessages(context.Context, []NewMessage) ([]Message, error)
+	CreateMessages(context.Context, []NewMessage) ([]MessageDetails, error)
 	DeleteMessages(context.Context, []string) error
-	GetMessages(context.Context, []string) ([]Message, error)
+	GetMessages(context.Context, []string) ([]MessageDetails, error)
 	ListMessages(context.Context, MessageQuery) ([]Message, error)
 	CreateSecrets(context.Context, []NewSecret) ([]Secret, error)
 	GetSecrets(context.Context, []string) ([]Secret, error)
@@ -138,6 +138,10 @@ type Message struct {
 	EventID       string
 	Payload       string
 	CreatedAt     time.Time
+}
+type MessageDetails struct {
+	Message
+	Attempts []Attempt
 }
 type NewAttempt struct {
 	ID        *int32

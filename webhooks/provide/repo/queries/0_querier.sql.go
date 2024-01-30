@@ -61,13 +61,13 @@ type Querier interface {
 	ListEventTypes(ctx context.Context, params ListEventTypesParams) ([]EventType, error)
 
 	// CreateMessages inserts messages into the database
-	CreateMessages(ctx context.Context, messages []NewMessage) ([]Message, error)
+	CreateMessages(ctx context.Context, messages []NewMessage) ([]MessageDetails, error)
 
 	// DeleteMessages deletes messages by uid
 	DeleteMessages(ctx context.Context, ids []string) (pgconn.CommandTag, error)
 
 	// GetMessages gets messages by id
-	GetMessages(ctx context.Context, ids []string) ([]Message, error)
+	GetMessages(ctx context.Context, ids []string) ([]MessageDetails, error)
 
 	// ListMessages lists event-types
 	ListMessages(ctx context.Context, params ListMessagesParams) ([]Message, error)
@@ -160,6 +160,12 @@ type MessageAttempt struct {
 	Status         *int32    `json:"status"`
 	ResponseStatus *int32    `json:"response_status"`
 	Response       string    `json:"response"`
+}
+
+// MessageDetails represents the Postgres composite type "message_details".
+type MessageDetails struct {
+	Message  Message          `json:"message"`
+	Attempts []MessageAttempt `json:"attempts"`
 }
 
 // NewApplication represents the Postgres composite type "new_application".
@@ -353,6 +359,16 @@ func (tr *typeResolver) newMessageAttempt() pgtype.ValueTranscoder {
 	)
 }
 
+// newMessageDetails creates a new pgtype.ValueTranscoder for the Postgres
+// composite type 'message_details'.
+func (tr *typeResolver) newMessageDetails() pgtype.ValueTranscoder {
+	return tr.newCompositeValue(
+		"message_details",
+		compositeField{name: "message", typeName: "message", defaultVal: tr.newMessage()},
+		compositeField{name: "attempts", typeName: "_message_attempt", defaultVal: tr.newMessageAttemptArray()},
+	)
+}
+
 // newMessage creates a new pgtype.ValueTranscoder for the Postgres
 // composite type 'message'.
 func (tr *typeResolver) newMessage() pgtype.ValueTranscoder {
@@ -493,6 +509,12 @@ func (tr *typeResolver) newSecret() pgtype.ValueTranscoder {
 		compositeField{name: "tenant_id", typeName: "text", defaultVal: &pgtype.Text{}},
 		compositeField{name: "value", typeName: "text", defaultVal: &pgtype.Text{}},
 	)
+}
+
+// newMessageAttemptArray creates a new pgtype.ValueTranscoder for the Postgres
+// '_message_attempt' array type.
+func (tr *typeResolver) newMessageAttemptArray() pgtype.ValueTranscoder {
+	return tr.newArrayValue("_message_attempt", "message_attempt", tr.newMessageAttempt)
 }
 
 // newNewApplicationArray creates a new pgtype.ValueTranscoder for the Postgres

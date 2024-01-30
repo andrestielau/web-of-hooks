@@ -119,12 +119,12 @@ func (r *Repository) ListEventTypes(ctx context.Context, query webhooks.EventTyp
 	return r.Convert.EventTypes(res), nil
 }
 
-func (r *Repository) CreateMessages(ctx context.Context, messages []webhooks.NewMessage) ([]webhooks.Message, error) {
+func (r *Repository) CreateMessages(ctx context.Context, messages []webhooks.NewMessage) ([]webhooks.MessageDetails, error) {
 	res, err := r.Querier.CreateMessages(ctx, r.Convert.NewMessages(messages))
 	if err != nil {
 		return nil, err
 	}
-	return r.Convert.Messages(res), nil
+	return r.Convert.MessageDetails(res), nil
 }
 
 func (r *Repository) DeleteMessages(ctx context.Context, ids []string) error {
@@ -132,12 +132,12 @@ func (r *Repository) DeleteMessages(ctx context.Context, ids []string) error {
 	return err
 }
 
-func (r *Repository) GetMessages(ctx context.Context, ids []string) ([]webhooks.Message, error) {
+func (r *Repository) GetMessages(ctx context.Context, ids []string) ([]webhooks.MessageDetails, error) {
 	res, err := r.Querier.GetMessages(ctx, ids)
 	if err != nil {
 		return nil, err
 	}
-	return r.Convert.Messages(res), nil
+	return r.Convert.MessageDetails(res), nil
 }
 func (r *Repository) ListMessages(ctx context.Context, query webhooks.MessageQuery) ([]webhooks.Message, error) {
 	res, err := r.Querier.ListMessages(ctx, r.Convert.MessageQuery(query))

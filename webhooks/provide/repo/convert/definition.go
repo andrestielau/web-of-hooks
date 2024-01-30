@@ -46,6 +46,8 @@ type Converter interface {
 	NewMessage(webhooks.NewMessage) queries.NewMessage
 	NewMessages([]webhooks.NewMessage) []queries.NewMessage
 	MessageQuery(webhooks.MessageQuery) queries.ListMessagesParams
+	MessageDetail(queries.MessageDetails) webhooks.MessageDetails
+	MessageDetails([]queries.MessageDetails) []webhooks.MessageDetails
 
 	// goverter:ignore CreatedAt
 	Attempt(queries.MessageAttempt) webhooks.Attempt
