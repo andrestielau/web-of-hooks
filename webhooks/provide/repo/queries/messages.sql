@@ -56,6 +56,7 @@ SELECT (
     payload
 )::webhooks.message
 FROM webhooks.message
+WHERE uid > pggen.arg('after')
 ORDER BY uid
 LIMIT pggen.arg('limit')
 OFFSET pggen.arg('offset');

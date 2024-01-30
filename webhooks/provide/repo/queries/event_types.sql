@@ -39,6 +39,7 @@ SELECT (
     created_at
 ):: webhooks.event_type
 FROM webhooks.event_type
+WHERE uid > pggen.arg('after')
 ORDER BY uid
 LIMIT pggen.arg('limit')
 OFFSET pggen.arg('offset');

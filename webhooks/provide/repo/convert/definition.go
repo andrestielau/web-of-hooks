@@ -11,42 +11,46 @@ import (
 // goverter:output:file ./generated.go
 // goverter:output:package github.com/andrestielau/web-of-hooks/webhooks/provide/repo/convert
 type Converter interface {
-	EventTypes([]queries.Application) []webhooks.EventType
 	// goverter:ignore Key
-	EventType(queries.Application) webhooks.EventType
-	NewEventTypes([]webhooks.NewEventType) []queries.NewEventType
+	EventType(queries.EventType) webhooks.EventType
+	EventTypes([]queries.EventType) []webhooks.EventType
 	NewEventType(webhooks.NewEventType) queries.NewEventType
+	NewEventTypes([]webhooks.NewEventType) []queries.NewEventType
+	EventTypeQuery(webhooks.EventTypeQuery) queries.ListEventTypesParams
 
-	Applications([]queries.Application) []webhooks.Application
 	// goverter:ignore Metadata CreatedAt UpdatedAt
 	Application(queries.Application) webhooks.Application
-	NewApplications([]webhooks.NewApplication) []queries.NewApplication
+	Applications([]queries.Application) []webhooks.Application
 	// goverter:ignore Metadata
 	NewApplication(webhooks.NewApplication) queries.NewApplication
+	NewApplications([]webhooks.NewApplication) []queries.NewApplication
+	ApplicationQuery(webhooks.ApplicationQuery) queries.ListApplicationsParams
 
-	Endpoints([]queries.Endpoint) []webhooks.Endpoint
 	// goverter:ignore Metadata UpdatedAt CreatedAt Disabled
 	Endpoint(queries.Endpoint) webhooks.Endpoint
-	NewEndpoints([]webhooks.NewEndpoint) []queries.NewEndpoint
+	Endpoints([]queries.Endpoint) []webhooks.Endpoint
 	// goverter:ignore Metadata
 	NewEndpoint(webhooks.NewEndpoint) queries.NewEndpoint
+	NewEndpoints([]webhooks.NewEndpoint) []queries.NewEndpoint
+	EndpointQuery(webhooks.EndpointQuery) queries.ListEndpointsParams
 
-	Secrets([]queries.Secret) []webhooks.Secret
 	Secret(queries.Secret) webhooks.Secret
-	NewSecrets([]webhooks.NewSecret) []queries.NewSecret
+	Secrets([]queries.Secret) []webhooks.Secret
 	NewSecret(webhooks.NewSecret) queries.NewSecret
+	NewSecrets([]webhooks.NewSecret) []queries.NewSecret
+	SecretQuery(webhooks.SecretQuery) queries.ListSecretsParams
 
-	Messages([]queries.Message) []webhooks.Message
 	// goverter:ignore CreatedAt
 	Message(queries.Message) webhooks.Message
-	NewMessages([]webhooks.NewMessage) []queries.NewMessage
+	Messages([]queries.Message) []webhooks.Message
 	NewMessage(webhooks.NewMessage) queries.NewMessage
+	NewMessages([]webhooks.NewMessage) []queries.NewMessage
+	MessageQuery(webhooks.MessageQuery) queries.ListMessagesParams
 
 	// goverter:ignore CreatedAt
 	Attempt(queries.MessageAttempt) webhooks.Attempt
 	Attempts([]queries.MessageAttempt) []webhooks.Attempt
-	//NewAttempts([]webhooks.NewAttempt) []queries.NewMessageAttempt
-	//NewAttempt(webhooks.NewAttempt) queries.NewMessageAttempt
+	AttemptQuery(webhooks.AttemptQuery) queries.ListAttemptsParams
 }
 
 func ConvertTime(t time.Time) time.Time { return t }

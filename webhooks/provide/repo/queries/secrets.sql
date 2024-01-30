@@ -40,6 +40,7 @@ SELECT (
     value
 )::webhooks.secret
 FROM webhooks.secret
+WHERE uid > pggen.arg('after')
 ORDER BY uid
 LIMIT pggen.arg('limit')
 OFFSET pggen.arg('offset');

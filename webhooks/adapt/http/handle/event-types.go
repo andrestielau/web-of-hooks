@@ -15,7 +15,7 @@ func (h *Handler) ListChannels(w http.ResponseWriter, r *http.Request, params we
 // ListEventTypes implements webhooksv1.ServerInterface.
 func (h *Handler) ListEventTypes(w http.ResponseWriter, r *http.Request, params webhooksv1.ListEventTypesParams) {
 	//	h.Repo.CreateEventTypes(r.Context(), []queries.NewEventType{{"test-" + uuid.NewString()}}) uncomment to test types
-	eventTypes, err := h.Repo.ListEventTypes(r.Context(), 100, 0)
+	eventTypes, err := h.Repo.ListEventTypes(r.Context(), h.Convert.EventTypeQuery(params))
 	if media.ShouldRender(r) {
 		page.EventTypes(page.EventTypesViewModel{
 			Data: nil,

@@ -58,7 +58,7 @@ SELECT (
     updated_at
 )::webhooks.application
 FROM webhooks.application
-WHERE created_at > pggen.arg('created_after')
-ORDER BY uid
+WHERE created_at > pggen.arg('created_after') 
+ORDER BY created_at
 LIMIT pggen.arg('limit')
 OFFSET pggen.arg('offset');

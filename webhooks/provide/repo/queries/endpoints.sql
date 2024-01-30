@@ -71,6 +71,7 @@ SELECT (
     updated_at
 )::webhooks.endpoint
 FROM webhooks.endpoint
+WHERE uid > pggen.arg('after') 
 ORDER BY uid
 LIMIT pggen.arg('limit')
 OFFSET pggen.arg('offset');

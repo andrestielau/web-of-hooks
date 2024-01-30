@@ -34,30 +34,35 @@ type Repository interface {
 	CreateApplications(context.Context, []NewApplication) ([]Application, error)
 	DeleteApplications(context.Context, []string) error
 	GetApplications(context.Context, []string) ([]Application, error)
-	ListApplications(context.Context, int, int) ([]Application, error)
+	ListApplications(context.Context, ApplicationQuery) ([]Application, error)
 	DeleteAttempts(context.Context, []string) error
 	GetAttempts(context.Context, []string) ([]Attempt, error)
-	ListAttempts(context.Context,  int,  int) ([]Attempt, error)
+	ListAttempts(context.Context, AttemptQuery) ([]Attempt, error)
 	CreateEndpoints(context.Context, []NewEndpoint) ([]Endpoint, error)
 	DeleteEndpoints(context.Context, []string) error
 	GetEndpoints(context.Context, []string) ([]Endpoint, error)
-	ListEndpoints(context.Context,  int,  int) ([]Endpoint, error)
+	ListEndpoints(context.Context, EndpointQuery) ([]Endpoint, error)
 	CreateEventTypes(context.Context, []NewEventType) ([]EventType, error)
 	DeleteEventTypes(context.Context, []string) error
 	GetEventTypes(context.Context, []string) ([]EventType, error)
-	ListEventTypes(context.Context,  int,  int) ([]EventType, error)
+	ListEventTypes(context.Context, EventTypeQuery) ([]EventType, error)
 	CreateMessages(context.Context, []NewMessage) ([]Message, error)
 	DeleteMessages(context.Context, []string) error
 	GetMessages(context.Context, []string) ([]Message, error)
-	ListMessages(context.Context,  int,  int) ([]Message, error)
+	ListMessages(context.Context, MessageQuery) ([]Message, error)
 	CreateSecrets(context.Context, []NewSecret) ([]Secret, error)
 	GetSecrets(context.Context, []string) ([]Secret, error)
 	DeleteSecrets(context.Context, []string) error
-	ListSecrets(context.Context, int, int) ([]Secret, error)
+	ListSecrets(context.Context, SecretQuery) ([]Secret, error)
 }
 
 type NewEventType struct {
 	Key string
+}
+type EventTypeQuery struct {
+	Limit  int
+	Offset int
+	After  string
 }
 
 type EventType struct {
@@ -70,6 +75,11 @@ type NewApplication struct {
 	TenantID  string
 	RateLimit *int32
 	Metadata  string
+}
+type ApplicationQuery struct {
+	Limit        int
+	Offset       int
+	CreatedAfter time.Time
 }
 type Application struct {
 	ID        *int32
@@ -91,6 +101,11 @@ type NewEndpoint struct {
 	FilterTypes   []string
 	Channels      []string
 }
+type EndpointQuery struct {
+	Limit  int
+	Offset int
+	After  string
+}
 type Endpoint struct {
 	ID            *int32
 	Uid           string
@@ -110,6 +125,11 @@ type NewMessage struct {
 	EventID       string
 	Payload       string
 }
+type MessageQuery struct {
+	Limit  int
+	Offset int
+	After  string
+}
 type Message struct {
 	ID            *int32
 	Uid           string
@@ -124,6 +144,11 @@ type NewAttempt struct {
 	Uid       string
 	CreatedAt time.Time
 }
+type AttemptQuery struct {
+	Limit  int
+	Offset int
+	After  string
+}
 type Attempt struct {
 	ID        *int32
 	Uid       string
@@ -132,6 +157,11 @@ type Attempt struct {
 type NewSecret struct {
 	TenantID string
 	ID       string
+}
+type SecretQuery struct {
+	Limit  int
+	Offset int
+	After  string
 }
 type Secret struct {
 	ID  *int32

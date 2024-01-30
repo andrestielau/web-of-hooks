@@ -70,14 +70,21 @@ const listAttemptsSQL = `SELECT (
     response
 )::webhooks.message_attempt
 FROM webhooks.message_attempt
+WHERE uid > $1 
 ORDER BY uid
-LIMIT $1
-OFFSET $2;`
+LIMIT $2
+OFFSET $3;`
+
+type ListAttemptsParams struct {
+	After  string `json:"after"`
+	Limit  int    `json:"limit"`
+	Offset int    `json:"offset"`
+}
 
 // ListAttempts implements Querier.ListAttempts.
-func (q *DBQuerier) ListAttempts(ctx context.Context, limit int, offset int) ([]MessageAttempt, error) {
+func (q *DBQuerier) ListAttempts(ctx context.Context, params ListAttemptsParams) ([]MessageAttempt, error) {
 	ctx = context.WithValue(ctx, "pggen_query_name", "ListAttempts")
-	rows, err := q.conn.Query(ctx, listAttemptsSQL, limit, offset)
+	rows, err := q.conn.Query(ctx, listAttemptsSQL, params.After, params.Limit, params.Offset)
 	if err != nil {
 		return nil, fmt.Errorf("query ListAttempts: %w", err)
 	}

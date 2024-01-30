@@ -33,6 +33,7 @@ SELECT (
     response
 )::webhooks.message_attempt
 FROM webhooks.message_attempt
+WHERE uid > pggen.arg('after') 
 ORDER BY uid
 LIMIT pggen.arg('limit')
 OFFSET pggen.arg('offset');

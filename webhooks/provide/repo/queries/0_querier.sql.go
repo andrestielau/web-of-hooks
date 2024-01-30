@@ -34,7 +34,7 @@ type Querier interface {
 	GetAttempts(ctx context.Context, ids []string) ([]MessageAttempt, error)
 
 	// ListAttempts lists message attempts
-	ListAttempts(ctx context.Context, limit int, offset int) ([]MessageAttempt, error)
+	ListAttempts(ctx context.Context, params ListAttemptsParams) ([]MessageAttempt, error)
 
 	// CreateEndpoints inserts endpoints into the database
 	CreateEndpoints(ctx context.Context, endpoints []NewEndpoint) ([]Endpoint, error)
@@ -46,7 +46,7 @@ type Querier interface {
 	GetEndpoints(ctx context.Context, ids []string) ([]Endpoint, error)
 
 	// ListEndpoints lists endpoints
-	ListEndpoints(ctx context.Context, limit int, offset int) ([]Endpoint, error)
+	ListEndpoints(ctx context.Context, params ListEndpointsParams) ([]Endpoint, error)
 
 	// CreateEventTypes inserts event types into the database
 	CreateEventTypes(ctx context.Context, eventTypes []NewEventType) ([]EventType, error)
@@ -58,7 +58,7 @@ type Querier interface {
 	GetEventTypes(ctx context.Context, ids []string) ([]EventType, error)
 
 	// ListEventTypes lists event-types
-	ListEventTypes(ctx context.Context, limit int, offset int) ([]EventType, error)
+	ListEventTypes(ctx context.Context, params ListEventTypesParams) ([]EventType, error)
 
 	// CreateMessages inserts messages into the database
 	CreateMessages(ctx context.Context, messages []NewMessage) ([]Message, error)
@@ -70,7 +70,7 @@ type Querier interface {
 	GetMessages(ctx context.Context, ids []string) ([]Message, error)
 
 	// ListMessages lists event-types
-	ListMessages(ctx context.Context, limit int, offset int) ([]Message, error)
+	ListMessages(ctx context.Context, params ListMessagesParams) ([]Message, error)
 
 	// CreateSecrets creates secrets
 	CreateSecrets(ctx context.Context, secrets []NewSecret) ([]Secret, error)
@@ -82,7 +82,7 @@ type Querier interface {
 	DeleteSecrets(ctx context.Context, ids []string) (pgconn.CommandTag, error)
 
 	// ListSecrets lists secrets
-	ListSecrets(ctx context.Context, limit int, offset int) ([]Secret, error)
+	ListSecrets(ctx context.Context, params ListSecretsParams) ([]Secret, error)
 }
 
 var _ Querier = &DBQuerier{}

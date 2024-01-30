@@ -119,14 +119,21 @@ const listMessagesSQL = `SELECT (
     payload
 )::webhooks.message
 FROM webhooks.message
+WHERE uid > $1
 ORDER BY uid
-LIMIT $1
-OFFSET $2;`
+LIMIT $2
+OFFSET $3;`
+
+type ListMessagesParams struct {
+	After  string `json:"after"`
+	Limit  int    `json:"limit"`
+	Offset int    `json:"offset"`
+}
 
 // ListMessages implements Querier.ListMessages.
-func (q *DBQuerier) ListMessages(ctx context.Context, limit int, offset int) ([]Message, error) {
+func (q *DBQuerier) ListMessages(ctx context.Context, params ListMessagesParams) ([]Message, error) {
 	ctx = context.WithValue(ctx, "pggen_query_name", "ListMessages")
-	rows, err := q.conn.Query(ctx, listMessagesSQL, limit, offset)
+	rows, err := q.conn.Query(ctx, listMessagesSQL, params.After, params.Limit, params.Offset)
 	if err != nil {
 		return nil, fmt.Errorf("query ListMessages: %w", err)
 	}

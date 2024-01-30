@@ -61,7 +61,7 @@ func (h *Handler) GetApplication(w http.ResponseWriter, r *http.Request, applica
 
 // ListApplications implements webhooksv1.ServerInterface.
 func (h *Handler) ListApplications(w http.ResponseWriter, r *http.Request, params webhooksv1.ListApplicationsParams) {
-	if res, err := h.Repo.ListApplications(r.Context(), 100, 0); err != nil {
+	if res, err := h.Repo.ListApplications(r.Context(), h.Convert.ApplicationQuery(params)); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	} else if media.ShouldRender(r) {
 		applications.Applications(applications.ApplicationsViewModel{

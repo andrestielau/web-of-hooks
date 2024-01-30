@@ -104,14 +104,21 @@ const listSecretsSQL = `SELECT (
     value
 )::webhooks.secret
 FROM webhooks.secret
+WHERE uid > $1
 ORDER BY uid
-LIMIT $1
-OFFSET $2;`
+LIMIT $2
+OFFSET $3;`
+
+type ListSecretsParams struct {
+	After  string `json:"after"`
+	Limit  int    `json:"limit"`
+	Offset int    `json:"offset"`
+}
 
 // ListSecrets implements Querier.ListSecrets.
-func (q *DBQuerier) ListSecrets(ctx context.Context, limit int, offset int) ([]Secret, error) {
+func (q *DBQuerier) ListSecrets(ctx context.Context, params ListSecretsParams) ([]Secret, error) {
 	ctx = context.WithValue(ctx, "pggen_query_name", "ListSecrets")
-	rows, err := q.conn.Query(ctx, listSecretsSQL, limit, offset)
+	rows, err := q.conn.Query(ctx, listSecretsSQL, params.After, params.Limit, params.Offset)
 	if err != nil {
 		return nil, fmt.Errorf("query ListSecrets: %w", err)
 	}

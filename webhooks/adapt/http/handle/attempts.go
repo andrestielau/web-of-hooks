@@ -55,7 +55,7 @@ func (h *Handler) GetAttempt(w http.ResponseWriter, r *http.Request, attemptId s
 
 // ListAttempts implements webhooksv1.ServerInterface.
 func (h *Handler) ListAttempts(w http.ResponseWriter, r *http.Request, params webhooksv1.ListAttemptsParams) {
-	if res, err := h.Repo.ListMessages(r.Context(), 100, 0); err != nil {
+	if res, err := h.Repo.ListAttempts(r.Context(), h.Convert.AttemptQuery(params)); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	} else if media.ShouldRender(r) {
 		messages.Messages(messages.MessagesViewModel{}).Render(r.Context(), w)

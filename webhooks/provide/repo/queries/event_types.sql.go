@@ -102,14 +102,21 @@ const listEventTypesSQL = `SELECT (
     created_at
 ):: webhooks.event_type
 FROM webhooks.event_type
+WHERE uid > $1
 ORDER BY uid
-LIMIT $1
-OFFSET $2;`
+LIMIT $2
+OFFSET $3;`
+
+type ListEventTypesParams struct {
+	After  string `json:"after"`
+	Limit  int    `json:"limit"`
+	Offset int    `json:"offset"`
+}
 
 // ListEventTypes implements Querier.ListEventTypes.
-func (q *DBQuerier) ListEventTypes(ctx context.Context, limit int, offset int) ([]EventType, error) {
+func (q *DBQuerier) ListEventTypes(ctx context.Context, params ListEventTypesParams) ([]EventType, error) {
 	ctx = context.WithValue(ctx, "pggen_query_name", "ListEventTypes")
-	rows, err := q.conn.Query(ctx, listEventTypesSQL, limit, offset)
+	rows, err := q.conn.Query(ctx, listEventTypesSQL, params.After, params.Limit, params.Offset)
 	if err != nil {
 		return nil, fmt.Errorf("query ListEventTypes: %w", err)
 	}

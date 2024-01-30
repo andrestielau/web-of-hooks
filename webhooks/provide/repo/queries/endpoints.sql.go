@@ -134,14 +134,21 @@ const listEndpointsSQL = `SELECT (
     updated_at
 )::webhooks.endpoint
 FROM webhooks.endpoint
+WHERE uid > $1 
 ORDER BY uid
-LIMIT $1
-OFFSET $2;`
+LIMIT $2
+OFFSET $3;`
+
+type ListEndpointsParams struct {
+	After  string `json:"after"`
+	Limit  int    `json:"limit"`
+	Offset int    `json:"offset"`
+}
 
 // ListEndpoints implements Querier.ListEndpoints.
-func (q *DBQuerier) ListEndpoints(ctx context.Context, limit int, offset int) ([]Endpoint, error) {
+func (q *DBQuerier) ListEndpoints(ctx context.Context, params ListEndpointsParams) ([]Endpoint, error) {
 	ctx = context.WithValue(ctx, "pggen_query_name", "ListEndpoints")
-	rows, err := q.conn.Query(ctx, listEndpointsSQL, limit, offset)
+	rows, err := q.conn.Query(ctx, listEndpointsSQL, params.After, params.Limit, params.Offset)
 	if err != nil {
 		return nil, fmt.Errorf("query ListEndpoints: %w", err)
 	}

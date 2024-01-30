@@ -121,8 +121,8 @@ const listApplicationsSQL = `SELECT (
     updated_at
 )::webhooks.application
 FROM webhooks.application
-WHERE created_at > $1
-ORDER BY uid
+WHERE created_at > $1 
+ORDER BY created_at
 LIMIT $2
 OFFSET $3;`
 
