@@ -5,11 +5,13 @@ import (
 	"strings"
 	"time"
 
-	"woh/package/utils"
+	"woh/package/utils/media"
 	"woh/webhooks"
 	webhooksv1 "woh/webhooks/adapt/http/v1"
 	"woh/webhooks/render/page"
 	"woh/webhooks/render/style/theme"
+
+	"woh/webhooks/adapt/http/convert"
 
 	"github.com/alexedwards/scs/v2"
 )
@@ -18,6 +20,22 @@ type Handler struct {
 	Session *scs.SessionManager
 	Repo    webhooks.Repository
 	Secrets webhooks.Secrets
+	Convert Converters
+}
+type Converters struct {
+	Application *convert.ApplicationConverterImpl
+	Endpoint    *convert.EndpointConverterImpl
+	Secret      *convert.SecretConverterImpl
+	Message     *convert.MessageConverterImpl
+}
+
+func Convert() Converters {
+	return Converters{
+		Application: &convert.ApplicationConverterImpl{},
+		Endpoint:    &convert.EndpointConverterImpl{},
+		Secret:      &convert.SecretConverterImpl{},
+		Message:     &convert.MessageConverterImpl{},
+	}
 }
 
 var _ webhooksv1.ServerInterface = &Handler{}
@@ -38,5 +56,5 @@ func (h *Handler) GetHealth(w http.ResponseWriter, r *http.Request) {
 		page.Health(status, start.String()).Render(theme.Set(r.Context(), t), w)
 		return
 	}
-	utils.JsonRes(w, map[string]any{"status": status, "since": start})
+	media.Res(w, media.Accept(r), map[string]any{"status": status, "since": start})
 }

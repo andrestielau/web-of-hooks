@@ -72,7 +72,7 @@ paths:
       responses:
         '200':
           $ref: '#/components/responses/ApplicationList'
-      operationId: get-applications
+      operationId: list-applications
       parameters:
         - $ref: '#/components/parameters/limit'
         - $ref: '#/components/parameters/cursor'
@@ -83,7 +83,7 @@ paths:
       operationId: create-applications
       responses:
         '200':
-          $ref: '#/components/responses/ErrorList'
+          $ref: '#/components/responses/CreatedApplications'
       requestBody:
         $ref: '#/components/requestBodies/CreateApplicationsPayload'
       tags:
@@ -130,21 +130,21 @@ paths:
     patch:
       summary: Update Application
       operationId: update-application
-      responses:
-        '200':
-          $ref: '#/components/responses/Error'
       parameters:
         - $ref: '#/components/parameters/force'
       description: Update Application
       tags:
         - applications
+      responses:
+        '202':
+          description: Accepted
   '/applications/{applicationId}/stats':
     get:
       summary: Application Statistics
       responses:
         '200':
           $ref: '#/components/responses/StatisticsOut'
-      operationId: get-stats
+      operationId: get-application-stats
       description: Get Overall Statistics for your application's endpoints
       tags:
         - applications
@@ -164,8 +164,21 @@ paths:
       description: Get the secret
       tags:
         - applications
+        - secrets
     parameters:
       - $ref: '#/components/parameters/applicationId'
+    post:
+      summary: Create Secrets
+      operationId: create-secrets
+      responses:
+        '200':
+          $ref: '#/components/responses/CreatedSecrets'
+      description: Create Secrets
+      requestBody:
+        $ref: '#/components/requestBodies/CreateSecretsPayload'
+      tags:
+        - applications
+        - secrets
   '/applications/{applicationId}/endpoints':
     get:
       summary: List Endpoints
@@ -186,7 +199,7 @@ paths:
       operationId: create-endpoints
       responses:
         '201':
-          $ref: '#/components/responses/ErrorList'
+          $ref: '#/components/responses/CreatedEndpoints'
       description: 'Register the Endpoints you want to receive webhooks at. '
       tags:
         - endpoints
@@ -227,7 +240,7 @@ paths:
       operationId: create-messages
       responses:
         '202':
-          $ref: '#/components/responses/ErrorList'
+          $ref: '#/components/responses/CreatedMessages'
       parameters:
         - $ref: '#/components/parameters/force'
       description: Send or Resend Messages
@@ -255,8 +268,6 @@ paths:
       - $ref: '#/components/parameters/secretId'
     get:
       summary: Get Secret
-      tags:
-        - utils
       operationId: get-secret
       description: Get Secret
       responses:
@@ -266,12 +277,11 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Secret'
+      tags:
+        - secrets
     post:
       summary: Rotate Secret
       operationId: rotate-secret
-      responses:
-        '200':
-          $ref: '#/components/responses/Error'
       requestBody:
         content:
           application/json:
@@ -279,7 +289,14 @@ paths:
               $ref: '#/components/schemas/NewSecret'
       description: Update secret.
       tags:
-        - utils
+        - secrets
+      responses:
+        '202':
+          description: Accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Secret'
   '/endpoints/{endpointId}':
     parameters:
       - name: endpointId
@@ -315,8 +332,8 @@ paths:
       summary: Update Endpoint Configuration
       operationId: update-endpoint
       responses:
-        '204':
-          $ref: '#/components/responses/Error'
+        '202':
+          description: No Content
       description: Update the configurations for your Endpoint
       tags:
         - endpoints
@@ -358,7 +375,7 @@ paths:
       operationId: create-endpoint-attempts
       responses:
         '202':
-          $ref: '#/components/responses/ErrorList'
+          $ref: '#/components/responses/CreatedAttempts'
       parameters:
         - $ref: '#/components/parameters/force'
       description: Send or Retry Endpoint Message Attempts
@@ -411,8 +428,12 @@ paths:
             schema:
               $ref: '#/components/schemas/NewMessage'
       responses:
-        '200':
-          $ref: '#/components/responses/Error'
+        '202':
+          description: Accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
     delete:
       summary: Expire or Delete Message
       description: Expire or Delete Message
@@ -447,7 +468,7 @@ paths:
       description: Send or Retry Message's Attempts
       responses:
         '202':
-          $ref: '#/components/responses/ErrorList'
+          $ref: '#/components/responses/CreatedAttempts'
       parameters:
         - $ref: '#/components/parameters/force'
       requestBody:
@@ -488,7 +509,7 @@ paths:
       operationId: create-attempts
       responses:
         '202':
-          $ref: '#/components/responses/ErrorList'
+          $ref: '#/components/responses/CreatedAttempts'
       parameters:
         - $ref: '#/components/parameters/force'
       description: Send or Retry Message Attempts
@@ -526,9 +547,6 @@ paths:
     post:
       summary: Send or Retry Message Attempt
       operationId: create-attempt
-      responses:
-        '202':
-          $ref: '#/components/responses/Error'
       parameters:
         - $ref: '#/components/parameters/force'
       requestBody:
@@ -539,6 +557,13 @@ paths:
       tags:
         - attempts
       description: Send or Retry Message Attempt
+      responses:
+        '202':
+          description: Accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Attempt'
     delete:
       summary: Expire or Delete Message Attempt
       operationId: delete-attempt
@@ -592,6 +617,7 @@ components:
       x-stoplight:
         id: 9dn0k20qxfpcu
       type: object
+      examples: []
       properties:
         id:
           type: string
@@ -599,7 +625,7 @@ components:
           type: string
         rateLimit:
           type: integer
-      examples: []
+          format: int32
     Application:
       type: object
       x-examples:
@@ -614,10 +640,12 @@ components:
           type: string
         rateLimit:
           type: integer
+          format: int32
         createdAt:
           type: string
       required:
         - id
+        - createdAt
     NewSecret:
       title: NewSecret
       x-stoplight:
@@ -673,6 +701,7 @@ components:
           type: string
         rateLimit:
           type: integer
+          format: int32
         secret:
           type: string
         filterTypes:
@@ -712,6 +741,7 @@ components:
           type: string
         rateLimit:
           type: integer
+          format: int32
         filterTypes:
           type: array
           items:
@@ -805,8 +835,16 @@ components:
         id: 21cqt7ccboh84
       type: object
       properties:
-        id:
+        method:
           type: string
+        successes:
+          type: integer
+        failures:
+          type: integer
+      required:
+        - method
+        - successes
+        - failures
     PageInfo:
       title: PageInfo
       x-stoplight:
@@ -821,6 +859,22 @@ components:
           type: boolean
       required:
         - done
+    ErrorItem:
+      title: ErrorItem
+      x-stoplight:
+        id: jx2kp2sm3i0e6
+      type: object
+      properties:
+        index:
+          type: string
+        reason:
+          type: string
+        code:
+          type: integer
+      required:
+        - index
+        - reason
+        - code
   requestBodies:
     CreateEndpointsPayload:
       content:
@@ -990,41 +1044,6 @@ components:
             required:
               - data
               - page
-    Error:
-      description: Example response
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              cause:
-                type: string
-              code:
-                type: integer
-            x-examples:
-              example-1:
-                cause: string
-                code: 0
-    ErrorList:
-      description: Example response
-      content:
-        application/json:
-          schema:
-            type: array
-            items:
-              type: object
-              properties:
-                index:
-                  type: string
-                cause:
-                  type: string
-                code:
-                  type: integer
-            x-examples:
-              example-1:
-                - index: string
-                  cause: string
-                  code: 0
     ChannelList:
       description: Example response
       content:
@@ -1044,6 +1063,96 @@ components:
             type: array
             items:
               $ref: '#/components/schemas/Application'
+    CreatedApplications:
+      description: Example response
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              data:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Application'
+              errors:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ErrorItem'
+            required:
+              - data
+              - errors
+    CreatedEndpoints:
+      description: Example response
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              data:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Endpoint'
+              errors:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ErrorItem'
+            required:
+              - data
+              - errors
+    CreatedMessages:
+      description: Example response
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              data:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Message'
+              errors:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ErrorItem'
+            required:
+              - data
+              - errors
+    CreatedAttempts:
+      description: Example response
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              data:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Attempt'
+              errors:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ErrorItem'
+            required:
+              - data
+              - errors
+    CreatedSecrets:
+      description: Example response
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              data:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Secret'
+              errors:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ErrorItem'
+            required:
+              - data
+              - errors
   parameters:
     endpointId:
       name: endpointId
@@ -1110,4 +1219,5 @@ tags:
   - name: endpoints
   - name: event-types
   - name: messages
+  - name: secrets
   - name: utils

@@ -22,14 +22,34 @@ ON CONFLICT DO NOTHING
 RETURNING 
     id,
     uid,
-        application_id,
+    url,
+    name,
+    application_id,
     rate_limit,
     metadata,
+    description,
     created_at;
 
 -- DeleteEndpoints deletes endpoints by uid
 -- name: DeleteEndpoints :exec
 DELETE FROM webhooks.endpoint WHERE uid = ANY(pggen.arg('ids')::UUID[]);
+
+-- GetEndpoints gets endpoints by id
+-- name: GetEndpoints :many
+SELECT 
+    id,
+    uid,
+    url,
+    name,
+    metadata,
+    disabled,
+    rate_limit,
+    created_at,
+    updated_at,
+    description,
+    application_id
+FROM webhooks.endpoint
+WHERE uid = ANY(pggen.arg('ids')::uuid[]);
 
 -- ListEndpoints lists endpoints
 -- name: ListEndpoints :many

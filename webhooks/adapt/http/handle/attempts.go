@@ -2,7 +2,10 @@ package handle
 
 import (
 	"net/http"
+	"woh/package/utils/media"
 	webhooksv1 "woh/webhooks/adapt/http/v1"
+
+	"github.com/andrestielau/web-of-hooks/webhooks/render/page/messages"
 )
 
 // CreateAttempt implements webhooksv1.ServerInterface.
@@ -52,7 +55,13 @@ func (h *Handler) GetAttempt(w http.ResponseWriter, r *http.Request, attemptId s
 
 // ListAttempts implements webhooksv1.ServerInterface.
 func (h *Handler) ListAttempts(w http.ResponseWriter, r *http.Request, params webhooksv1.ListAttemptsParams) {
-	panic("unimplemented")
+	if res, err := h.Repo.ListMessages(r.Context(), 100, 0); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	} else if media.ShouldRender(r) {
+		messages.Messages(messages.MessagesViewModel{}).Render(r.Context(), w)
+	} else {
+		media.Res(w, media.Accept(r), res)
+	}
 }
 
 // ListEndpointAttempts implements webhooksv1.ServerInterface.

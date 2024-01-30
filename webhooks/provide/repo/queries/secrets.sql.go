@@ -8,6 +8,81 @@ import (
 	"github.com/jackc/pgconn"
 )
 
+const createSecretsSQL = `INSERT INTO webhooks.secret (
+    uid,
+    tenant_id
+) 
+SELECT 
+    u.id,
+    u.tenant_id
+FROM unnest($1::webhooks.new_secret[]) u
+ON CONFLICT DO NOTHING
+RETURNING 
+    id,
+    uid,
+    tenant_id;`
+
+type CreateSecretsRow struct {
+	ID       int32  `json:"id"`
+	Uid      string `json:"uid"`
+	TenantID string `json:"tenant_id"`
+}
+
+// CreateSecrets implements Querier.CreateSecrets.
+func (q *DBQuerier) CreateSecrets(ctx context.Context, secrets []NewSecret) ([]CreateSecretsRow, error) {
+	ctx = context.WithValue(ctx, "pggen_query_name", "CreateSecrets")
+	rows, err := q.conn.Query(ctx, createSecretsSQL, q.types.newNewSecretArrayInit(secrets))
+	if err != nil {
+		return nil, fmt.Errorf("query CreateSecrets: %w", err)
+	}
+	defer rows.Close()
+	items := []CreateSecretsRow{}
+	for rows.Next() {
+		var item CreateSecretsRow
+		if err := rows.Scan(&item.ID, &item.Uid, &item.TenantID); err != nil {
+			return nil, fmt.Errorf("scan CreateSecrets row: %w", err)
+		}
+		items = append(items, item)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("close CreateSecrets rows: %w", err)
+	}
+	return items, err
+}
+
+const getSecretsSQL = `SELECT 
+    id,
+    uid
+FROM webhooks.secret
+WHERE uid = ANY($1::uuid[]);`
+
+type GetSecretsRow struct {
+	ID  *int32 `json:"id"`
+	Uid string `json:"uid"`
+}
+
+// GetSecrets implements Querier.GetSecrets.
+func (q *DBQuerier) GetSecrets(ctx context.Context, ids []string) ([]GetSecretsRow, error) {
+	ctx = context.WithValue(ctx, "pggen_query_name", "GetSecrets")
+	rows, err := q.conn.Query(ctx, getSecretsSQL, ids)
+	if err != nil {
+		return nil, fmt.Errorf("query GetSecrets: %w", err)
+	}
+	defer rows.Close()
+	items := []GetSecretsRow{}
+	for rows.Next() {
+		var item GetSecretsRow
+		if err := rows.Scan(&item.ID, &item.Uid); err != nil {
+			return nil, fmt.Errorf("scan GetSecrets row: %w", err)
+		}
+		items = append(items, item)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("close GetSecrets rows: %w", err)
+	}
+	return items, err
+}
+
 const deleteSecretsSQL = `DELETE FROM webhooks.secret WHERE uid = ANY($1::UUID[]);`
 
 // DeleteSecrets implements Querier.DeleteSecrets.
@@ -20,7 +95,7 @@ func (q *DBQuerier) DeleteSecrets(ctx context.Context, ids []string) (pgconn.Com
 	return cmdTag, err
 }
 
-const listMesListSecretssagesSQL = `SELECT
+const listSecretsSQL = `SELECT
     id,
     uid
 FROM webhooks.secret
@@ -28,29 +103,29 @@ ORDER BY uid
 LIMIT $1
 OFFSET $2;`
 
-type ListMesListSecretssagesRow struct {
+type ListSecretsRow struct {
 	ID  *int32 `json:"id"`
 	Uid string `json:"uid"`
 }
 
-// ListMesListSecretssages implements Querier.ListMesListSecretssages.
-func (q *DBQuerier) ListMesListSecretssages(ctx context.Context, limit int, offset int) ([]ListMesListSecretssagesRow, error) {
-	ctx = context.WithValue(ctx, "pggen_query_name", "ListMesListSecretssages")
-	rows, err := q.conn.Query(ctx, listMesListSecretssagesSQL, limit, offset)
+// ListSecrets implements Querier.ListSecrets.
+func (q *DBQuerier) ListSecrets(ctx context.Context, limit int, offset int) ([]ListSecretsRow, error) {
+	ctx = context.WithValue(ctx, "pggen_query_name", "ListSecrets")
+	rows, err := q.conn.Query(ctx, listSecretsSQL, limit, offset)
 	if err != nil {
-		return nil, fmt.Errorf("query ListMesListSecretssages: %w", err)
+		return nil, fmt.Errorf("query ListSecrets: %w", err)
 	}
 	defer rows.Close()
-	items := []ListMesListSecretssagesRow{}
+	items := []ListSecretsRow{}
 	for rows.Next() {
-		var item ListMesListSecretssagesRow
+		var item ListSecretsRow
 		if err := rows.Scan(&item.ID, &item.Uid); err != nil {
-			return nil, fmt.Errorf("scan ListMesListSecretssages row: %w", err)
+			return nil, fmt.Errorf("scan ListSecrets row: %w", err)
 		}
 		items = append(items, item)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("close ListMesListSecretssages rows: %w", err)
+		return nil, fmt.Errorf("close ListSecrets rows: %w", err)
 	}
 	return items, err
 }

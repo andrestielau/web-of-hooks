@@ -3,35 +3,77 @@ package handle
 import (
 	"net/http"
 	webhooksv1 "woh/webhooks/adapt/http/v1"
+
+	"woh/package/utils/media"
+
+	"github.com/andrestielau/web-of-hooks/webhooks/adapt/http/convert"
+	"github.com/andrestielau/web-of-hooks/webhooks/render/page/applications"
 )
 
 // CreateApplications implements webhooksv1.ServerInterface.
 func (h *Handler) CreateApplications(w http.ResponseWriter, r *http.Request) {
-	panic("unimplemented")
+	var req webhooksv1.CreateApplicationsPayload
+	var ret webhooksv1.CreatedApplications
+	if err := media.Req(r, &req); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	if res, err := h.Repo.CreateApplications(r.Context(), h.Convert.Application.New(req)); err != nil {
+		errs, stop := convert.Errors(w, err)
+		if stop {
+			return
+		}
+		ret.Errors = errs
+	} else {
+		ret.Data = h.Convert.Application.Created(res)
+	}
+	if media.ShouldRender(r) {
+		// TODO: partial
+	} else if err := media.Res(w, media.Accept(r), ret); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
 }
 
 // DeleteApplication implements webhooksv1.ServerInterface.
 func (h *Handler) DeleteApplication(w http.ResponseWriter, r *http.Request, applicationId string, params webhooksv1.DeleteApplicationParams) {
-	panic("unimplemented")
+	h.Repo.DeleteApplications(r.Context(), []string{applicationId})
 }
 
 // DeleteApplications implements webhooksv1.ServerInterface.
 func (h *Handler) DeleteApplications(w http.ResponseWriter, r *http.Request) {
-	panic("unimplemented")
+	h.Repo.DeleteApplications(r.Context(), []string{})
 }
 
 // GetApplication implements webhooksv1.ServerInterface.
 func (h *Handler) GetApplication(w http.ResponseWriter, r *http.Request, applicationId string) {
-	panic("unimplemented")
+	var ret webhooksv1.Application
+	if res, err := h.Repo.GetApplications(r.Context(), []string{applicationId}); convert.Error(w, err) {
+		return
+	} else if len(res) == 1 {
+		ret = h.Convert.Application.GotItem(res[0])
+	}
+	if media.ShouldRender(r) {
+		// TODO: partial
+	} else if err := media.Res(w, media.Accept(r), ret); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
 }
 
-// GetApplications implements webhooksv1.ServerInterface.
-func (h *Handler) GetApplications(w http.ResponseWriter, r *http.Request, params webhooksv1.GetApplicationsParams) {
-	panic("unimplemented")
+// ListApplications implements webhooksv1.ServerInterface.
+func (h *Handler) ListApplications(w http.ResponseWriter, r *http.Request, params webhooksv1.ListApplicationsParams) {
+	if res, err := h.Repo.ListApplications(r.Context(), 100, 0); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	} else if media.ShouldRender(r) {
+		applications.Applications(applications.ApplicationsViewModel{
+			Data: res,
+		}, nil).Render(r.Context(), w)
+	} else {
+		media.Res(w, media.Accept(r), res)
+	}
 }
 
-// GetStats implements webhooksv1.ServerInterface.
-func (h *Handler) GetStats(w http.ResponseWriter, r *http.Request, applicationId string) {
+// GetApplicationStats implements webhooksv1.ServerInterface.
+func (h *Handler) GetApplicationStats(w http.ResponseWriter, r *http.Request, applicationId string) {
 	panic("unimplemented")
 }
 

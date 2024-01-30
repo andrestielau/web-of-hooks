@@ -5,7 +5,7 @@ CREATE TYPE webhooks.new_endpoint AS (
     rate_limit INT,
     metadata JSONB,
     description TEXT,
-    filterTypes TEXT[],
+    filter_types TEXT[],
     channels TEXT[]
 );
 

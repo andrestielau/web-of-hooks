@@ -9,6 +9,62 @@ import (
 	"time"
 )
 
+const createMessagesSQL = `INSERT INTO webhooks.message (
+    application_id,
+    event_type_id,
+    event_id,
+    payload
+) 
+SELECT 
+    a.id,
+    e.id,
+    u.event_id,
+    u.payload
+FROM unnest($1::webhooks.new_message[]) u
+JOIN webhooks.application a ON u.application_id = a.uid
+JOIN webhooks.event_type e ON u.event_type_id = e.uid
+ON CONFLICT DO NOTHING
+RETURNING 
+    id,
+    uid,
+    application_id,
+    event_type_id,
+    event_id,
+    payload,
+    created_at;`
+
+type CreateMessagesRow struct {
+	ID            int32     `json:"id"`
+	Uid           string    `json:"uid"`
+	ApplicationID *int32    `json:"application_id"`
+	EventTypeID   *int32    `json:"event_type_id"`
+	EventID       string    `json:"event_id"`
+	Payload       string    `json:"payload"`
+	CreatedAt     time.Time `json:"created_at"`
+}
+
+// CreateMessages implements Querier.CreateMessages.
+func (q *DBQuerier) CreateMessages(ctx context.Context, messages []NewMessage) ([]CreateMessagesRow, error) {
+	ctx = context.WithValue(ctx, "pggen_query_name", "CreateMessages")
+	rows, err := q.conn.Query(ctx, createMessagesSQL, q.types.newNewMessageArrayInit(messages))
+	if err != nil {
+		return nil, fmt.Errorf("query CreateMessages: %w", err)
+	}
+	defer rows.Close()
+	items := []CreateMessagesRow{}
+	for rows.Next() {
+		var item CreateMessagesRow
+		if err := rows.Scan(&item.ID, &item.Uid, &item.ApplicationID, &item.EventTypeID, &item.EventID, &item.Payload, &item.CreatedAt); err != nil {
+			return nil, fmt.Errorf("scan CreateMessages row: %w", err)
+		}
+		items = append(items, item)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("close CreateMessages rows: %w", err)
+	}
+	return items, err
+}
+
 const deleteMessagesSQL = `DELETE FROM webhooks.message WHERE uid = ANY($1::UUID[]);`
 
 // DeleteMessages implements Querier.DeleteMessages.
@@ -21,9 +77,56 @@ func (q *DBQuerier) DeleteMessages(ctx context.Context, ids []string) (pgconn.Co
 	return cmdTag, err
 }
 
+const getMessagesSQL = `SELECT 
+    id,
+    uid,
+    application_id,
+    event_type_id,
+    event_id,
+    payload,
+    created_at
+FROM webhooks.message
+WHERE uid = ANY($1::uuid[]);`
+
+type GetMessagesRow struct {
+	ID            *int32    `json:"id"`
+	Uid           string    `json:"uid"`
+	ApplicationID *int32    `json:"application_id"`
+	EventTypeID   *int32    `json:"event_type_id"`
+	EventID       string    `json:"event_id"`
+	Payload       string    `json:"payload"`
+	CreatedAt     time.Time `json:"created_at"`
+}
+
+// GetMessages implements Querier.GetMessages.
+func (q *DBQuerier) GetMessages(ctx context.Context, ids []string) ([]GetMessagesRow, error) {
+	ctx = context.WithValue(ctx, "pggen_query_name", "GetMessages")
+	rows, err := q.conn.Query(ctx, getMessagesSQL, ids)
+	if err != nil {
+		return nil, fmt.Errorf("query GetMessages: %w", err)
+	}
+	defer rows.Close()
+	items := []GetMessagesRow{}
+	for rows.Next() {
+		var item GetMessagesRow
+		if err := rows.Scan(&item.ID, &item.Uid, &item.ApplicationID, &item.EventTypeID, &item.EventID, &item.Payload, &item.CreatedAt); err != nil {
+			return nil, fmt.Errorf("scan GetMessages row: %w", err)
+		}
+		items = append(items, item)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("close GetMessages rows: %w", err)
+	}
+	return items, err
+}
+
 const listMessagesSQL = `SELECT
     id,
     uid,
+    application_id,
+    event_type_id,
+    event_id,
+    payload,
     created_at
 FROM webhooks.message
 ORDER BY uid
@@ -31,9 +134,13 @@ LIMIT $1
 OFFSET $2;`
 
 type ListMessagesRow struct {
-	ID        *int32    `json:"id"`
-	Uid       string    `json:"uid"`
-	CreatedAt time.Time `json:"created_at"`
+	ID            *int32    `json:"id"`
+	Uid           string    `json:"uid"`
+	ApplicationID *int32    `json:"application_id"`
+	EventTypeID   *int32    `json:"event_type_id"`
+	EventID       string    `json:"event_id"`
+	Payload       string    `json:"payload"`
+	CreatedAt     time.Time `json:"created_at"`
 }
 
 // ListMessages implements Querier.ListMessages.
@@ -47,7 +154,7 @@ func (q *DBQuerier) ListMessages(ctx context.Context, limit int, offset int) ([]
 	items := []ListMessagesRow{}
 	for rows.Next() {
 		var item ListMessagesRow
-		if err := rows.Scan(&item.ID, &item.Uid, &item.CreatedAt); err != nil {
+		if err := rows.Scan(&item.ID, &item.Uid, &item.ApplicationID, &item.EventTypeID, &item.EventID, &item.Payload, &item.CreatedAt); err != nil {
 			return nil, fmt.Errorf("scan ListMessages row: %w", err)
 		}
 		items = append(items, item)

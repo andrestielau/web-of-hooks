@@ -21,6 +21,41 @@ func (q *DBQuerier) DeleteAttempts(ctx context.Context, ids []string) (pgconn.Co
 	return cmdTag, err
 }
 
+const getAttemptsSQL = `SELECT 
+    id,
+    uid,
+    created_at
+FROM webhooks.message_attempt
+WHERE uid = ANY($1::uuid[]);`
+
+type GetAttemptsRow struct {
+	ID        *int32    `json:"id"`
+	Uid       string    `json:"uid"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
+// GetAttempts implements Querier.GetAttempts.
+func (q *DBQuerier) GetAttempts(ctx context.Context, ids []string) ([]GetAttemptsRow, error) {
+	ctx = context.WithValue(ctx, "pggen_query_name", "GetAttempts")
+	rows, err := q.conn.Query(ctx, getAttemptsSQL, ids)
+	if err != nil {
+		return nil, fmt.Errorf("query GetAttempts: %w", err)
+	}
+	defer rows.Close()
+	items := []GetAttemptsRow{}
+	for rows.Next() {
+		var item GetAttemptsRow
+		if err := rows.Scan(&item.ID, &item.Uid, &item.CreatedAt); err != nil {
+			return nil, fmt.Errorf("scan GetAttempts row: %w", err)
+		}
+		items = append(items, item)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("close GetAttempts rows: %w", err)
+	}
+	return items, err
+}
+
 const listAttemptsSQL = `SELECT
     id,
     uid,

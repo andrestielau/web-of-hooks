@@ -8,6 +8,7 @@ boot:
 	go install github.com/a-h/templ/cmd/templ@latest
 	go install github.com/google/wire/cmd/wire@latest
 	go install github.com/jschaf/pggen/cmd/pggen@latest
+	go install github.com/jmattheis/goverter/cmd/goverter@latest
 	go install github.com/deepmap/oapi-codegen/v2/cmd/oapi-codegen@latest
 	go install github.com/pseudomuto/protoc-gen-doc/cmd/protoc-gen-doc@latest
 	go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
@@ -32,7 +33,7 @@ wait:
 	done; 
 
 # Generator Commands
-gen: gen/ui gen/db gen/grpc gen/api gen/go
+gen: gen/ui gen/db gen/grpc gen/api gen/conv gen/go 
 
 gen/grpc: ${GRPC_DIR}/webhooks.proto buf.gen.yaml 
 	@echo Generating gRPC
@@ -49,6 +50,9 @@ gen/db:
 gen/ui:
 	templ generate
 
+gen/conv:
+	@goverter gen ./webhooks/adapt/http/convert/...
+	
 gen/go:
 	@go mod tidy
 	@go generate ./...

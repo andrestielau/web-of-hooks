@@ -20,10 +20,10 @@ import (
 
 // Application defines model for Application.
 type Application struct {
-	CreatedAt *string `json:"createdAt,omitempty"`
+	CreatedAt string  `json:"createdAt"`
 	Id        string  `json:"id"`
 	Name      *string `json:"name,omitempty"`
-	RateLimit *int    `json:"rateLimit,omitempty"`
+	RateLimit *int32  `json:"rateLimit,omitempty"`
 }
 
 // Attempt defines model for Attempt.
@@ -50,8 +50,15 @@ type Endpoint struct {
 	FilterTypes *[]string `json:"filterTypes,omitempty"`
 	Id          string    `json:"id"`
 	Name        *string   `json:"name,omitempty"`
-	RateLimit   *int      `json:"rateLimit,omitempty"`
+	RateLimit   *int32    `json:"rateLimit,omitempty"`
 	Url         string    `json:"url"`
+}
+
+// ErrorItem defines model for ErrorItem.
+type ErrorItem struct {
+	Code   int    `json:"code"`
+	Index  string `json:"index"`
+	Reason string `json:"reason"`
 }
 
 // EventType Type of Messages that you can receive in your Endpoints.
@@ -74,7 +81,7 @@ type Message struct {
 type NewApplication struct {
 	Id        *string `json:"id,omitempty"`
 	Name      *string `json:"name,omitempty"`
-	RateLimit *int    `json:"rateLimit,omitempty"`
+	RateLimit *int32  `json:"rateLimit,omitempty"`
 }
 
 // NewAttempt defines model for NewAttempt.
@@ -93,7 +100,7 @@ type NewEndpoint struct {
 	FilterTypes *[]string `json:"filterTypes,omitempty"`
 	Id          *string   `json:"id,omitempty"`
 	Name        *string   `json:"name,omitempty"`
-	RateLimit   *int      `json:"rateLimit,omitempty"`
+	RateLimit   *int32    `json:"rateLimit,omitempty"`
 	Secret      *string   `json:"secret,omitempty"`
 	Url         string    `json:"url"`
 }
@@ -128,7 +135,9 @@ type Secret struct {
 
 // Statistics defines model for Statistics.
 type Statistics struct {
-	Id *string `json:"id,omitempty"`
+	Failures  int    `json:"failures"`
+	Method    string `json:"method"`
+	Successes int    `json:"successes"`
 }
 
 // ApplicationId defines model for applicationId.
@@ -172,23 +181,40 @@ type ChannelList struct {
 	Data *[]Channel `json:"data,omitempty"`
 }
 
+// CreatedApplications defines model for CreatedApplications.
+type CreatedApplications struct {
+	Data   []Application `json:"data"`
+	Errors []ErrorItem   `json:"errors"`
+}
+
+// CreatedAttempts defines model for CreatedAttempts.
+type CreatedAttempts struct {
+	Data   []Attempt   `json:"data"`
+	Errors []ErrorItem `json:"errors"`
+}
+
+// CreatedEndpoints defines model for CreatedEndpoints.
+type CreatedEndpoints struct {
+	Data   []Endpoint  `json:"data"`
+	Errors []ErrorItem `json:"errors"`
+}
+
+// CreatedMessages defines model for CreatedMessages.
+type CreatedMessages struct {
+	Data   []Message   `json:"data"`
+	Errors []ErrorItem `json:"errors"`
+}
+
+// CreatedSecrets defines model for CreatedSecrets.
+type CreatedSecrets struct {
+	Data   []Secret    `json:"data"`
+	Errors []ErrorItem `json:"errors"`
+}
+
 // EndpointList defines model for EndpointList.
 type EndpointList struct {
 	Data []Endpoint `json:"data"`
 	Page PageInfo   `json:"page"`
-}
-
-// Error defines model for Error.
-type Error struct {
-	Cause *string `json:"cause,omitempty"`
-	Code  *int    `json:"code,omitempty"`
-}
-
-// ErrorList defines model for ErrorList.
-type ErrorList = []struct {
-	Cause *string `json:"cause,omitempty"`
-	Code  *int    `json:"code,omitempty"`
-	Index *string `json:"index,omitempty"`
 }
 
 // EventTypeList defines model for EventTypeList.
@@ -243,8 +269,8 @@ type DeleteApplicationsJSONBody = []struct {
 	Id *string `json:"id,omitempty"`
 }
 
-// GetApplicationsParams defines parameters for GetApplications.
-type GetApplicationsParams struct {
+// ListApplicationsParams defines parameters for ListApplications.
+type ListApplicationsParams struct {
 	Limit   *Limit   `form:"limit,omitempty" json:"limit,omitempty"`
 	Cursor  *Cursor  `form:"cursor,omitempty" json:"cursor,omitempty"`
 	Reverse *Reverse `form:"reverse,omitempty" json:"reverse,omitempty"`
@@ -315,6 +341,12 @@ type CreateMessagesMultipartBody = []NewMessage
 type CreateMessagesParams struct {
 	Force *Force `form:"force,omitempty" json:"force,omitempty"`
 }
+
+// CreateSecretsJSONBody defines parameters for CreateSecrets.
+type CreateSecretsJSONBody = []NewSecret
+
+// CreateSecretsMultipartBody defines parameters for CreateSecrets.
+type CreateSecretsMultipartBody = []NewSecret
 
 // DeleteAttemptsJSONBody defines parameters for DeleteAttempts.
 type DeleteAttemptsJSONBody = []string
@@ -460,6 +492,12 @@ type CreateMessagesJSONRequestBody = CreateMessagesJSONBody
 // CreateMessagesMultipartRequestBody defines body for CreateMessages for multipart/form-data ContentType.
 type CreateMessagesMultipartRequestBody = CreateMessagesMultipartBody
 
+// CreateSecretsJSONRequestBody defines body for CreateSecrets for application/json ContentType.
+type CreateSecretsJSONRequestBody = CreateSecretsJSONBody
+
+// CreateSecretsMultipartRequestBody defines body for CreateSecrets for multipart/form-data ContentType.
+type CreateSecretsMultipartRequestBody = CreateSecretsMultipartBody
+
 // DeleteAttemptsJSONRequestBody defines body for DeleteAttempts for application/json ContentType.
 type DeleteAttemptsJSONRequestBody = DeleteAttemptsJSONBody
 
@@ -574,8 +612,8 @@ type ClientInterface interface {
 
 	DeleteApplications(ctx context.Context, body DeleteApplicationsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// GetApplications request
-	GetApplications(ctx context.Context, params *GetApplicationsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// ListApplications request
+	ListApplications(ctx context.Context, params *ListApplicationsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// CreateApplicationsWithBody request with any body
 	CreateApplicationsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -620,8 +658,13 @@ type ClientInterface interface {
 	// ListApplicationSecrets request
 	ListApplicationSecrets(ctx context.Context, applicationId ApplicationId, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// GetStats request
-	GetStats(ctx context.Context, applicationId ApplicationId, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// CreateSecretsWithBody request with any body
+	CreateSecretsWithBody(ctx context.Context, applicationId ApplicationId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateSecrets(ctx context.Context, applicationId ApplicationId, body CreateSecretsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetApplicationStats request
+	GetApplicationStats(ctx context.Context, applicationId ApplicationId, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// DeleteAttemptsWithBody request with any body
 	DeleteAttemptsWithBody(ctx context.Context, params *DeleteAttemptsParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -738,8 +781,8 @@ func (c *Client) DeleteApplications(ctx context.Context, body DeleteApplications
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetApplications(ctx context.Context, params *GetApplicationsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetApplicationsRequest(c.Server, params)
+func (c *Client) ListApplications(ctx context.Context, params *ListApplicationsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListApplicationsRequest(c.Server, params)
 	if err != nil {
 		return nil, err
 	}
@@ -942,8 +985,32 @@ func (c *Client) ListApplicationSecrets(ctx context.Context, applicationId Appli
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetStats(ctx context.Context, applicationId ApplicationId, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetStatsRequest(c.Server, applicationId)
+func (c *Client) CreateSecretsWithBody(ctx context.Context, applicationId ApplicationId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateSecretsRequestWithBody(c.Server, applicationId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateSecrets(ctx context.Context, applicationId ApplicationId, body CreateSecretsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateSecretsRequest(c.Server, applicationId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetApplicationStats(ctx context.Context, applicationId ApplicationId, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetApplicationStatsRequest(c.Server, applicationId)
 	if err != nil {
 		return nil, err
 	}
@@ -1390,8 +1457,8 @@ func NewDeleteApplicationsRequestWithBody(server string, contentType string, bod
 	return req, nil
 }
 
-// NewGetApplicationsRequest generates requests for GetApplications
-func NewGetApplicationsRequest(server string, params *GetApplicationsParams) (*http.Request, error) {
+// NewListApplicationsRequest generates requests for ListApplications
+func NewListApplicationsRequest(server string, params *ListApplicationsParams) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -2121,8 +2188,55 @@ func NewListApplicationSecretsRequest(server string, applicationId ApplicationId
 	return req, nil
 }
 
-// NewGetStatsRequest generates requests for GetStats
-func NewGetStatsRequest(server string, applicationId ApplicationId) (*http.Request, error) {
+// NewCreateSecretsRequest calls the generic CreateSecrets builder with application/json body
+func NewCreateSecretsRequest(server string, applicationId ApplicationId, body CreateSecretsJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateSecretsRequestWithBody(server, applicationId, "application/json", bodyReader)
+}
+
+// NewCreateSecretsRequestWithBody generates requests for CreateSecrets with any type of body
+func NewCreateSecretsRequestWithBody(server string, applicationId ApplicationId, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "applicationId", runtime.ParamLocationPath, applicationId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/applications/%s/secrets", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewGetApplicationStatsRequest generates requests for GetApplicationStats
+func NewGetApplicationStatsRequest(server string, applicationId ApplicationId) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -3606,8 +3720,8 @@ type ClientWithResponsesInterface interface {
 
 	DeleteApplicationsWithResponse(ctx context.Context, body DeleteApplicationsJSONRequestBody, reqEditors ...RequestEditorFn) (*DeleteApplicationsResponse, error)
 
-	// GetApplicationsWithResponse request
-	GetApplicationsWithResponse(ctx context.Context, params *GetApplicationsParams, reqEditors ...RequestEditorFn) (*GetApplicationsResponse, error)
+	// ListApplicationsWithResponse request
+	ListApplicationsWithResponse(ctx context.Context, params *ListApplicationsParams, reqEditors ...RequestEditorFn) (*ListApplicationsResponse, error)
 
 	// CreateApplicationsWithBodyWithResponse request with any body
 	CreateApplicationsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateApplicationsResponse, error)
@@ -3652,8 +3766,13 @@ type ClientWithResponsesInterface interface {
 	// ListApplicationSecretsWithResponse request
 	ListApplicationSecretsWithResponse(ctx context.Context, applicationId ApplicationId, reqEditors ...RequestEditorFn) (*ListApplicationSecretsResponse, error)
 
-	// GetStatsWithResponse request
-	GetStatsWithResponse(ctx context.Context, applicationId ApplicationId, reqEditors ...RequestEditorFn) (*GetStatsResponse, error)
+	// CreateSecretsWithBodyWithResponse request with any body
+	CreateSecretsWithBodyWithResponse(ctx context.Context, applicationId ApplicationId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateSecretsResponse, error)
+
+	CreateSecretsWithResponse(ctx context.Context, applicationId ApplicationId, body CreateSecretsJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateSecretsResponse, error)
+
+	// GetApplicationStatsWithResponse request
+	GetApplicationStatsWithResponse(ctx context.Context, applicationId ApplicationId, reqEditors ...RequestEditorFn) (*GetApplicationStatsResponse, error)
 
 	// DeleteAttemptsWithBodyWithResponse request with any body
 	DeleteAttemptsWithBodyWithResponse(ctx context.Context, params *DeleteAttemptsParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*DeleteAttemptsResponse, error)
@@ -3767,14 +3886,14 @@ func (r DeleteApplicationsResponse) StatusCode() int {
 	return 0
 }
 
-type GetApplicationsResponse struct {
+type ListApplicationsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *ApplicationList
 }
 
 // Status returns HTTPResponse.Status
-func (r GetApplicationsResponse) Status() string {
+func (r ListApplicationsResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -3782,7 +3901,7 @@ func (r GetApplicationsResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r GetApplicationsResponse) StatusCode() int {
+func (r ListApplicationsResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -3792,7 +3911,7 @@ func (r GetApplicationsResponse) StatusCode() int {
 type CreateApplicationsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *ErrorList
+	JSON200      *CreatedApplications
 }
 
 // Status returns HTTPResponse.Status
@@ -3857,7 +3976,6 @@ func (r GetApplicationResponse) StatusCode() int {
 type UpdateApplicationResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *Error
 }
 
 // Status returns HTTPResponse.Status
@@ -3922,7 +4040,7 @@ func (r ListEndpointsResponse) StatusCode() int {
 type CreateEndpointsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON201      *ErrorList
+	JSON201      *CreatedEndpoints
 }
 
 // Status returns HTTPResponse.Status
@@ -3987,7 +4105,7 @@ func (r ListMessagesResponse) StatusCode() int {
 type CreateMessagesResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON202      *ErrorList
+	JSON202      *CreatedMessages
 }
 
 // Status returns HTTPResponse.Status
@@ -4028,14 +4146,14 @@ func (r ListApplicationSecretsResponse) StatusCode() int {
 	return 0
 }
 
-type GetStatsResponse struct {
+type CreateSecretsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *StatisticsOut
+	JSON200      *CreatedSecrets
 }
 
 // Status returns HTTPResponse.Status
-func (r GetStatsResponse) Status() string {
+func (r CreateSecretsResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -4043,7 +4161,29 @@ func (r GetStatsResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r GetStatsResponse) StatusCode() int {
+func (r CreateSecretsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetApplicationStatsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *StatisticsOut
+}
+
+// Status returns HTTPResponse.Status
+func (r GetApplicationStatsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetApplicationStatsResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -4096,7 +4236,7 @@ func (r ListAttemptsResponse) StatusCode() int {
 type CreateAttemptsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON202      *ErrorList
+	JSON202      *CreatedAttempts
 }
 
 // Status returns HTTPResponse.Status
@@ -4161,7 +4301,7 @@ func (r GetAttemptResponse) StatusCode() int {
 type CreateAttemptResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON202      *Error
+	JSON202      *Attempt
 }
 
 // Status returns HTTPResponse.Status
@@ -4248,7 +4388,6 @@ func (r GetEndpointResponse) StatusCode() int {
 type UpdateEndpointResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON204      *Error
 }
 
 // Status returns HTTPResponse.Status
@@ -4313,7 +4452,7 @@ func (r ListEndpointAttemptsResponse) StatusCode() int {
 type CreateEndpointAttemptsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON202      *ErrorList
+	JSON202      *CreatedAttempts
 }
 
 // Status returns HTTPResponse.Status
@@ -4447,7 +4586,7 @@ func (r GetMessageResponse) StatusCode() int {
 type CreateMessageResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *Error
+	JSON202      *Message
 }
 
 // Status returns HTTPResponse.Status
@@ -4512,7 +4651,7 @@ func (r ListMessageAttemptsResponse) StatusCode() int {
 type CreateMessagesAttemptsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON202      *ErrorList
+	JSON202      *CreatedAttempts
 }
 
 // Status returns HTTPResponse.Status
@@ -4556,7 +4695,7 @@ func (r GetSecretResponse) StatusCode() int {
 type RotateSecretResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *Error
+	JSON202      *Secret
 }
 
 // Status returns HTTPResponse.Status
@@ -4592,13 +4731,13 @@ func (c *ClientWithResponses) DeleteApplicationsWithResponse(ctx context.Context
 	return ParseDeleteApplicationsResponse(rsp)
 }
 
-// GetApplicationsWithResponse request returning *GetApplicationsResponse
-func (c *ClientWithResponses) GetApplicationsWithResponse(ctx context.Context, params *GetApplicationsParams, reqEditors ...RequestEditorFn) (*GetApplicationsResponse, error) {
-	rsp, err := c.GetApplications(ctx, params, reqEditors...)
+// ListApplicationsWithResponse request returning *ListApplicationsResponse
+func (c *ClientWithResponses) ListApplicationsWithResponse(ctx context.Context, params *ListApplicationsParams, reqEditors ...RequestEditorFn) (*ListApplicationsResponse, error) {
+	rsp, err := c.ListApplications(ctx, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseGetApplicationsResponse(rsp)
+	return ParseListApplicationsResponse(rsp)
 }
 
 // CreateApplicationsWithBodyWithResponse request with arbitrary body returning *CreateApplicationsResponse
@@ -4740,13 +4879,30 @@ func (c *ClientWithResponses) ListApplicationSecretsWithResponse(ctx context.Con
 	return ParseListApplicationSecretsResponse(rsp)
 }
 
-// GetStatsWithResponse request returning *GetStatsResponse
-func (c *ClientWithResponses) GetStatsWithResponse(ctx context.Context, applicationId ApplicationId, reqEditors ...RequestEditorFn) (*GetStatsResponse, error) {
-	rsp, err := c.GetStats(ctx, applicationId, reqEditors...)
+// CreateSecretsWithBodyWithResponse request with arbitrary body returning *CreateSecretsResponse
+func (c *ClientWithResponses) CreateSecretsWithBodyWithResponse(ctx context.Context, applicationId ApplicationId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateSecretsResponse, error) {
+	rsp, err := c.CreateSecretsWithBody(ctx, applicationId, contentType, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseGetStatsResponse(rsp)
+	return ParseCreateSecretsResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateSecretsWithResponse(ctx context.Context, applicationId ApplicationId, body CreateSecretsJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateSecretsResponse, error) {
+	rsp, err := c.CreateSecrets(ctx, applicationId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateSecretsResponse(rsp)
+}
+
+// GetApplicationStatsWithResponse request returning *GetApplicationStatsResponse
+func (c *ClientWithResponses) GetApplicationStatsWithResponse(ctx context.Context, applicationId ApplicationId, reqEditors ...RequestEditorFn) (*GetApplicationStatsResponse, error) {
+	rsp, err := c.GetApplicationStats(ctx, applicationId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetApplicationStatsResponse(rsp)
 }
 
 // DeleteAttemptsWithBodyWithResponse request with arbitrary body returning *DeleteAttemptsResponse
@@ -5053,15 +5209,15 @@ func ParseDeleteApplicationsResponse(rsp *http.Response) (*DeleteApplicationsRes
 	return response, nil
 }
 
-// ParseGetApplicationsResponse parses an HTTP response from a GetApplicationsWithResponse call
-func ParseGetApplicationsResponse(rsp *http.Response) (*GetApplicationsResponse, error) {
+// ParseListApplicationsResponse parses an HTTP response from a ListApplicationsWithResponse call
+func ParseListApplicationsResponse(rsp *http.Response) (*ListApplicationsResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &GetApplicationsResponse{
+	response := &ListApplicationsResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -5094,7 +5250,7 @@ func ParseCreateApplicationsResponse(rsp *http.Response) (*CreateApplicationsRes
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest ErrorList
+		var dest CreatedApplications
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -5160,16 +5316,6 @@ func ParseUpdateApplicationResponse(rsp *http.Response) (*UpdateApplicationRespo
 		HTTPResponse: rsp,
 	}
 
-	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest Error
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON200 = &dest
-
-	}
-
 	return response, nil
 }
 
@@ -5230,7 +5376,7 @@ func ParseCreateEndpointsResponse(rsp *http.Response) (*CreateEndpointsResponse,
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
-		var dest ErrorList
+		var dest CreatedEndpoints
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -5298,7 +5444,7 @@ func ParseCreateMessagesResponse(rsp *http.Response) (*CreateMessagesResponse, e
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 202:
-		var dest ErrorList
+		var dest CreatedMessages
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -5335,15 +5481,41 @@ func ParseListApplicationSecretsResponse(rsp *http.Response) (*ListApplicationSe
 	return response, nil
 }
 
-// ParseGetStatsResponse parses an HTTP response from a GetStatsWithResponse call
-func ParseGetStatsResponse(rsp *http.Response) (*GetStatsResponse, error) {
+// ParseCreateSecretsResponse parses an HTTP response from a CreateSecretsWithResponse call
+func ParseCreateSecretsResponse(rsp *http.Response) (*CreateSecretsResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &GetStatsResponse{
+	response := &CreateSecretsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest CreatedSecrets
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetApplicationStatsResponse parses an HTTP response from a GetApplicationStatsWithResponse call
+func ParseGetApplicationStatsResponse(rsp *http.Response) (*GetApplicationStatsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetApplicationStatsResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -5418,7 +5590,7 @@ func ParseCreateAttemptsResponse(rsp *http.Response) (*CreateAttemptsResponse, e
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 202:
-		var dest ErrorList
+		var dest CreatedAttempts
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -5486,7 +5658,7 @@ func ParseCreateAttemptResponse(rsp *http.Response) (*CreateAttemptResponse, err
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 202:
-		var dest Error
+		var dest Attempt
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -5578,16 +5750,6 @@ func ParseUpdateEndpointResponse(rsp *http.Response) (*UpdateEndpointResponse, e
 		HTTPResponse: rsp,
 	}
 
-	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 204:
-		var dest Error
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON204 = &dest
-
-	}
-
 	return response, nil
 }
 
@@ -5648,7 +5810,7 @@ func ParseCreateEndpointAttemptsResponse(rsp *http.Response) (*CreateEndpointAtt
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 202:
-		var dest ErrorList
+		var dest CreatedAttempts
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -5796,12 +5958,12 @@ func ParseCreateMessageResponse(rsp *http.Response) (*CreateMessageResponse, err
 	}
 
 	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest Error
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 202:
+		var dest Message
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.JSON200 = &dest
+		response.JSON202 = &dest
 
 	}
 
@@ -5865,7 +6027,7 @@ func ParseCreateMessagesAttemptsResponse(rsp *http.Response) (*CreateMessagesAtt
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 202:
-		var dest ErrorList
+		var dest CreatedAttempts
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -5916,12 +6078,12 @@ func ParseRotateSecretResponse(rsp *http.Response) (*RotateSecretResponse, error
 	}
 
 	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest Error
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 202:
+		var dest Secret
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.JSON200 = &dest
+		response.JSON202 = &dest
 
 	}
 
@@ -5935,7 +6097,7 @@ type ServerInterface interface {
 	DeleteApplications(w http.ResponseWriter, r *http.Request)
 	// List Applications
 	// (GET /applications)
-	GetApplications(w http.ResponseWriter, r *http.Request, params GetApplicationsParams)
+	ListApplications(w http.ResponseWriter, r *http.Request, params ListApplicationsParams)
 	// Create Applications
 	// (POST /applications)
 	CreateApplications(w http.ResponseWriter, r *http.Request)
@@ -5969,9 +6131,12 @@ type ServerInterface interface {
 	// List Secret
 	// (GET /applications/{applicationId}/secrets)
 	ListApplicationSecrets(w http.ResponseWriter, r *http.Request, applicationId ApplicationId)
+	// Create Secrets
+	// (POST /applications/{applicationId}/secrets)
+	CreateSecrets(w http.ResponseWriter, r *http.Request, applicationId ApplicationId)
 	// Application Statistics
 	// (GET /applications/{applicationId}/stats)
-	GetStats(w http.ResponseWriter, r *http.Request, applicationId ApplicationId)
+	GetApplicationStats(w http.ResponseWriter, r *http.Request, applicationId ApplicationId)
 	// Expire or Delete Message Attempts
 	// (DELETE /attempts)
 	DeleteAttempts(w http.ResponseWriter, r *http.Request, params DeleteAttemptsParams)
@@ -6058,7 +6223,7 @@ func (_ Unimplemented) DeleteApplications(w http.ResponseWriter, r *http.Request
 
 // List Applications
 // (GET /applications)
-func (_ Unimplemented) GetApplications(w http.ResponseWriter, r *http.Request, params GetApplicationsParams) {
+func (_ Unimplemented) ListApplications(w http.ResponseWriter, r *http.Request, params ListApplicationsParams) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -6128,9 +6293,15 @@ func (_ Unimplemented) ListApplicationSecrets(w http.ResponseWriter, r *http.Req
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
+// Create Secrets
+// (POST /applications/{applicationId}/secrets)
+func (_ Unimplemented) CreateSecrets(w http.ResponseWriter, r *http.Request, applicationId ApplicationId) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
 // Application Statistics
 // (GET /applications/{applicationId}/stats)
-func (_ Unimplemented) GetStats(w http.ResponseWriter, r *http.Request, applicationId ApplicationId) {
+func (_ Unimplemented) GetApplicationStats(w http.ResponseWriter, r *http.Request, applicationId ApplicationId) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -6302,14 +6473,14 @@ func (siw *ServerInterfaceWrapper) DeleteApplications(w http.ResponseWriter, r *
 	handler.ServeHTTP(w, r.WithContext(ctx))
 }
 
-// GetApplications operation middleware
-func (siw *ServerInterfaceWrapper) GetApplications(w http.ResponseWriter, r *http.Request) {
+// ListApplications operation middleware
+func (siw *ServerInterfaceWrapper) ListApplications(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	var err error
 
 	// Parameter object where we will unmarshal all parameters from the context
-	var params GetApplicationsParams
+	var params ListApplicationsParams
 
 	// ------------- Optional query parameter "limit" -------------
 
@@ -6336,7 +6507,7 @@ func (siw *ServerInterfaceWrapper) GetApplications(w http.ResponseWriter, r *htt
 	}
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.GetApplications(w, r, params)
+		siw.Handler.ListApplications(w, r, params)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -6730,8 +6901,8 @@ func (siw *ServerInterfaceWrapper) ListApplicationSecrets(w http.ResponseWriter,
 	handler.ServeHTTP(w, r.WithContext(ctx))
 }
 
-// GetStats operation middleware
-func (siw *ServerInterfaceWrapper) GetStats(w http.ResponseWriter, r *http.Request) {
+// CreateSecrets operation middleware
+func (siw *ServerInterfaceWrapper) CreateSecrets(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	var err error
@@ -6746,7 +6917,33 @@ func (siw *ServerInterfaceWrapper) GetStats(w http.ResponseWriter, r *http.Reque
 	}
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.GetStats(w, r, applicationId)
+		siw.Handler.CreateSecrets(w, r, applicationId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r.WithContext(ctx))
+}
+
+// GetApplicationStats operation middleware
+func (siw *ServerInterfaceWrapper) GetApplicationStats(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	var err error
+
+	// ------------- Path parameter "applicationId" -------------
+	var applicationId ApplicationId
+
+	err = runtime.BindStyledParameterWithOptions("simple", "applicationId", chi.URLParam(r, "applicationId"), &applicationId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "applicationId", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetApplicationStats(w, r, applicationId)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -7697,7 +7894,7 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 		r.Delete(options.BaseURL+"/applications", wrapper.DeleteApplications)
 	})
 	r.Group(func(r chi.Router) {
-		r.Get(options.BaseURL+"/applications", wrapper.GetApplications)
+		r.Get(options.BaseURL+"/applications", wrapper.ListApplications)
 	})
 	r.Group(func(r chi.Router) {
 		r.Post(options.BaseURL+"/applications", wrapper.CreateApplications)
@@ -7733,7 +7930,10 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 		r.Get(options.BaseURL+"/applications/{applicationId}/secrets", wrapper.ListApplicationSecrets)
 	})
 	r.Group(func(r chi.Router) {
-		r.Get(options.BaseURL+"/applications/{applicationId}/stats", wrapper.GetStats)
+		r.Post(options.BaseURL+"/applications/{applicationId}/secrets", wrapper.CreateSecrets)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/applications/{applicationId}/stats", wrapper.GetApplicationStats)
 	})
 	r.Group(func(r chi.Router) {
 		r.Delete(options.BaseURL+"/attempts", wrapper.DeleteAttempts)

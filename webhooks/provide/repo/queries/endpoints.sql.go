@@ -31,17 +31,23 @@ ON CONFLICT DO NOTHING
 RETURNING 
     id,
     uid,
-        application_id,
+    url,
+    name,
+    application_id,
     rate_limit,
     metadata,
+    description,
     created_at;`
 
 type CreateEndpointsRow struct {
 	ID            int32        `json:"id"`
 	Uid           string       `json:"uid"`
+	Url           string       `json:"url"`
+	Name          string       `json:"name"`
 	ApplicationID int32        `json:"application_id"`
 	RateLimit     int32        `json:"rate_limit"`
 	Metadata      pgtype.JSONB `json:"metadata"`
+	Description   string       `json:"description"`
 	CreatedAt     time.Time    `json:"created_at"`
 }
 
@@ -56,7 +62,7 @@ func (q *DBQuerier) CreateEndpoints(ctx context.Context, endpoints []NewEndpoint
 	items := []CreateEndpointsRow{}
 	for rows.Next() {
 		var item CreateEndpointsRow
-		if err := rows.Scan(&item.ID, &item.Uid, &item.ApplicationID, &item.RateLimit, &item.Metadata, &item.CreatedAt); err != nil {
+		if err := rows.Scan(&item.ID, &item.Uid, &item.Url, &item.Name, &item.ApplicationID, &item.RateLimit, &item.Metadata, &item.Description, &item.CreatedAt); err != nil {
 			return nil, fmt.Errorf("scan CreateEndpoints row: %w", err)
 		}
 		items = append(items, item)
@@ -77,6 +83,57 @@ func (q *DBQuerier) DeleteEndpoints(ctx context.Context, ids []string) (pgconn.C
 		return cmdTag, fmt.Errorf("exec query DeleteEndpoints: %w", err)
 	}
 	return cmdTag, err
+}
+
+const getEndpointsSQL = `SELECT 
+    id,
+    uid,
+    url,
+    name,
+    metadata,
+    disabled,
+    rate_limit,
+    created_at,
+    updated_at,
+    description,
+    application_id
+FROM webhooks.endpoint
+WHERE uid = ANY($1::uuid[]);`
+
+type GetEndpointsRow struct {
+	ID            *int32       `json:"id"`
+	Uid           string       `json:"uid"`
+	Url           string       `json:"url"`
+	Name          string       `json:"name"`
+	Metadata      pgtype.JSONB `json:"metadata"`
+	Disabled      *bool        `json:"disabled"`
+	RateLimit     *int32       `json:"rate_limit"`
+	CreatedAt     time.Time    `json:"created_at"`
+	UpdatedAt     time.Time    `json:"updated_at"`
+	Description   string       `json:"description"`
+	ApplicationID *int32       `json:"application_id"`
+}
+
+// GetEndpoints implements Querier.GetEndpoints.
+func (q *DBQuerier) GetEndpoints(ctx context.Context, ids []string) ([]GetEndpointsRow, error) {
+	ctx = context.WithValue(ctx, "pggen_query_name", "GetEndpoints")
+	rows, err := q.conn.Query(ctx, getEndpointsSQL, ids)
+	if err != nil {
+		return nil, fmt.Errorf("query GetEndpoints: %w", err)
+	}
+	defer rows.Close()
+	items := []GetEndpointsRow{}
+	for rows.Next() {
+		var item GetEndpointsRow
+		if err := rows.Scan(&item.ID, &item.Uid, &item.Url, &item.Name, &item.Metadata, &item.Disabled, &item.RateLimit, &item.CreatedAt, &item.UpdatedAt, &item.Description, &item.ApplicationID); err != nil {
+			return nil, fmt.Errorf("scan GetEndpoints row: %w", err)
+		}
+		items = append(items, item)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("close GetEndpoints rows: %w", err)
+	}
+	return items, err
 }
 
 const listEndpointsSQL = `SELECT 

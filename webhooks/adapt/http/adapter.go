@@ -37,6 +37,7 @@ func New(opts Options) *Adapter {
 var Set = wire.NewSet(
 	wire.Struct(new(handle.Handler), "*"),
 	wire.Struct(new(Options), "*"),
+	handle.Convert,
 	scs.New,
 	New,
 )

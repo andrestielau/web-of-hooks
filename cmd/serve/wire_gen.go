@@ -29,10 +29,12 @@ func Adapters() actor.Actors {
 	options := pgx.ProvideOptions()
 	provider := repo.New(options)
 	secretsProvider := secrets.New()
+	converters := handle.Convert()
 	handler := &handle.Handler{
 		Session: sessionManager,
 		Repo:    provider,
 		Secrets: secretsProvider,
+		Convert: converters,
 	}
 	httpOptions := http.Options{
 		Handler: handler,

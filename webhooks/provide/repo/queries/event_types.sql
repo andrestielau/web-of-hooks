@@ -18,6 +18,16 @@ RETURNING
 -- name: DeleteEventTypes :exec
 DELETE FROM webhooks.event_type WHERE key = ANY(pggen.arg('keys')::TEXT[]);
 
+-- GetEventTypes gets event-types by id
+-- name: GetEventTypes :many
+SELECT 
+    id,
+    uid,
+    key,
+    created_at
+FROM webhooks.event_type
+WHERE uid = ANY(pggen.arg('ids')::uuid[]);
+
 -- ListEventTypes lists event-types
 -- name: ListEventTypes :many
 SELECT

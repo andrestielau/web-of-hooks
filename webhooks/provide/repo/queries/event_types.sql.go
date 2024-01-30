@@ -63,6 +63,43 @@ func (q *DBQuerier) DeleteEventTypes(ctx context.Context, keys []string) (pgconn
 	return cmdTag, err
 }
 
+const getEventTypesSQL = `SELECT 
+    id,
+    uid,
+    key,
+    created_at
+FROM webhooks.event_type
+WHERE uid = ANY($1::uuid[]);`
+
+type GetEventTypesRow struct {
+	ID        *int32    `json:"id"`
+	Uid       string    `json:"uid"`
+	Key       string    `json:"key"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
+// GetEventTypes implements Querier.GetEventTypes.
+func (q *DBQuerier) GetEventTypes(ctx context.Context, ids []string) ([]GetEventTypesRow, error) {
+	ctx = context.WithValue(ctx, "pggen_query_name", "GetEventTypes")
+	rows, err := q.conn.Query(ctx, getEventTypesSQL, ids)
+	if err != nil {
+		return nil, fmt.Errorf("query GetEventTypes: %w", err)
+	}
+	defer rows.Close()
+	items := []GetEventTypesRow{}
+	for rows.Next() {
+		var item GetEventTypesRow
+		if err := rows.Scan(&item.ID, &item.Uid, &item.Key, &item.CreatedAt); err != nil {
+			return nil, fmt.Errorf("scan GetEventTypes row: %w", err)
+		}
+		items = append(items, item)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("close GetEventTypes rows: %w", err)
+	}
+	return items, err
+}
+
 const listEventTypesSQL = `SELECT
     id,
     uid,
