@@ -48,7 +48,7 @@ paths:
       description: List Web-Hook Event-Types that you can subscribe to.
       parameters:
         - $ref: '#/components/parameters/limit'
-        - $ref: '#/components/parameters/cursor'
+        - $ref: '#/components/parameters/offset'
         - $ref: '#/components/parameters/reverse'
   /channels:
     get:
@@ -61,7 +61,7 @@ paths:
       operationId: list-channels
       parameters:
         - $ref: '#/components/parameters/limit'
-        - $ref: '#/components/parameters/cursor'
+        - $ref: '#/components/parameters/offset'
         - $ref: '#/components/parameters/reverse'
       description: List Channels
   /applications:
@@ -75,7 +75,7 @@ paths:
       operationId: list-applications
       parameters:
         - $ref: '#/components/parameters/limit'
-        - $ref: '#/components/parameters/cursor'
+        - $ref: '#/components/parameters/offset'
         - $ref: '#/components/parameters/reverse'
       description: List Applications
     post:
@@ -192,7 +192,7 @@ paths:
       description: List the Endpoints you want to receive Web-Hook Event-Types at.
       parameters:
         - $ref: '#/components/parameters/limit'
-        - $ref: '#/components/parameters/cursor'
+        - $ref: '#/components/parameters/offset'
         - $ref: '#/components/parameters/reverse'
     post:
       summary: Register Endpoints
@@ -232,7 +232,7 @@ paths:
       operationId: list-messages
       parameters:
         - $ref: '#/components/parameters/limit'
-        - $ref: '#/components/parameters/cursor'
+        - $ref: '#/components/parameters/offset'
         - $ref: '#/components/parameters/reverse'
       description: List Messages
     post:
@@ -400,7 +400,7 @@ paths:
       description: List the Message Attempts directed at your Endpoint
       parameters:
         - $ref: '#/components/parameters/limit'
-        - $ref: '#/components/parameters/cursor'
+        - $ref: '#/components/parameters/offset'
         - $ref: '#/components/parameters/reverse'
     parameters:
       - $ref: '#/components/parameters/endpointId'
@@ -494,7 +494,7 @@ paths:
       operationId: list-message-attempts
       parameters:
         - $ref: '#/components/parameters/limit'
-        - $ref: '#/components/parameters/cursor'
+        - $ref: '#/components/parameters/offset'
         - $ref: '#/components/parameters/reverse'
     post:
       summary: Send or Retry Message's Attempts
@@ -536,7 +536,7 @@ paths:
       operationId: list-attempts
       parameters:
         - $ref: '#/components/parameters/limit'
-        - $ref: '#/components/parameters/cursor'
+        - $ref: '#/components/parameters/offset'
         - $ref: '#/components/parameters/reverse'
     post:
       summary: Send or Retry Message Attempts
@@ -1229,8 +1229,8 @@ components:
       required: false
       schema:
         type: integer
-    cursor:
-      name: cursor
+    offset:
+      name: offset
       in: query
       required: false
       schema:

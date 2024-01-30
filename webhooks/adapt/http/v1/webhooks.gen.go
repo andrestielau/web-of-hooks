@@ -148,9 +148,6 @@ type ApplicationId = string
 // AttemptId defines model for attemptId.
 type AttemptId = string
 
-// Cursor defines model for cursor.
-type Cursor = string
-
 // EndpointId defines model for endpointId.
 type EndpointId = string
 
@@ -162,6 +159,9 @@ type Limit = int
 
 // MessageId defines model for messageId.
 type MessageId = string
+
+// Offset defines model for offset.
+type Offset = string
 
 // Reverse defines model for reverse.
 type Reverse = bool
@@ -274,7 +274,7 @@ type DeleteApplicationsJSONBody = []struct {
 // ListApplicationsParams defines parameters for ListApplications.
 type ListApplicationsParams struct {
 	Limit   *Limit   `form:"limit,omitempty" json:"limit,omitempty"`
-	Cursor  *Cursor  `form:"cursor,omitempty" json:"cursor,omitempty"`
+	Offset  *Offset  `form:"offset,omitempty" json:"offset,omitempty"`
 	Reverse *Reverse `form:"reverse,omitempty" json:"reverse,omitempty"`
 }
 
@@ -308,7 +308,7 @@ type DisableEndpointsParams struct {
 // ListEndpointsParams defines parameters for ListEndpoints.
 type ListEndpointsParams struct {
 	Limit   *Limit   `form:"limit,omitempty" json:"limit,omitempty"`
-	Cursor  *Cursor  `form:"cursor,omitempty" json:"cursor,omitempty"`
+	Offset  *Offset  `form:"offset,omitempty" json:"offset,omitempty"`
 	Reverse *Reverse `form:"reverse,omitempty" json:"reverse,omitempty"`
 }
 
@@ -329,7 +329,7 @@ type DeleteMessagesParams struct {
 // ListMessagesParams defines parameters for ListMessages.
 type ListMessagesParams struct {
 	Limit   *Limit   `form:"limit,omitempty" json:"limit,omitempty"`
-	Cursor  *Cursor  `form:"cursor,omitempty" json:"cursor,omitempty"`
+	Offset  *Offset  `form:"offset,omitempty" json:"offset,omitempty"`
 	Reverse *Reverse `form:"reverse,omitempty" json:"reverse,omitempty"`
 }
 
@@ -361,7 +361,7 @@ type DeleteAttemptsParams struct {
 // ListAttemptsParams defines parameters for ListAttempts.
 type ListAttemptsParams struct {
 	Limit   *Limit   `form:"limit,omitempty" json:"limit,omitempty"`
-	Cursor  *Cursor  `form:"cursor,omitempty" json:"cursor,omitempty"`
+	Offset  *Offset  `form:"offset,omitempty" json:"offset,omitempty"`
 	Reverse *Reverse `form:"reverse,omitempty" json:"reverse,omitempty"`
 }
 
@@ -389,7 +389,7 @@ type CreateAttemptParams struct {
 // ListChannelsParams defines parameters for ListChannels.
 type ListChannelsParams struct {
 	Limit   *Limit   `form:"limit,omitempty" json:"limit,omitempty"`
-	Cursor  *Cursor  `form:"cursor,omitempty" json:"cursor,omitempty"`
+	Offset  *Offset  `form:"offset,omitempty" json:"offset,omitempty"`
 	Reverse *Reverse `form:"reverse,omitempty" json:"reverse,omitempty"`
 }
 
@@ -409,7 +409,7 @@ type DeleteEndpointAttemptsParams struct {
 // ListEndpointAttemptsParams defines parameters for ListEndpointAttempts.
 type ListEndpointAttemptsParams struct {
 	Limit   *Limit   `form:"limit,omitempty" json:"limit,omitempty"`
-	Cursor  *Cursor  `form:"cursor,omitempty" json:"cursor,omitempty"`
+	Offset  *Offset  `form:"offset,omitempty" json:"offset,omitempty"`
 	Reverse *Reverse `form:"reverse,omitempty" json:"reverse,omitempty"`
 }
 
@@ -427,7 +427,7 @@ type CreateEndpointAttemptsParams struct {
 // ListEventTypesParams defines parameters for ListEventTypes.
 type ListEventTypesParams struct {
 	Limit   *Limit   `form:"limit,omitempty" json:"limit,omitempty"`
-	Cursor  *Cursor  `form:"cursor,omitempty" json:"cursor,omitempty"`
+	Offset  *Offset  `form:"offset,omitempty" json:"offset,omitempty"`
 	Reverse *Reverse `form:"reverse,omitempty" json:"reverse,omitempty"`
 }
 
@@ -452,7 +452,7 @@ type DeleteMessageAttemptsParams struct {
 // ListMessageAttemptsParams defines parameters for ListMessageAttempts.
 type ListMessageAttemptsParams struct {
 	Limit   *Limit   `form:"limit,omitempty" json:"limit,omitempty"`
-	Cursor  *Cursor  `form:"cursor,omitempty" json:"cursor,omitempty"`
+	Offset  *Offset  `form:"offset,omitempty" json:"offset,omitempty"`
 	Reverse *Reverse `form:"reverse,omitempty" json:"reverse,omitempty"`
 }
 
@@ -1544,9 +1544,9 @@ func NewListApplicationsRequest(server string, params *ListApplicationsParams) (
 
 		}
 
-		if params.Cursor != nil {
+		if params.Offset != nil {
 
-			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "cursor", runtime.ParamLocationQuery, *params.Cursor); err != nil {
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "offset", runtime.ParamLocationQuery, *params.Offset); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err
@@ -1887,9 +1887,9 @@ func NewListEndpointsRequest(server string, applicationId ApplicationId, params 
 
 		}
 
-		if params.Cursor != nil {
+		if params.Offset != nil {
 
-			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "cursor", runtime.ParamLocationQuery, *params.Cursor); err != nil {
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "offset", runtime.ParamLocationQuery, *params.Offset); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err
@@ -2091,9 +2091,9 @@ func NewListMessagesRequest(server string, applicationId ApplicationId, params *
 
 		}
 
-		if params.Cursor != nil {
+		if params.Offset != nil {
 
-			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "cursor", runtime.ParamLocationQuery, *params.Cursor); err != nil {
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "offset", runtime.ParamLocationQuery, *params.Offset); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err
@@ -2418,9 +2418,9 @@ func NewListAttemptsRequest(server string, params *ListAttemptsParams) (*http.Re
 
 		}
 
-		if params.Cursor != nil {
+		if params.Offset != nil {
 
-			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "cursor", runtime.ParamLocationQuery, *params.Cursor); err != nil {
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "offset", runtime.ParamLocationQuery, *params.Offset); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err
@@ -2720,9 +2720,9 @@ func NewListChannelsRequest(server string, params *ListChannelsParams) (*http.Re
 
 		}
 
-		if params.Cursor != nil {
+		if params.Offset != nil {
 
-			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "cursor", runtime.ParamLocationQuery, *params.Cursor); err != nil {
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "offset", runtime.ParamLocationQuery, *params.Offset); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err
@@ -3001,9 +3001,9 @@ func NewListEndpointAttemptsRequest(server string, endpointId EndpointId, params
 
 		}
 
-		if params.Cursor != nil {
+		if params.Offset != nil {
 
-			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "cursor", runtime.ParamLocationQuery, *params.Cursor); err != nil {
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "offset", runtime.ParamLocationQuery, *params.Offset); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err
@@ -3185,9 +3185,9 @@ func NewListEventTypesRequest(server string, params *ListEventTypesParams) (*htt
 
 		}
 
-		if params.Cursor != nil {
+		if params.Offset != nil {
 
-			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "cursor", runtime.ParamLocationQuery, *params.Cursor); err != nil {
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "offset", runtime.ParamLocationQuery, *params.Offset); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err
@@ -3528,9 +3528,9 @@ func NewListMessageAttemptsRequest(server string, messageId MessageId, params *L
 
 		}
 
-		if params.Cursor != nil {
+		if params.Offset != nil {
 
-			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "cursor", runtime.ParamLocationQuery, *params.Cursor); err != nil {
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "offset", runtime.ParamLocationQuery, *params.Offset); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err
@@ -6754,11 +6754,11 @@ func (siw *ServerInterfaceWrapper) ListApplications(w http.ResponseWriter, r *ht
 		return
 	}
 
-	// ------------- Optional query parameter "cursor" -------------
+	// ------------- Optional query parameter "offset" -------------
 
-	err = runtime.BindQueryParameter("form", true, false, "cursor", r.URL.Query(), &params.Cursor)
+	err = runtime.BindQueryParameter("form", true, false, "offset", r.URL.Query(), &params.Offset)
 	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "cursor", Err: err})
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "offset", Err: err})
 		return
 	}
 
@@ -6959,11 +6959,11 @@ func (siw *ServerInterfaceWrapper) ListEndpoints(w http.ResponseWriter, r *http.
 		return
 	}
 
-	// ------------- Optional query parameter "cursor" -------------
+	// ------------- Optional query parameter "offset" -------------
 
-	err = runtime.BindQueryParameter("form", true, false, "cursor", r.URL.Query(), &params.Cursor)
+	err = runtime.BindQueryParameter("form", true, false, "offset", r.URL.Query(), &params.Offset)
 	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "cursor", Err: err})
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "offset", Err: err})
 		return
 	}
 
@@ -7075,11 +7075,11 @@ func (siw *ServerInterfaceWrapper) ListMessages(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	// ------------- Optional query parameter "cursor" -------------
+	// ------------- Optional query parameter "offset" -------------
 
-	err = runtime.BindQueryParameter("form", true, false, "cursor", r.URL.Query(), &params.Cursor)
+	err = runtime.BindQueryParameter("form", true, false, "offset", r.URL.Query(), &params.Offset)
 	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "cursor", Err: err})
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "offset", Err: err})
 		return
 	}
 
@@ -7262,11 +7262,11 @@ func (siw *ServerInterfaceWrapper) ListAttempts(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	// ------------- Optional query parameter "cursor" -------------
+	// ------------- Optional query parameter "offset" -------------
 
-	err = runtime.BindQueryParameter("form", true, false, "cursor", r.URL.Query(), &params.Cursor)
+	err = runtime.BindQueryParameter("form", true, false, "offset", r.URL.Query(), &params.Offset)
 	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "cursor", Err: err})
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "offset", Err: err})
 		return
 	}
 
@@ -7434,11 +7434,11 @@ func (siw *ServerInterfaceWrapper) ListChannels(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	// ------------- Optional query parameter "cursor" -------------
+	// ------------- Optional query parameter "offset" -------------
 
-	err = runtime.BindQueryParameter("form", true, false, "cursor", r.URL.Query(), &params.Cursor)
+	err = runtime.BindQueryParameter("form", true, false, "offset", r.URL.Query(), &params.Offset)
 	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "cursor", Err: err})
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "offset", Err: err})
 		return
 	}
 
@@ -7613,11 +7613,11 @@ func (siw *ServerInterfaceWrapper) ListEndpointAttempts(w http.ResponseWriter, r
 		return
 	}
 
-	// ------------- Optional query parameter "cursor" -------------
+	// ------------- Optional query parameter "offset" -------------
 
-	err = runtime.BindQueryParameter("form", true, false, "cursor", r.URL.Query(), &params.Cursor)
+	err = runtime.BindQueryParameter("form", true, false, "offset", r.URL.Query(), &params.Offset)
 	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "cursor", Err: err})
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "offset", Err: err})
 		return
 	}
 
@@ -7720,11 +7720,11 @@ func (siw *ServerInterfaceWrapper) ListEventTypes(w http.ResponseWriter, r *http
 		return
 	}
 
-	// ------------- Optional query parameter "cursor" -------------
+	// ------------- Optional query parameter "offset" -------------
 
-	err = runtime.BindQueryParameter("form", true, false, "cursor", r.URL.Query(), &params.Cursor)
+	err = runtime.BindQueryParameter("form", true, false, "offset", r.URL.Query(), &params.Offset)
 	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "cursor", Err: err})
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "offset", Err: err})
 		return
 	}
 
@@ -7925,11 +7925,11 @@ func (siw *ServerInterfaceWrapper) ListMessageAttempts(w http.ResponseWriter, r 
 		return
 	}
 
-	// ------------- Optional query parameter "cursor" -------------
+	// ------------- Optional query parameter "offset" -------------
 
-	err = runtime.BindQueryParameter("form", true, false, "cursor", r.URL.Query(), &params.Cursor)
+	err = runtime.BindQueryParameter("form", true, false, "offset", r.URL.Query(), &params.Offset)
 	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "cursor", Err: err})
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "offset", Err: err})
 		return
 	}
 

@@ -14,6 +14,7 @@ import (
 
 // goverter:converter
 // goverter:extend TimeToString
+// goverter:matchIgnoreCase
 // goverter:output:file ./generated.go
 // goverter:output:package github.com/andrestielau/web-of-hooks/webhooks/adapt/http/convert
 type Converter interface {
@@ -27,13 +28,11 @@ type Converter interface {
 	// goverter:useZeroValueOnPointerInconsistency
 	EventTypeQuery(webhooksv1.ListEventTypesParams) webhooks.EventTypeQuery
 
-	// goverter:matchIgnoreCase
 	// goverter:ignore Metadata
 	// goverter:useZeroValueOnPointerInconsistency
 	NewApplication(webhooksv1.NewApplication) webhooks.NewApplication
 	NewApplications([]webhooksv1.NewApplication) []webhooks.NewApplication
 
-	// goverter:matchIgnoreCase
 	// goverter:useZeroValueOnPointerInconsistency
 	Application(webhooks.Application) webhooksv1.Application
 	Applications([]webhooks.Application) []webhooksv1.Application
@@ -57,12 +56,10 @@ type Converter interface {
 	// goverter:useZeroValueOnPointerInconsistency
 	EndpointQuery(webhooksv1.ListEndpointsParams) webhooks.EndpointQuery
 
-	// goverter:matchIgnoreCase
 	// goverter:useZeroValueOnPointerInconsistency
 	NewSecret(webhooksv1.NewSecret) webhooks.NewSecret
 	NewSecrets([]webhooksv1.NewSecret) []webhooks.NewSecret
 
-	// goverter:matchIgnoreCase
 	// goverter:ignore CreatedAt
 	// goverter:useZeroValueOnPointerInconsistency
 	Secret(webhooks.Secret) webhooksv1.Secret

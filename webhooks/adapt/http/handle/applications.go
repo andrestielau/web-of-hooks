@@ -1,7 +1,6 @@
 package handle
 
 import (
-	"log"
 	"net/http"
 	webhooksv1 "woh/webhooks/adapt/http/v1"
 
@@ -19,8 +18,6 @@ func (h *Handler) CreateApplications(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	log.Println(req)
-	log.Println(h.Convert.NewApplications(req))
 	if res, err := h.Repo.CreateApplications(r.Context(), h.Convert.NewApplications(req)); err != nil {
 		errs, stop := convert.Errors(w, err)
 		if stop {
