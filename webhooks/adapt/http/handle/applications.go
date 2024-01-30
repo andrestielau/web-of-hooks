@@ -1,6 +1,7 @@
 package handle
 
 import (
+	"log"
 	"net/http"
 	webhooksv1 "woh/webhooks/adapt/http/v1"
 
@@ -18,6 +19,8 @@ func (h *Handler) CreateApplications(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+	log.Println(req)
+	log.Println(h.Convert.NewApplications(req))
 	if res, err := h.Repo.CreateApplications(r.Context(), h.Convert.NewApplications(req)); err != nil {
 		errs, stop := convert.Errors(w, err)
 		if stop {
@@ -74,7 +77,17 @@ func (h *Handler) ListApplications(w http.ResponseWriter, r *http.Request, param
 
 // GetApplicationStats implements webhooksv1.ServerInterface.
 func (h *Handler) GetApplicationStats(w http.ResponseWriter, r *http.Request, applicationId string) {
-	panic("unimplemented")
+	var ret webhooksv1.Application
+	if res, err := h.Repo.GetApplications(r.Context(), []string{applicationId}); convert.Error(w, err) {
+		return
+	} else if len(res) == 1 {
+		ret = h.Convert.Application(res[0])
+	}
+	if media.ShouldRender(r) {
+		// TODO: partial
+	} else if err := media.Res(w, media.Accept(r), ret); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
 }
 
 // UpdateApplication implements webhooksv1.ServerInterface.

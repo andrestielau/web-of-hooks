@@ -21,9 +21,11 @@ import (
 // Application defines model for Application.
 type Application struct {
 	CreatedAt string  `json:"createdAt"`
-	Id        string  `json:"id"`
-	Name      *string `json:"name,omitempty"`
+	Id        *int32  `json:"id,omitempty"`
+	Name      string  `json:"name"`
 	RateLimit *int32  `json:"rateLimit,omitempty"`
+	TenantId  string  `json:"tenant_id"`
+	Uid       *string `json:"uid,omitempty"`
 }
 
 // Attempt defines model for Attempt.
@@ -79,9 +81,9 @@ type Message struct {
 
 // NewApplication defines model for NewApplication.
 type NewApplication struct {
-	Id        *string `json:"id,omitempty"`
-	Name      *string `json:"name,omitempty"`
-	RateLimit *int32  `json:"rateLimit,omitempty"`
+	Name      string `json:"name"`
+	RateLimit *int32 `json:"rateLimit,omitempty"`
+	TenantId  string `json:"tenant_id"`
 }
 
 // NewAttempt defines model for NewAttempt.
@@ -115,8 +117,8 @@ type NewMessage struct {
 
 // NewSecret defines model for NewSecret.
 type NewSecret struct {
-	Id    *string `json:"id,omitempty"`
-	Value string  `json:"value"`
+	ApplicationId *int32 `json:"application_id,omitempty"`
+	Value         string `json:"value"`
 }
 
 // PageInfo defines model for PageInfo.
@@ -128,9 +130,9 @@ type PageInfo struct {
 
 // Secret defines model for Secret.
 type Secret struct {
-	CreatedAt *string `json:"createdAt,omitempty"`
-	Id        string  `json:"id"`
-	Value     string  `json:"value"`
+	ApplicationId *int32  `json:"application_id,omitempty"`
+	CreatedAt     *string `json:"createdAt,omitempty"`
+	Value         string  `json:"value"`
 }
 
 // Statistics defines model for Statistics.
@@ -280,7 +282,7 @@ type ListApplicationsParams struct {
 type CreateApplicationsJSONBody = []NewApplication
 
 // CreateApplicationsMultipartBody defines parameters for CreateApplications.
-type CreateApplicationsMultipartBody = []NewEndpoint
+type CreateApplicationsMultipartBody = []NewApplication
 
 // DeleteApplicationParams defines parameters for DeleteApplication.
 type DeleteApplicationParams struct {
@@ -531,6 +533,9 @@ type CreateMessagesAttemptsJSONRequestBody = CreateMessagesAttemptsJSONBody
 // CreateMessagesAttemptsMultipartRequestBody defines body for CreateMessagesAttempts for multipart/form-data ContentType.
 type CreateMessagesAttemptsMultipartRequestBody = CreateMessagesAttemptsMultipartBody
 
+// CreateSecretJSONRequestBody defines body for CreateSecret for application/json ContentType.
+type CreateSecretJSONRequestBody = NewSecret
+
 // RotateSecretJSONRequestBody defines body for RotateSecret for application/json ContentType.
 type RotateSecretJSONRequestBody = NewSecret
 
@@ -747,6 +752,14 @@ type ClientInterface interface {
 	CreateMessagesAttemptsWithBody(ctx context.Context, messageId MessageId, params *CreateMessagesAttemptsParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	CreateMessagesAttempts(ctx context.Context, messageId MessageId, params *CreateMessagesAttemptsParams, body CreateMessagesAttemptsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ListSecrets request
+	ListSecrets(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateSecretWithBody request with any body
+	CreateSecretWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateSecret(ctx context.Context, body CreateSecretJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetSecret request
 	GetSecret(ctx context.Context, secretId SecretId, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -1371,6 +1384,42 @@ func (c *Client) CreateMessagesAttemptsWithBody(ctx context.Context, messageId M
 
 func (c *Client) CreateMessagesAttempts(ctx context.Context, messageId MessageId, params *CreateMessagesAttemptsParams, body CreateMessagesAttemptsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewCreateMessagesAttemptsRequest(c.Server, messageId, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListSecrets(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListSecretsRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateSecretWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateSecretRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateSecret(ctx context.Context, body CreateSecretJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateSecretRequest(c.Server, body)
 	if err != nil {
 		return nil, err
 	}
@@ -3591,6 +3640,73 @@ func NewCreateMessagesAttemptsRequestWithBody(server string, messageId MessageId
 	return req, nil
 }
 
+// NewListSecretsRequest generates requests for ListSecrets
+func NewListSecretsRequest(server string) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/secrets")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewCreateSecretRequest calls the generic CreateSecret builder with application/json body
+func NewCreateSecretRequest(server string, body CreateSecretJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateSecretRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewCreateSecretRequestWithBody generates requests for CreateSecret with any type of body
+func NewCreateSecretRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/secrets")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewGetSecretRequest generates requests for GetSecret
 func NewGetSecretRequest(server string, secretId SecretId) (*http.Request, error) {
 	var err error
@@ -3855,6 +3971,14 @@ type ClientWithResponsesInterface interface {
 	CreateMessagesAttemptsWithBodyWithResponse(ctx context.Context, messageId MessageId, params *CreateMessagesAttemptsParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateMessagesAttemptsResponse, error)
 
 	CreateMessagesAttemptsWithResponse(ctx context.Context, messageId MessageId, params *CreateMessagesAttemptsParams, body CreateMessagesAttemptsJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateMessagesAttemptsResponse, error)
+
+	// ListSecretsWithResponse request
+	ListSecretsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListSecretsResponse, error)
+
+	// CreateSecretWithBodyWithResponse request with any body
+	CreateSecretWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateSecretResponse, error)
+
+	CreateSecretWithResponse(ctx context.Context, body CreateSecretJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateSecretResponse, error)
 
 	// GetSecretWithResponse request
 	GetSecretWithResponse(ctx context.Context, secretId SecretId, reqEditors ...RequestEditorFn) (*GetSecretResponse, error)
@@ -4670,6 +4794,50 @@ func (r CreateMessagesAttemptsResponse) StatusCode() int {
 	return 0
 }
 
+type ListSecretsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *[]Secret
+}
+
+// Status returns HTTPResponse.Status
+func (r ListSecretsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListSecretsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type CreateSecretResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON202      *Secret
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateSecretResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateSecretResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type GetSecretResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -5165,6 +5333,32 @@ func (c *ClientWithResponses) CreateMessagesAttemptsWithResponse(ctx context.Con
 		return nil, err
 	}
 	return ParseCreateMessagesAttemptsResponse(rsp)
+}
+
+// ListSecretsWithResponse request returning *ListSecretsResponse
+func (c *ClientWithResponses) ListSecretsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListSecretsResponse, error) {
+	rsp, err := c.ListSecrets(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListSecretsResponse(rsp)
+}
+
+// CreateSecretWithBodyWithResponse request with arbitrary body returning *CreateSecretResponse
+func (c *ClientWithResponses) CreateSecretWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateSecretResponse, error) {
+	rsp, err := c.CreateSecretWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateSecretResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateSecretWithResponse(ctx context.Context, body CreateSecretJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateSecretResponse, error) {
+	rsp, err := c.CreateSecret(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateSecretResponse(rsp)
 }
 
 // GetSecretWithResponse request returning *GetSecretResponse
@@ -6038,6 +6232,58 @@ func ParseCreateMessagesAttemptsResponse(rsp *http.Response) (*CreateMessagesAtt
 	return response, nil
 }
 
+// ParseListSecretsResponse parses an HTTP response from a ListSecretsWithResponse call
+func ParseListSecretsResponse(rsp *http.Response) (*ListSecretsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListSecretsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest []Secret
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateSecretResponse parses an HTTP response from a CreateSecretWithResponse call
+func ParseCreateSecretResponse(rsp *http.Response) (*CreateSecretResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateSecretResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 202:
+		var dest Secret
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON202 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseGetSecretResponse parses an HTTP response from a GetSecretWithResponse call
 func ParseGetSecretResponse(rsp *http.Response) (*GetSecretResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -6203,6 +6449,12 @@ type ServerInterface interface {
 	// Send or Retry Message's Attempts
 	// (POST /messages/{messageId}/attempts)
 	CreateMessagesAttempts(w http.ResponseWriter, r *http.Request, messageId MessageId, params CreateMessagesAttemptsParams)
+	// List Secrets
+	// (GET /secrets)
+	ListSecrets(w http.ResponseWriter, r *http.Request)
+	// Create Secret
+	// (POST /secrets)
+	CreateSecret(w http.ResponseWriter, r *http.Request)
 	// Get Secret
 	// (GET /secrets/{secretId})
 	GetSecret(w http.ResponseWriter, r *http.Request, secretId SecretId)
@@ -6434,6 +6686,18 @@ func (_ Unimplemented) ListMessageAttempts(w http.ResponseWriter, r *http.Reques
 // Send or Retry Message's Attempts
 // (POST /messages/{messageId}/attempts)
 func (_ Unimplemented) CreateMessagesAttempts(w http.ResponseWriter, r *http.Request, messageId MessageId, params CreateMessagesAttemptsParams) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// List Secrets
+// (GET /secrets)
+func (_ Unimplemented) ListSecrets(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// Create Secret
+// (POST /secrets)
+func (_ Unimplemented) CreateSecret(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -7725,6 +7989,36 @@ func (siw *ServerInterfaceWrapper) CreateMessagesAttempts(w http.ResponseWriter,
 	handler.ServeHTTP(w, r.WithContext(ctx))
 }
 
+// ListSecrets operation middleware
+func (siw *ServerInterfaceWrapper) ListSecrets(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.ListSecrets(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r.WithContext(ctx))
+}
+
+// CreateSecret operation middleware
+func (siw *ServerInterfaceWrapper) CreateSecret(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.CreateSecret(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r.WithContext(ctx))
+}
+
 // GetSecret operation middleware
 func (siw *ServerInterfaceWrapper) GetSecret(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
@@ -8000,6 +8294,12 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 	})
 	r.Group(func(r chi.Router) {
 		r.Post(options.BaseURL+"/messages/{messageId}/attempts", wrapper.CreateMessagesAttempts)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/secrets", wrapper.ListSecrets)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/secrets", wrapper.CreateSecret)
 	})
 	r.Group(func(r chi.Router) {
 		r.Get(options.BaseURL+"/secrets/{secretId}", wrapper.GetSecret)

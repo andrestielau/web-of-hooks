@@ -1,10 +1,12 @@
 CREATE TYPE webhooks.new_secret AS (
-    tenant_id TEXT,
-    id UUID
+    application_id INT,
+    value TEXT
 );
 CREATE TABLE webhooks.secret (
-    uid UUID UNIQUE NOT NULL,
     id SERIAL PRIMARY KEY,
-    tenant_id TEXT,
-    value TEXT
+    uid UUID UNIQUE NOT NULL DEFAULT generate_ulid(),
+    application_id INT NOT NULL REFERENCES webhooks.application(id),
+    value TEXT NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );

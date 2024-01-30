@@ -83,6 +83,9 @@ type Querier interface {
 
 	// ListSecrets lists secrets
 	ListSecrets(ctx context.Context, params ListSecretsParams) ([]Secret, error)
+
+	// Update secret value by uid
+	UpdateSecret(ctx context.Context, value string, uid string) (pgconn.CommandTag, error)
 }
 
 var _ Querier = &DBQuerier{}
@@ -170,7 +173,6 @@ type MessageDetails struct {
 
 // NewApplication represents the Postgres composite type "new_application".
 type NewApplication struct {
-	ID        string       `json:"id"`
 	Name      string       `json:"name"`
 	TenantID  string       `json:"tenant_id"`
 	RateLimit *int32       `json:"rate_limit"`
@@ -204,16 +206,18 @@ type NewMessage struct {
 
 // NewSecret represents the Postgres composite type "new_secret".
 type NewSecret struct {
-	TenantID string `json:"tenant_id"`
-	ID       string `json:"id"`
+	ApplicationID *int32 `json:"application_id"`
+	Value         string `json:"value"`
 }
 
 // Secret represents the Postgres composite type "secret".
 type Secret struct {
-	Uid      string `json:"uid"`
-	ID       *int32 `json:"id"`
-	TenantID string `json:"tenant_id"`
-	Value    string `json:"value"`
+	ID            *int32    `json:"id"`
+	Uid           string    `json:"uid"`
+	ApplicationID *int32    `json:"application_id"`
+	Value         string    `json:"value"`
+	CreatedAt     time.Time `json:"created_at"`
+	UpdatedAt     time.Time `json:"updated_at"`
 }
 
 // typeResolver looks up the pgtype.ValueTranscoder by Postgres type name.
@@ -389,7 +393,6 @@ func (tr *typeResolver) newMessage() pgtype.ValueTranscoder {
 func (tr *typeResolver) newNewApplication() pgtype.ValueTranscoder {
 	return tr.newCompositeValue(
 		"new_application",
-		compositeField{name: "id", typeName: "uuid", defaultVal: &pgtype.UUID{}},
 		compositeField{name: "name", typeName: "text", defaultVal: &pgtype.Text{}},
 		compositeField{name: "tenant_id", typeName: "text", defaultVal: &pgtype.Text{}},
 		compositeField{name: "rate_limit", typeName: "int4", defaultVal: &pgtype.Int4{}},
@@ -401,7 +404,6 @@ func (tr *typeResolver) newNewApplication() pgtype.ValueTranscoder {
 // type 'new_application' as a slice of interface{} to encode query parameters.
 func (tr *typeResolver) newNewApplicationRaw(v NewApplication) []interface{} {
 	return []interface{}{
-		v.ID,
 		v.Name,
 		v.TenantID,
 		v.RateLimit,
@@ -485,8 +487,8 @@ func (tr *typeResolver) newNewMessageRaw(v NewMessage) []interface{} {
 func (tr *typeResolver) newNewSecret() pgtype.ValueTranscoder {
 	return tr.newCompositeValue(
 		"new_secret",
-		compositeField{name: "tenant_id", typeName: "text", defaultVal: &pgtype.Text{}},
-		compositeField{name: "id", typeName: "uuid", defaultVal: &pgtype.UUID{}},
+		compositeField{name: "application_id", typeName: "int4", defaultVal: &pgtype.Int4{}},
+		compositeField{name: "value", typeName: "text", defaultVal: &pgtype.Text{}},
 	)
 }
 
@@ -494,8 +496,8 @@ func (tr *typeResolver) newNewSecret() pgtype.ValueTranscoder {
 // type 'new_secret' as a slice of interface{} to encode query parameters.
 func (tr *typeResolver) newNewSecretRaw(v NewSecret) []interface{} {
 	return []interface{}{
-		v.TenantID,
-		v.ID,
+		v.ApplicationID,
+		v.Value,
 	}
 }
 
@@ -504,10 +506,12 @@ func (tr *typeResolver) newNewSecretRaw(v NewSecret) []interface{} {
 func (tr *typeResolver) newSecret() pgtype.ValueTranscoder {
 	return tr.newCompositeValue(
 		"secret",
-		compositeField{name: "uid", typeName: "uuid", defaultVal: &pgtype.UUID{}},
 		compositeField{name: "id", typeName: "int4", defaultVal: &pgtype.Int4{}},
-		compositeField{name: "tenant_id", typeName: "text", defaultVal: &pgtype.Text{}},
+		compositeField{name: "uid", typeName: "uuid", defaultVal: &pgtype.UUID{}},
+		compositeField{name: "application_id", typeName: "int4", defaultVal: &pgtype.Int4{}},
 		compositeField{name: "value", typeName: "text", defaultVal: &pgtype.Text{}},
+		compositeField{name: "created_at", typeName: "timestamptz", defaultVal: &pgtype.Timestamptz{}},
+		compositeField{name: "updated_at", typeName: "timestamptz", defaultVal: &pgtype.Timestamptz{}},
 	)
 }
 

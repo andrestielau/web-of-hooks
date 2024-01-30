@@ -27,12 +27,13 @@ type Converter interface {
 	// goverter:useZeroValueOnPointerInconsistency
 	EventTypeQuery(webhooksv1.ListEventTypesParams) webhooks.EventTypeQuery
 
-	// goverter:ignore ID TenantID Metadata
+	// goverter:matchIgnoreCase
+	// goverter:ignore Metadata
 	// goverter:useZeroValueOnPointerInconsistency
 	NewApplication(webhooksv1.NewApplication) webhooks.NewApplication
 	NewApplications([]webhooksv1.NewApplication) []webhooks.NewApplication
 
-	// goverter:map Uid Id
+	// goverter:matchIgnoreCase
 	// goverter:useZeroValueOnPointerInconsistency
 	Application(webhooks.Application) webhooksv1.Application
 	Applications([]webhooks.Application) []webhooksv1.Application
@@ -56,13 +57,13 @@ type Converter interface {
 	// goverter:useZeroValueOnPointerInconsistency
 	EndpointQuery(webhooksv1.ListEndpointsParams) webhooks.EndpointQuery
 
-	// goverter:ignore ID TenantID
+	// goverter:matchIgnoreCase
 	// goverter:useZeroValueOnPointerInconsistency
 	NewSecret(webhooksv1.NewSecret) webhooks.NewSecret
 	NewSecrets([]webhooksv1.NewSecret) []webhooks.NewSecret
 
-	// goverter:map Uid Id
-	// goverter:ignore CreatedAt Value
+	// goverter:matchIgnoreCase
+	// goverter:ignore CreatedAt
 	// goverter:useZeroValueOnPointerInconsistency
 	Secret(webhooks.Secret) webhooksv1.Secret
 	Secrets([]webhooks.Secret) []webhooksv1.Secret

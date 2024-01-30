@@ -17,8 +17,8 @@ FROM unnest(pggen.arg('applications')::webhooks.new_application[]) u
 ON CONFLICT DO NOTHING
 RETURNING (
     id,
-    uid,
     name,
+    uid,
     tenant_id,
     rate_limit,
     metadata,
@@ -34,8 +34,8 @@ DELETE FROM webhooks.application WHERE uid = ANY(pggen.arg('ids')::UUID[]);
 -- name: GetApplications :many
 SELECT (
     id,
-    uid,
     name,
+    uid,
     tenant_id,
     rate_limit,
     metadata,
@@ -49,8 +49,8 @@ WHERE uid = ANY(pggen.arg('ids')::uuid[]);
 -- name: ListApplications :many
 SELECT (
     id,
-    uid,
     name,
+    uid,
     tenant_id,
     rate_limit,
     metadata,

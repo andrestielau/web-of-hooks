@@ -1,28 +1,32 @@
 -- CreateSecrets creates secrets
 -- name: CreateSecrets :many
  INSERT INTO webhooks.secret (
-    uid,
-    tenant_id
+    value,
+    application_id
 ) 
 SELECT 
-    u.id,
-    u.tenant_id
+    u.value,
+    u.application_id
 FROM unnest(pggen.arg('secrets')::webhooks.new_secret[]) u
 ON CONFLICT DO NOTHING
 RETURNING (
+    id,
     uid,
-    id ,
-    tenant_id,
-    value
+    application_id,
+    value,
+    created_at,
+    updated_at
 )::webhooks.secret;
 
 -- GetSecrets gets secrets by id
 -- name: GetSecrets :many
 SELECT (
+    id,
     uid,
-    id ,
-    tenant_id,
-    value
+    application_id,
+    value,
+    created_at,
+    updated_at
 )::webhooks.secret
 FROM webhooks.secret
 WHERE uid = ANY(pggen.arg('ids')::uuid[]);
@@ -34,13 +38,20 @@ DELETE FROM webhooks.secret WHERE uid = ANY(pggen.arg('ids')::UUID[]);
 -- ListSecrets lists secrets
 -- name: ListSecrets :many
 SELECT (
+    id,
     uid,
-    id ,
-    tenant_id,
-    value
+    application_id,
+    value,
+    created_at,
+    updated_at
 )::webhooks.secret
 FROM webhooks.secret
 WHERE uid > pggen.arg('after')
 ORDER BY uid
 LIMIT pggen.arg('limit')
 OFFSET pggen.arg('offset');
+
+-- Update secret value by uid
+-- name: UpdateSecret :exec
+UPDATE webhooks.secret SET value = pggen.arg('value') WHERE uid = pggen.arg('uid');
+

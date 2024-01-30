@@ -9,19 +9,21 @@ import (
 )
 
 const createSecretsSQL = `INSERT INTO webhooks.secret (
-    uid,
-    tenant_id
+    value,
+    application_id
 ) 
 SELECT 
-    u.id,
-    u.tenant_id
+    u.value,
+    u.application_id
 FROM unnest($1::webhooks.new_secret[]) u
 ON CONFLICT DO NOTHING
 RETURNING (
+    id,
     uid,
-    id ,
-    tenant_id,
-    value
+    application_id,
+    value,
+    created_at,
+    updated_at
 )::webhooks.secret;`
 
 // CreateSecrets implements Querier.CreateSecrets.
@@ -51,10 +53,12 @@ func (q *DBQuerier) CreateSecrets(ctx context.Context, secrets []NewSecret) ([]S
 }
 
 const getSecretsSQL = `SELECT (
+    id,
     uid,
-    id ,
-    tenant_id,
-    value
+    application_id,
+    value,
+    created_at,
+    updated_at
 )::webhooks.secret
 FROM webhooks.secret
 WHERE uid = ANY($1::uuid[]);`
@@ -98,10 +102,12 @@ func (q *DBQuerier) DeleteSecrets(ctx context.Context, ids []string) (pgconn.Com
 }
 
 const listSecretsSQL = `SELECT (
+    id,
     uid,
-    id ,
-    tenant_id,
-    value
+    application_id,
+    value,
+    created_at,
+    updated_at
 )::webhooks.secret
 FROM webhooks.secret
 WHERE uid > $1
@@ -139,4 +145,16 @@ func (q *DBQuerier) ListSecrets(ctx context.Context, params ListSecretsParams) (
 		return nil, fmt.Errorf("close ListSecrets rows: %w", err)
 	}
 	return items, err
+}
+
+const updateSecretSQL = `UPDATE webhooks.secret SET value = $1 WHERE uid = $2;`
+
+// UpdateSecret implements Querier.UpdateSecret.
+func (q *DBQuerier) UpdateSecret(ctx context.Context, value string, uid string) (pgconn.CommandTag, error) {
+	ctx = context.WithValue(ctx, "pggen_query_name", "UpdateSecret")
+	cmdTag, err := q.conn.Exec(ctx, updateSecretSQL, value, uid)
+	if err != nil {
+		return cmdTag, fmt.Errorf("exec query UpdateSecret: %w", err)
+	}
+	return cmdTag, err
 }

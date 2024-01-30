@@ -263,6 +263,40 @@ paths:
         - messages
     parameters:
       - $ref: '#/components/parameters/applicationId'
+  /secrets:
+    get:
+      summary: List Secrets
+      operationId: list-secrets
+      description: List Secrets
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Secret'
+      tags:
+        - secrets
+    post:
+      summary: Create Secret
+      operationId: create-secret
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewSecret'
+      description: Create secret.
+      tags:
+        - secrets
+      responses:
+        '202':
+          description: Accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Secret'  
   '/secrets/{secretId}':
     parameters:
       - $ref: '#/components/parameters/secretId'
@@ -619,24 +653,32 @@ components:
       type: object
       examples: []
       properties:
-        id:
+        tenant_id:
           type: string
         name:
           type: string
         rateLimit:
           type: integer
           format: int32
+      required:
+        - name
+        - tenant_id            
     Application:
       type: object
       x-examples:
         example-1:
-          id: string
+          tenant_id: string
           name: string
           rateLimit: 0
       properties:
         id:
-          type: string
+          type: integer
+          format: int32
         name:
+          type: string
+        uid:
+          type: string                    
+        tenant_id:
           type: string
         rateLimit:
           type: integer
@@ -644,7 +686,8 @@ components:
         createdAt:
           type: string
       required:
-        - id
+        - name
+        - tenant_id        
         - createdAt
     NewSecret:
       title: NewSecret
@@ -652,8 +695,9 @@ components:
         id: y7yazj136bti3
       type: object
       properties:
-        id:
-          type: string
+        application_id:
+          type: integer
+          format: int32
         value:
           type: string
       required:
@@ -664,8 +708,9 @@ components:
         id: 4dt8yk6o8zgxn
       type: object
       properties:
-        id:
-          type: string
+        application_id:
+          type: integer
+          format: int32
         value:
           type: string
         createdAt:
@@ -949,7 +994,7 @@ components:
           schema:
             type: array
             items:
-              $ref: '#/components/schemas/NewEndpoint'
+              $ref: '#/components/schemas/NewApplication'
       description: ''
     DeleteApplicationsPayload:
       content:

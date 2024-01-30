@@ -24,8 +24,8 @@ FROM unnest($1::webhooks.new_application[]) u
 ON CONFLICT DO NOTHING
 RETURNING (
     id,
-    uid,
     name,
+    uid,
     tenant_id,
     rate_limit,
     metadata,
@@ -73,8 +73,8 @@ func (q *DBQuerier) DeleteApplications(ctx context.Context, ids []string) (pgcon
 
 const getApplicationsSQL = `SELECT (
     id,
-    uid,
     name,
+    uid,
     tenant_id,
     rate_limit,
     metadata,
@@ -112,8 +112,8 @@ func (q *DBQuerier) GetApplications(ctx context.Context, ids []string) ([]Applic
 
 const listApplicationsSQL = `SELECT (
     id,
-    uid,
     name,
+    uid,
     tenant_id,
     rate_limit,
     metadata,

@@ -70,7 +70,6 @@ type EventType struct {
 }
 
 type NewApplication struct {
-	ID        string
 	Name      string
 	TenantID  string
 	RateLimit *int32
@@ -159,8 +158,8 @@ type Attempt struct {
 	CreatedAt time.Time
 }
 type NewSecret struct {
-	TenantID string
-	ID       string
+	ApplicationID *int32
+	Value         string
 }
 type SecretQuery struct {
 	Limit  int
@@ -168,6 +167,8 @@ type SecretQuery struct {
 	After  string
 }
 type Secret struct {
-	ID  *int32
-	Uid string
+	ID            *int32
+	Uid           string
+	ApplicationID *int32
+	Value         string
 }
