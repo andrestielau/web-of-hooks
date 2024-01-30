@@ -40,6 +40,7 @@ require (
 	cloud.google.com/go/iam v1.1.5 // indirect
 	cloud.google.com/go/pubsub v1.33.0 // indirect
 	dario.cat/mergo v1.0.0 // indirect
+	github.com/Azure/go-ansiterm v0.0.0-20230124172434-306776ec8161 // indirect
 	github.com/Masterminds/semver v1.4.2 // indirect
 	github.com/Masterminds/sprig v2.15.0+incompatible // indirect
 	github.com/Microsoft/go-winio v0.6.1 // indirect

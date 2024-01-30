@@ -239,22 +239,22 @@ func (c *EndpointConverterImpl) NewItem(source v1.NewEndpoint) queries.NewEndpoi
 
 type MessageConverterImpl struct{}
 
-func (c *MessageConverterImpl) CreatedItem(source queries.CreateMessagesRow) v1.Message {
+func (c *MessageConverterImpl) Created(source []queries.CreateMessagesRow) []v1.Message {
+	var webhooksv1MessageList []v1.Message
+	if source != nil {
+		webhooksv1MessageList = make([]v1.Message, len(source))
+		for i := 0; i < len(source); i++ {
+			webhooksv1MessageList[i] = c.GotItem(source[i])
+		}
+	}
+	return webhooksv1MessageList
+}
+func (c *MessageConverterImpl) GotItem(source queries.CreateMessagesRow) v1.Message {
 	var webhooksv1Message v1.Message
 	webhooksv1Message.CreatedAt = c.timeTimeToPString(source.CreatedAt)
 	webhooksv1Message.Id = source.Uid
 	webhooksv1Message.Payload = source.Payload
 	return webhooksv1Message
-}
-func (c *MessageConverterImpl) Got(source []queries.CreateMessagesRow) []v1.Message {
-	var webhooksv1MessageList []v1.Message
-	if source != nil {
-		webhooksv1MessageList = make([]v1.Message, len(source))
-		for i := 0; i < len(source); i++ {
-			webhooksv1MessageList[i] = c.CreatedItem(source[i])
-		}
-	}
-	return webhooksv1MessageList
 }
 func (c *MessageConverterImpl) List(source []queries.ListMessagesRow) []v1.Message {
 	var webhooksv1MessageList []v1.Message
