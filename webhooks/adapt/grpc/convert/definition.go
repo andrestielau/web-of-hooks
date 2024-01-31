@@ -30,7 +30,7 @@ type Converter interface {
 	// goverter:useZeroValueOnPointerInconsistency
 	ApplicationQuery(*webhooksv1.PageRequest) webhooks.ApplicationQuery
 
-	// goverter:ignore Name ApplicationID Metadata
+	// goverter:ignore Name ApplicationID Metadata FilterTypeIds
 	// goverter:useZeroValueOnPointerInconsistency
 	NewEndpoint(webhooksv1.Endpoint) webhooks.NewEndpoint
 	NewEndpoints([]webhooksv1.Endpoint) []webhooks.NewEndpoint
