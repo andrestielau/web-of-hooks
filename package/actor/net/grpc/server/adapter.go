@@ -42,6 +42,7 @@ func (a *Adapter) Start(ctx context.Context) (first bool, err error) {
 	a.opts.Handler(a.Server)
 	go func() {
 		defer a.closer.Close()
+		log.Println("grpc listening at http://localhost" + a.opts.Addr)
 		log.Fatal(a.Server.Serve(l))
 	}()
 	return

@@ -10,12 +10,13 @@ import (
 	"github.com/samber/lo"
 	"github.com/spf13/cobra"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 var client webhooksv1.WebHookServiceClient
 var Root = cmd.New("call",
 	cmd.PPreRun(func(cmd *cobra.Command, _ []string) {
-		client = webhooksv1.NewWebHookServiceClient(lo.Must(grpc.Dial("http://localhost:3001")))
+		client = webhooksv1.NewWebHookServiceClient(lo.Must(grpc.Dial("localhost:3001", grpc.WithTransportCredentials(insecure.NewCredentials()))))
 	}),
 	cmd.Add(
 		cmd.New("endpoints", cmd.Alias("e"), cmd.Add(

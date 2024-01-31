@@ -2,7 +2,6 @@ package cron
 
 import (
 	"context"
-	"log"
 	webhooks "woh/webhooks"
 )
 
@@ -16,5 +15,5 @@ func (h *Handler) Work(context.Context) {
 	// for each app in partition
 	// start if not started
 	// for each started and not in partition
-	log.Println("I'm Alive!!!")
+
 }
