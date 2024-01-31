@@ -14,7 +14,7 @@ import (
 
 var client webhooksv1.WebHookServiceClient
 var Root = cmd.New("call",
-	cmd.PreRun(func(cmd *cobra.Command, _ []string) {
+	cmd.PPreRun(func(cmd *cobra.Command, _ []string) {
 		client = webhooksv1.NewWebHookServiceClient(lo.Must(grpc.Dial("http://localhost:3001")))
 	}),
 	cmd.Add(
