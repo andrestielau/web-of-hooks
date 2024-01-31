@@ -18,7 +18,7 @@ type Converter interface {
 	NewEventTypes([]webhooks.NewEventType) []queries.NewEventType
 	EventTypeQuery(webhooks.EventTypeQuery) queries.ListEventTypesParams
 
-	// goverter:ignore Metadata CreatedAt UpdatedAt
+	// goverter:ignore Metadata
 	Application(queries.Application) webhooks.Application
 	Applications([]queries.Application) []webhooks.Application
 	// goverter:ignore Metadata
@@ -26,7 +26,7 @@ type Converter interface {
 	NewApplications([]webhooks.NewApplication) []queries.NewApplication
 	ApplicationQuery(webhooks.ApplicationQuery) queries.ListApplicationsParams
 
-	// goverter:ignore Metadata UpdatedAt CreatedAt Disabled
+	// goverter:ignore Metadata Disabled
 	Endpoint(queries.Endpoint) webhooks.Endpoint
 	Endpoints([]queries.Endpoint) []webhooks.Endpoint
 	// goverter:ignore Metadata
@@ -40,7 +40,6 @@ type Converter interface {
 	NewSecrets([]webhooks.NewSecret) []queries.NewSecret
 	SecretQuery(webhooks.SecretQuery) queries.ListSecretsParams
 
-	// goverter:ignore CreatedAt
 	Message(queries.Message) webhooks.Message
 	Messages([]queries.Message) []webhooks.Message
 	NewMessage(webhooks.NewMessage) queries.NewMessage
@@ -49,7 +48,6 @@ type Converter interface {
 	MessageDetail(queries.MessageDetails) webhooks.MessageDetails
 	MessageDetails([]queries.MessageDetails) []webhooks.MessageDetails
 
-	// goverter:ignore CreatedAt
 	Attempt(queries.MessageAttempt) webhooks.Attempt
 	Attempts([]queries.MessageAttempt) []webhooks.Attempt
 	AttemptQuery(webhooks.AttemptQuery) queries.ListAttemptsParams

@@ -55,7 +55,6 @@ type Converter interface {
 	NewSecret(webhooksv1.NewSecret) webhooks.NewSecret
 	NewSecrets([]webhooksv1.NewSecret) []webhooks.NewSecret
 
-	// goverter:ignore CreatedAt
 	// goverter:useZeroValueOnPointerInconsistency
 	Secret(webhooks.Secret) webhooksv1.Secret
 	Secrets([]webhooks.Secret) []webhooksv1.Secret

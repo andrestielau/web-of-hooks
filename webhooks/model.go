@@ -171,4 +171,6 @@ type Secret struct {
 	Uid           string
 	ApplicationID *int32
 	Value         string
+	CreatedAt     time.Time
+	UpdatedAt     time.Time
 }
