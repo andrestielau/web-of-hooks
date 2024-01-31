@@ -9,6 +9,7 @@ import (
 	"woh/package/utils"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 )
 
 type Options struct {
@@ -39,6 +40,8 @@ func (a *Adapter) Start(ctx context.Context) (first bool, err error) {
 		return
 	}
 	a.Server = grpc.NewServer()
+	// Register reflection service on gRPC server.
+	reflection.Register(a.Server)
 	a.opts.Handler(a.Server)
 	go func() {
 		defer a.closer.Close()
