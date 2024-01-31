@@ -19,8 +19,7 @@ type Adapter struct {
 func New(opts Options) *Adapter {
 	a := actor.New()
 	deps := actor.Actors{
-		webhooks.SecretsKey: opts.Handler.Secrets,
-		webhooks.RepoKey:    opts.Handler.Repo,
+		webhooks.RepoKey: opts.Handler.Repo,
 	}
 	a.SpawnAll(actor.Actors{
 		"Work": cron.New(cron.Options{
