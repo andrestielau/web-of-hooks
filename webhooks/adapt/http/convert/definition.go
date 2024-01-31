@@ -59,6 +59,10 @@ type Converter interface {
 	Secret(webhooks.Secret) webhooksv1.Secret
 	Secrets([]webhooks.Secret) []webhooksv1.Secret
 
+	// goverter:ignore After
+	// goverter:useZeroValueOnPointerInconsistency
+	SecretQuery(webhooksv1.ListSecretsParams) webhooks.SecretQuery
+
 	// goverter:ignore ApplicationID EventTypeID EventID
 	// goverter:useZeroValueOnPointerInconsistency
 	NewMessage(webhooksv1.NewMessage) webhooks.NewMessage

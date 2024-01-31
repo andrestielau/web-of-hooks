@@ -26,6 +26,7 @@ type Application struct {
 	RateLimit *int32  `json:"rateLimit,omitempty"`
 	TenantId  string  `json:"tenant_id"`
 	Uid       *string `json:"uid,omitempty"`
+	UpdatedAt *string `json:"updatedAt,omitempty"`
 }
 
 // Attempt defines model for Attempt.
@@ -132,6 +133,9 @@ type PageInfo struct {
 type Secret struct {
 	ApplicationId *int32  `json:"application_id,omitempty"`
 	CreatedAt     *string `json:"createdAt,omitempty"`
+	Id            int32   `json:"id"`
+	Uid           string  `json:"uid"`
+	UpdatedAt     *string `json:"updatedAt,omitempty"`
 	Value         string  `json:"value"`
 }
 
@@ -266,6 +270,11 @@ type DeleteEndpointsPayload = []struct {
 // DeleteMessagesPayload defines model for DeleteMessagesPayload.
 type DeleteMessagesPayload = []string
 
+// DeleteSecretsPayload defines model for DeleteSecretsPayload.
+type DeleteSecretsPayload = []struct {
+	Id *string `json:"id,omitempty"`
+}
+
 // DeleteApplicationsJSONBody defines parameters for DeleteApplications.
 type DeleteApplicationsJSONBody = []struct {
 	Id *string `json:"id,omitempty"`
@@ -344,11 +353,11 @@ type CreateMessagesParams struct {
 	Force *Force `form:"force,omitempty" json:"force,omitempty"`
 }
 
-// CreateSecretsJSONBody defines parameters for CreateSecrets.
-type CreateSecretsJSONBody = []NewSecret
+// CreateApplicationSecretsJSONBody defines parameters for CreateApplicationSecrets.
+type CreateApplicationSecretsJSONBody = []NewSecret
 
-// CreateSecretsMultipartBody defines parameters for CreateSecrets.
-type CreateSecretsMultipartBody = []NewSecret
+// CreateApplicationSecretsMultipartBody defines parameters for CreateApplicationSecrets.
+type CreateApplicationSecretsMultipartBody = []NewSecret
 
 // DeleteAttemptsJSONBody defines parameters for DeleteAttempts.
 type DeleteAttemptsJSONBody = []string
@@ -467,6 +476,23 @@ type CreateMessagesAttemptsParams struct {
 	Force *Force `form:"force,omitempty" json:"force,omitempty"`
 }
 
+// DeleteSecretsJSONBody defines parameters for DeleteSecrets.
+type DeleteSecretsJSONBody = []struct {
+	Id *string `json:"id,omitempty"`
+}
+
+// ListSecretsParams defines parameters for ListSecrets.
+type ListSecretsParams struct {
+	Limit   *Limit   `form:"limit,omitempty" json:"limit,omitempty"`
+	Offset  *Offset  `form:"offset,omitempty" json:"offset,omitempty"`
+	Reverse *Reverse `form:"reverse,omitempty" json:"reverse,omitempty"`
+}
+
+// DeleteSecretParams defines parameters for DeleteSecret.
+type DeleteSecretParams struct {
+	Force *Force `form:"force,omitempty" json:"force,omitempty"`
+}
+
 // DeleteApplicationsJSONRequestBody defines body for DeleteApplications for application/json ContentType.
 type DeleteApplicationsJSONRequestBody = DeleteApplicationsJSONBody
 
@@ -494,11 +520,11 @@ type CreateMessagesJSONRequestBody = CreateMessagesJSONBody
 // CreateMessagesMultipartRequestBody defines body for CreateMessages for multipart/form-data ContentType.
 type CreateMessagesMultipartRequestBody = CreateMessagesMultipartBody
 
-// CreateSecretsJSONRequestBody defines body for CreateSecrets for application/json ContentType.
-type CreateSecretsJSONRequestBody = CreateSecretsJSONBody
+// CreateApplicationSecretsJSONRequestBody defines body for CreateApplicationSecrets for application/json ContentType.
+type CreateApplicationSecretsJSONRequestBody = CreateApplicationSecretsJSONBody
 
-// CreateSecretsMultipartRequestBody defines body for CreateSecrets for multipart/form-data ContentType.
-type CreateSecretsMultipartRequestBody = CreateSecretsMultipartBody
+// CreateApplicationSecretsMultipartRequestBody defines body for CreateApplicationSecrets for multipart/form-data ContentType.
+type CreateApplicationSecretsMultipartRequestBody = CreateApplicationSecretsMultipartBody
 
 // DeleteAttemptsJSONRequestBody defines body for DeleteAttempts for application/json ContentType.
 type DeleteAttemptsJSONRequestBody = DeleteAttemptsJSONBody
@@ -532,6 +558,9 @@ type CreateMessagesAttemptsJSONRequestBody = CreateMessagesAttemptsJSONBody
 
 // CreateMessagesAttemptsMultipartRequestBody defines body for CreateMessagesAttempts for multipart/form-data ContentType.
 type CreateMessagesAttemptsMultipartRequestBody = CreateMessagesAttemptsMultipartBody
+
+// DeleteSecretsJSONRequestBody defines body for DeleteSecrets for application/json ContentType.
+type DeleteSecretsJSONRequestBody = DeleteSecretsJSONBody
 
 // CreateSecretJSONRequestBody defines body for CreateSecret for application/json ContentType.
 type CreateSecretJSONRequestBody = NewSecret
@@ -663,10 +692,10 @@ type ClientInterface interface {
 	// ListApplicationSecrets request
 	ListApplicationSecrets(ctx context.Context, applicationId ApplicationId, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// CreateSecretsWithBody request with any body
-	CreateSecretsWithBody(ctx context.Context, applicationId ApplicationId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// CreateApplicationSecretsWithBody request with any body
+	CreateApplicationSecretsWithBody(ctx context.Context, applicationId ApplicationId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	CreateSecrets(ctx context.Context, applicationId ApplicationId, body CreateSecretsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	CreateApplicationSecrets(ctx context.Context, applicationId ApplicationId, body CreateApplicationSecretsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetApplicationStats request
 	GetApplicationStats(ctx context.Context, applicationId ApplicationId, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -753,13 +782,21 @@ type ClientInterface interface {
 
 	CreateMessagesAttempts(ctx context.Context, messageId MessageId, params *CreateMessagesAttemptsParams, body CreateMessagesAttemptsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// DeleteSecretsWithBody request with any body
+	DeleteSecretsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	DeleteSecrets(ctx context.Context, body DeleteSecretsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// ListSecrets request
-	ListSecrets(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+	ListSecrets(ctx context.Context, params *ListSecretsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// CreateSecretWithBody request with any body
 	CreateSecretWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	CreateSecret(ctx context.Context, body CreateSecretJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteSecret request
+	DeleteSecret(ctx context.Context, secretId SecretId, params *DeleteSecretParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetSecret request
 	GetSecret(ctx context.Context, secretId SecretId, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -998,8 +1035,8 @@ func (c *Client) ListApplicationSecrets(ctx context.Context, applicationId Appli
 	return c.Client.Do(req)
 }
 
-func (c *Client) CreateSecretsWithBody(ctx context.Context, applicationId ApplicationId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewCreateSecretsRequestWithBody(c.Server, applicationId, contentType, body)
+func (c *Client) CreateApplicationSecretsWithBody(ctx context.Context, applicationId ApplicationId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateApplicationSecretsRequestWithBody(c.Server, applicationId, contentType, body)
 	if err != nil {
 		return nil, err
 	}
@@ -1010,8 +1047,8 @@ func (c *Client) CreateSecretsWithBody(ctx context.Context, applicationId Applic
 	return c.Client.Do(req)
 }
 
-func (c *Client) CreateSecrets(ctx context.Context, applicationId ApplicationId, body CreateSecretsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewCreateSecretsRequest(c.Server, applicationId, body)
+func (c *Client) CreateApplicationSecrets(ctx context.Context, applicationId ApplicationId, body CreateApplicationSecretsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateApplicationSecretsRequest(c.Server, applicationId, body)
 	if err != nil {
 		return nil, err
 	}
@@ -1394,8 +1431,32 @@ func (c *Client) CreateMessagesAttempts(ctx context.Context, messageId MessageId
 	return c.Client.Do(req)
 }
 
-func (c *Client) ListSecrets(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewListSecretsRequest(c.Server)
+func (c *Client) DeleteSecretsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteSecretsRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteSecrets(ctx context.Context, body DeleteSecretsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteSecretsRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListSecrets(ctx context.Context, params *ListSecretsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListSecretsRequest(c.Server, params)
 	if err != nil {
 		return nil, err
 	}
@@ -1420,6 +1481,18 @@ func (c *Client) CreateSecretWithBody(ctx context.Context, contentType string, b
 
 func (c *Client) CreateSecret(ctx context.Context, body CreateSecretJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewCreateSecretRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteSecret(ctx context.Context, secretId SecretId, params *DeleteSecretParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteSecretRequest(c.Server, secretId, params)
 	if err != nil {
 		return nil, err
 	}
@@ -2237,19 +2310,19 @@ func NewListApplicationSecretsRequest(server string, applicationId ApplicationId
 	return req, nil
 }
 
-// NewCreateSecretsRequest calls the generic CreateSecrets builder with application/json body
-func NewCreateSecretsRequest(server string, applicationId ApplicationId, body CreateSecretsJSONRequestBody) (*http.Request, error) {
+// NewCreateApplicationSecretsRequest calls the generic CreateApplicationSecrets builder with application/json body
+func NewCreateApplicationSecretsRequest(server string, applicationId ApplicationId, body CreateApplicationSecretsJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
 	buf, err := json.Marshal(body)
 	if err != nil {
 		return nil, err
 	}
 	bodyReader = bytes.NewReader(buf)
-	return NewCreateSecretsRequestWithBody(server, applicationId, "application/json", bodyReader)
+	return NewCreateApplicationSecretsRequestWithBody(server, applicationId, "application/json", bodyReader)
 }
 
-// NewCreateSecretsRequestWithBody generates requests for CreateSecrets with any type of body
-func NewCreateSecretsRequestWithBody(server string, applicationId ApplicationId, contentType string, body io.Reader) (*http.Request, error) {
+// NewCreateApplicationSecretsRequestWithBody generates requests for CreateApplicationSecrets with any type of body
+func NewCreateApplicationSecretsRequestWithBody(server string, applicationId ApplicationId, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -3640,8 +3713,19 @@ func NewCreateMessagesAttemptsRequestWithBody(server string, messageId MessageId
 	return req, nil
 }
 
-// NewListSecretsRequest generates requests for ListSecrets
-func NewListSecretsRequest(server string) (*http.Request, error) {
+// NewDeleteSecretsRequest calls the generic DeleteSecrets builder with application/json body
+func NewDeleteSecretsRequest(server string, body DeleteSecretsJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewDeleteSecretsRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewDeleteSecretsRequestWithBody generates requests for DeleteSecrets with any type of body
+func NewDeleteSecretsRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -3657,6 +3741,89 @@ func NewListSecretsRequest(server string) (*http.Request, error) {
 	queryURL, err := serverURL.Parse(operationPath)
 	if err != nil {
 		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewListSecretsRequest generates requests for ListSecrets
+func NewListSecretsRequest(server string, params *ListSecretsParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/secrets")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.Limit != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "limit", runtime.ParamLocationQuery, *params.Limit); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Offset != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "offset", runtime.ParamLocationQuery, *params.Offset); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Reverse != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "reverse", runtime.ParamLocationQuery, *params.Reverse); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
 	}
 
 	req, err := http.NewRequest("GET", queryURL.String(), nil)
@@ -3703,6 +3870,62 @@ func NewCreateSecretRequestWithBody(server string, contentType string, body io.R
 	}
 
 	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteSecretRequest generates requests for DeleteSecret
+func NewDeleteSecretRequest(server string, secretId SecretId, params *DeleteSecretParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "secretId", runtime.ParamLocationPath, secretId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/secrets/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.Force != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "force", runtime.ParamLocationQuery, *params.Force); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
 
 	return req, nil
 }
@@ -3882,10 +4105,10 @@ type ClientWithResponsesInterface interface {
 	// ListApplicationSecretsWithResponse request
 	ListApplicationSecretsWithResponse(ctx context.Context, applicationId ApplicationId, reqEditors ...RequestEditorFn) (*ListApplicationSecretsResponse, error)
 
-	// CreateSecretsWithBodyWithResponse request with any body
-	CreateSecretsWithBodyWithResponse(ctx context.Context, applicationId ApplicationId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateSecretsResponse, error)
+	// CreateApplicationSecretsWithBodyWithResponse request with any body
+	CreateApplicationSecretsWithBodyWithResponse(ctx context.Context, applicationId ApplicationId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateApplicationSecretsResponse, error)
 
-	CreateSecretsWithResponse(ctx context.Context, applicationId ApplicationId, body CreateSecretsJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateSecretsResponse, error)
+	CreateApplicationSecretsWithResponse(ctx context.Context, applicationId ApplicationId, body CreateApplicationSecretsJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateApplicationSecretsResponse, error)
 
 	// GetApplicationStatsWithResponse request
 	GetApplicationStatsWithResponse(ctx context.Context, applicationId ApplicationId, reqEditors ...RequestEditorFn) (*GetApplicationStatsResponse, error)
@@ -3972,13 +4195,21 @@ type ClientWithResponsesInterface interface {
 
 	CreateMessagesAttemptsWithResponse(ctx context.Context, messageId MessageId, params *CreateMessagesAttemptsParams, body CreateMessagesAttemptsJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateMessagesAttemptsResponse, error)
 
+	// DeleteSecretsWithBodyWithResponse request with any body
+	DeleteSecretsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*DeleteSecretsResponse, error)
+
+	DeleteSecretsWithResponse(ctx context.Context, body DeleteSecretsJSONRequestBody, reqEditors ...RequestEditorFn) (*DeleteSecretsResponse, error)
+
 	// ListSecretsWithResponse request
-	ListSecretsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListSecretsResponse, error)
+	ListSecretsWithResponse(ctx context.Context, params *ListSecretsParams, reqEditors ...RequestEditorFn) (*ListSecretsResponse, error)
 
 	// CreateSecretWithBodyWithResponse request with any body
 	CreateSecretWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateSecretResponse, error)
 
 	CreateSecretWithResponse(ctx context.Context, body CreateSecretJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateSecretResponse, error)
+
+	// DeleteSecretWithResponse request
+	DeleteSecretWithResponse(ctx context.Context, secretId SecretId, params *DeleteSecretParams, reqEditors ...RequestEditorFn) (*DeleteSecretResponse, error)
 
 	// GetSecretWithResponse request
 	GetSecretWithResponse(ctx context.Context, secretId SecretId, reqEditors ...RequestEditorFn) (*GetSecretResponse, error)
@@ -4270,14 +4501,14 @@ func (r ListApplicationSecretsResponse) StatusCode() int {
 	return 0
 }
 
-type CreateSecretsResponse struct {
+type CreateApplicationSecretsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *CreatedSecrets
 }
 
 // Status returns HTTPResponse.Status
-func (r CreateSecretsResponse) Status() string {
+func (r CreateApplicationSecretsResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -4285,7 +4516,7 @@ func (r CreateSecretsResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r CreateSecretsResponse) StatusCode() int {
+func (r CreateApplicationSecretsResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -4794,6 +5025,27 @@ func (r CreateMessagesAttemptsResponse) StatusCode() int {
 	return 0
 }
 
+type DeleteSecretsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteSecretsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteSecretsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type ListSecretsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -4832,6 +5084,27 @@ func (r CreateSecretResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r CreateSecretResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteSecretResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteSecretResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteSecretResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -5047,21 +5320,21 @@ func (c *ClientWithResponses) ListApplicationSecretsWithResponse(ctx context.Con
 	return ParseListApplicationSecretsResponse(rsp)
 }
 
-// CreateSecretsWithBodyWithResponse request with arbitrary body returning *CreateSecretsResponse
-func (c *ClientWithResponses) CreateSecretsWithBodyWithResponse(ctx context.Context, applicationId ApplicationId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateSecretsResponse, error) {
-	rsp, err := c.CreateSecretsWithBody(ctx, applicationId, contentType, body, reqEditors...)
+// CreateApplicationSecretsWithBodyWithResponse request with arbitrary body returning *CreateApplicationSecretsResponse
+func (c *ClientWithResponses) CreateApplicationSecretsWithBodyWithResponse(ctx context.Context, applicationId ApplicationId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateApplicationSecretsResponse, error) {
+	rsp, err := c.CreateApplicationSecretsWithBody(ctx, applicationId, contentType, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseCreateSecretsResponse(rsp)
+	return ParseCreateApplicationSecretsResponse(rsp)
 }
 
-func (c *ClientWithResponses) CreateSecretsWithResponse(ctx context.Context, applicationId ApplicationId, body CreateSecretsJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateSecretsResponse, error) {
-	rsp, err := c.CreateSecrets(ctx, applicationId, body, reqEditors...)
+func (c *ClientWithResponses) CreateApplicationSecretsWithResponse(ctx context.Context, applicationId ApplicationId, body CreateApplicationSecretsJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateApplicationSecretsResponse, error) {
+	rsp, err := c.CreateApplicationSecrets(ctx, applicationId, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseCreateSecretsResponse(rsp)
+	return ParseCreateApplicationSecretsResponse(rsp)
 }
 
 // GetApplicationStatsWithResponse request returning *GetApplicationStatsResponse
@@ -5335,9 +5608,26 @@ func (c *ClientWithResponses) CreateMessagesAttemptsWithResponse(ctx context.Con
 	return ParseCreateMessagesAttemptsResponse(rsp)
 }
 
+// DeleteSecretsWithBodyWithResponse request with arbitrary body returning *DeleteSecretsResponse
+func (c *ClientWithResponses) DeleteSecretsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*DeleteSecretsResponse, error) {
+	rsp, err := c.DeleteSecretsWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteSecretsResponse(rsp)
+}
+
+func (c *ClientWithResponses) DeleteSecretsWithResponse(ctx context.Context, body DeleteSecretsJSONRequestBody, reqEditors ...RequestEditorFn) (*DeleteSecretsResponse, error) {
+	rsp, err := c.DeleteSecrets(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteSecretsResponse(rsp)
+}
+
 // ListSecretsWithResponse request returning *ListSecretsResponse
-func (c *ClientWithResponses) ListSecretsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListSecretsResponse, error) {
-	rsp, err := c.ListSecrets(ctx, reqEditors...)
+func (c *ClientWithResponses) ListSecretsWithResponse(ctx context.Context, params *ListSecretsParams, reqEditors ...RequestEditorFn) (*ListSecretsResponse, error) {
+	rsp, err := c.ListSecrets(ctx, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -5359,6 +5649,15 @@ func (c *ClientWithResponses) CreateSecretWithResponse(ctx context.Context, body
 		return nil, err
 	}
 	return ParseCreateSecretResponse(rsp)
+}
+
+// DeleteSecretWithResponse request returning *DeleteSecretResponse
+func (c *ClientWithResponses) DeleteSecretWithResponse(ctx context.Context, secretId SecretId, params *DeleteSecretParams, reqEditors ...RequestEditorFn) (*DeleteSecretResponse, error) {
+	rsp, err := c.DeleteSecret(ctx, secretId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteSecretResponse(rsp)
 }
 
 // GetSecretWithResponse request returning *GetSecretResponse
@@ -5675,15 +5974,15 @@ func ParseListApplicationSecretsResponse(rsp *http.Response) (*ListApplicationSe
 	return response, nil
 }
 
-// ParseCreateSecretsResponse parses an HTTP response from a CreateSecretsWithResponse call
-func ParseCreateSecretsResponse(rsp *http.Response) (*CreateSecretsResponse, error) {
+// ParseCreateApplicationSecretsResponse parses an HTTP response from a CreateApplicationSecretsWithResponse call
+func ParseCreateApplicationSecretsResponse(rsp *http.Response) (*CreateApplicationSecretsResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &CreateSecretsResponse{
+	response := &CreateApplicationSecretsResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -6232,6 +6531,22 @@ func ParseCreateMessagesAttemptsResponse(rsp *http.Response) (*CreateMessagesAtt
 	return response, nil
 }
 
+// ParseDeleteSecretsResponse parses an HTTP response from a DeleteSecretsWithResponse call
+func ParseDeleteSecretsResponse(rsp *http.Response) (*DeleteSecretsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteSecretsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
 // ParseListSecretsResponse parses an HTTP response from a ListSecretsWithResponse call
 func ParseListSecretsResponse(rsp *http.Response) (*ListSecretsResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -6279,6 +6594,22 @@ func ParseCreateSecretResponse(rsp *http.Response) (*CreateSecretResponse, error
 		}
 		response.JSON202 = &dest
 
+	}
+
+	return response, nil
+}
+
+// ParseDeleteSecretResponse parses an HTTP response from a DeleteSecretWithResponse call
+func ParseDeleteSecretResponse(rsp *http.Response) (*DeleteSecretResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteSecretResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
 	}
 
 	return response, nil
@@ -6377,9 +6708,9 @@ type ServerInterface interface {
 	// List Secret
 	// (GET /applications/{applicationId}/secrets)
 	ListApplicationSecrets(w http.ResponseWriter, r *http.Request, applicationId ApplicationId)
-	// Create Secrets
+	// Create Application Secrets
 	// (POST /applications/{applicationId}/secrets)
-	CreateSecrets(w http.ResponseWriter, r *http.Request, applicationId ApplicationId)
+	CreateApplicationSecrets(w http.ResponseWriter, r *http.Request, applicationId ApplicationId)
 	// Application Statistics
 	// (GET /applications/{applicationId}/stats)
 	GetApplicationStats(w http.ResponseWriter, r *http.Request, applicationId ApplicationId)
@@ -6449,12 +6780,18 @@ type ServerInterface interface {
 	// Send or Retry Message's Attempts
 	// (POST /messages/{messageId}/attempts)
 	CreateMessagesAttempts(w http.ResponseWriter, r *http.Request, messageId MessageId, params CreateMessagesAttemptsParams)
+	// Delete Secrets
+	// (DELETE /secrets)
+	DeleteSecrets(w http.ResponseWriter, r *http.Request)
 	// List Secrets
 	// (GET /secrets)
-	ListSecrets(w http.ResponseWriter, r *http.Request)
+	ListSecrets(w http.ResponseWriter, r *http.Request, params ListSecretsParams)
 	// Create Secret
 	// (POST /secrets)
 	CreateSecret(w http.ResponseWriter, r *http.Request)
+	// Disable or Delete Secret
+	// (DELETE /secrets/{secretId})
+	DeleteSecret(w http.ResponseWriter, r *http.Request, secretId SecretId, params DeleteSecretParams)
 	// Get Secret
 	// (GET /secrets/{secretId})
 	GetSecret(w http.ResponseWriter, r *http.Request, secretId SecretId)
@@ -6545,9 +6882,9 @@ func (_ Unimplemented) ListApplicationSecrets(w http.ResponseWriter, r *http.Req
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
-// Create Secrets
+// Create Application Secrets
 // (POST /applications/{applicationId}/secrets)
-func (_ Unimplemented) CreateSecrets(w http.ResponseWriter, r *http.Request, applicationId ApplicationId) {
+func (_ Unimplemented) CreateApplicationSecrets(w http.ResponseWriter, r *http.Request, applicationId ApplicationId) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -6689,15 +7026,27 @@ func (_ Unimplemented) CreateMessagesAttempts(w http.ResponseWriter, r *http.Req
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
+// Delete Secrets
+// (DELETE /secrets)
+func (_ Unimplemented) DeleteSecrets(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
 // List Secrets
 // (GET /secrets)
-func (_ Unimplemented) ListSecrets(w http.ResponseWriter, r *http.Request) {
+func (_ Unimplemented) ListSecrets(w http.ResponseWriter, r *http.Request, params ListSecretsParams) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
 // Create Secret
 // (POST /secrets)
 func (_ Unimplemented) CreateSecret(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// Disable or Delete Secret
+// (DELETE /secrets/{secretId})
+func (_ Unimplemented) DeleteSecret(w http.ResponseWriter, r *http.Request, secretId SecretId, params DeleteSecretParams) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -7165,8 +7514,8 @@ func (siw *ServerInterfaceWrapper) ListApplicationSecrets(w http.ResponseWriter,
 	handler.ServeHTTP(w, r.WithContext(ctx))
 }
 
-// CreateSecrets operation middleware
-func (siw *ServerInterfaceWrapper) CreateSecrets(w http.ResponseWriter, r *http.Request) {
+// CreateApplicationSecrets operation middleware
+func (siw *ServerInterfaceWrapper) CreateApplicationSecrets(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	var err error
@@ -7181,7 +7530,7 @@ func (siw *ServerInterfaceWrapper) CreateSecrets(w http.ResponseWriter, r *http.
 	}
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.CreateSecrets(w, r, applicationId)
+		siw.Handler.CreateApplicationSecrets(w, r, applicationId)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -7989,12 +8338,56 @@ func (siw *ServerInterfaceWrapper) CreateMessagesAttempts(w http.ResponseWriter,
 	handler.ServeHTTP(w, r.WithContext(ctx))
 }
 
+// DeleteSecrets operation middleware
+func (siw *ServerInterfaceWrapper) DeleteSecrets(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.DeleteSecrets(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r.WithContext(ctx))
+}
+
 // ListSecrets operation middleware
 func (siw *ServerInterfaceWrapper) ListSecrets(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params ListSecretsParams
+
+	// ------------- Optional query parameter "limit" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "limit", r.URL.Query(), &params.Limit)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "limit", Err: err})
+		return
+	}
+
+	// ------------- Optional query parameter "offset" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "offset", r.URL.Query(), &params.Offset)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "offset", Err: err})
+		return
+	}
+
+	// ------------- Optional query parameter "reverse" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "reverse", r.URL.Query(), &params.Reverse)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "reverse", Err: err})
+		return
+	}
+
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.ListSecrets(w, r)
+		siw.Handler.ListSecrets(w, r, params)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -8010,6 +8403,43 @@ func (siw *ServerInterfaceWrapper) CreateSecret(w http.ResponseWriter, r *http.R
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.CreateSecret(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r.WithContext(ctx))
+}
+
+// DeleteSecret operation middleware
+func (siw *ServerInterfaceWrapper) DeleteSecret(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	var err error
+
+	// ------------- Path parameter "secretId" -------------
+	var secretId SecretId
+
+	err = runtime.BindStyledParameterWithOptions("simple", "secretId", chi.URLParam(r, "secretId"), &secretId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "secretId", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params DeleteSecretParams
+
+	// ------------- Optional query parameter "force" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "force", r.URL.Query(), &params.Force)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "force", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.DeleteSecret(w, r, secretId, params)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -8224,7 +8654,7 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 		r.Get(options.BaseURL+"/applications/{applicationId}/secrets", wrapper.ListApplicationSecrets)
 	})
 	r.Group(func(r chi.Router) {
-		r.Post(options.BaseURL+"/applications/{applicationId}/secrets", wrapper.CreateSecrets)
+		r.Post(options.BaseURL+"/applications/{applicationId}/secrets", wrapper.CreateApplicationSecrets)
 	})
 	r.Group(func(r chi.Router) {
 		r.Get(options.BaseURL+"/applications/{applicationId}/stats", wrapper.GetApplicationStats)
@@ -8296,10 +8726,16 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 		r.Post(options.BaseURL+"/messages/{messageId}/attempts", wrapper.CreateMessagesAttempts)
 	})
 	r.Group(func(r chi.Router) {
+		r.Delete(options.BaseURL+"/secrets", wrapper.DeleteSecrets)
+	})
+	r.Group(func(r chi.Router) {
 		r.Get(options.BaseURL+"/secrets", wrapper.ListSecrets)
 	})
 	r.Group(func(r chi.Router) {
 		r.Post(options.BaseURL+"/secrets", wrapper.CreateSecret)
+	})
+	r.Group(func(r chi.Router) {
+		r.Delete(options.BaseURL+"/secrets/{secretId}", wrapper.DeleteSecret)
 	})
 	r.Group(func(r chi.Router) {
 		r.Get(options.BaseURL+"/secrets/{secretId}", wrapper.GetSecret)

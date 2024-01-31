@@ -161,15 +161,15 @@ paths:
               schema:
                 type: string
       operationId: list-application-secrets
-      description: Get the secret
+      description: Get application secrets
       tags:
         - applications
         - secrets
     parameters:
       - $ref: '#/components/parameters/applicationId'
     post:
-      summary: Create Secrets
-      operationId: create-secrets
+      summary: Create Application Secrets
+      operationId: create-application-secrets
       responses:
         '200':
           $ref: '#/components/responses/CreatedSecrets'
@@ -179,6 +179,8 @@ paths:
       tags:
         - applications
         - secrets
+      parameters:
+        - $ref: '#/components/parameters/applicationId'        
   '/applications/{applicationId}/endpoints':
     get:
       summary: List Endpoints
@@ -277,6 +279,10 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Secret'
+      parameters:
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/offset'
+        - $ref: '#/components/parameters/reverse'                  
       tags:
         - secrets
     post:
@@ -297,6 +303,17 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Secret'  
+    delete:
+      summary: Delete Secrets
+      operationId: delete-secrets
+      description: Delete Secrets
+      tags:
+        - secrets
+      requestBody:
+        $ref: '#/components/requestBodies/DeleteSecretsPayload'
+      responses:
+        '204':
+          description: No Content                
   '/secrets/{secretId}':
     parameters:
       - $ref: '#/components/parameters/secretId'
@@ -331,6 +348,17 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Secret'
+    delete:
+      summary: Disable or Delete Secret
+      operationId: delete-secret
+      description: Disable or Delete Secret
+      parameters:
+        - $ref: '#/components/parameters/force'
+      tags:
+        - secrets
+      responses:
+        '204':
+          description: No Content                
   '/endpoints/{endpointId}':
     parameters:
       - name: endpointId
@@ -685,6 +713,8 @@ components:
           format: int32
         createdAt:
           type: string
+        updatedAt:
+          type: string
       required:
         - name
         - tenant_id        
@@ -708,6 +738,11 @@ components:
         id: 4dt8yk6o8zgxn
       type: object
       properties:
+        id:
+          type: integer
+          format: int32
+        uid:
+          type: string 
         application_id:
           type: integer
           format: int32
@@ -715,8 +750,11 @@ components:
           type: string
         createdAt:
           type: string
+        updatedAt:
+          type: string
       required:
         - id
+        - uid
         - value
     NewEndpoint:
       title: Endpoint
@@ -1018,6 +1056,16 @@ components:
             type: array
             items:
               $ref: '#/components/schemas/NewSecret'
+    DeleteSecretsPayload:
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              type: object
+              properties:
+                id:
+                  type: string
   responses:
     EndpointList:
       description: Endpoint List with cursors
