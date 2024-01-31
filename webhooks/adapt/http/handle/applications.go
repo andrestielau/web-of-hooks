@@ -2,7 +2,6 @@ package handle
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"woh/webhooks"
 	webhooksv1 "woh/webhooks/adapt/http/v1"
