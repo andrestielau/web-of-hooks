@@ -51,6 +51,12 @@ func (h *Handler) GetApps(ctx context.Context, request *webhooksv1.GetAppsReques
 
 // ListApps implements webhooksv1.WebHookServiceServer.
 func (h *Handler) ListApps(ctx context.Context, request *webhooksv1.ListAppsRequest) (*webhooksv1.ListAppsResponse, error) {
+	if request.Page == nil {
+		request.Page = &webhooksv1.PageRequest{}
+	}
+	if request.Page.Limit == nil {
+		request.Page.Limit = lo.ToPtr(int32(20))
+	}
 	if res, err := h.Repo.ListApplications(ctx, h.Convert.ApplicationQuery(request.Page)); err != nil {
 		return &webhooksv1.ListAppsResponse{Errors: webhooks.GrpcErrors(err)}, nil
 	} else {

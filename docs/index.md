@@ -614,7 +614,7 @@ Req/Res
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| limit | [int32](#int32) |  |  |
+| limit | [int32](#int32) | optional |  |
 | offset | [int32](#int32) |  |  |
 | desc | [bool](#bool) |  |  |
 
