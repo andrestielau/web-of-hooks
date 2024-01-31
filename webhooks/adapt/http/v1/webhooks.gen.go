@@ -161,7 +161,7 @@ type Limit = int
 type MessageId = string
 
 // Offset defines model for offset.
-type Offset = string
+type Offset = int
 
 // Reverse defines model for reverse.
 type Reverse = bool

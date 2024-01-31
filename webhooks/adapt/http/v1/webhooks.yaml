@@ -1234,7 +1234,7 @@ components:
       in: query
       required: false
       schema:
-        type: string
+        type: integer
     reverse:
       name: reverse
       in: query

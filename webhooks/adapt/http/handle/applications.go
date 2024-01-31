@@ -9,6 +9,8 @@ import (
 	"woh/package/utils/media"
 
 	"woh/webhooks/render/page/applications"
+
+	"github.com/samber/lo"
 )
 
 // CreateApplications implements webhooksv1.ServerInterface.
@@ -37,12 +39,17 @@ func (h *Handler) CreateApplications(w http.ResponseWriter, r *http.Request) {
 
 // DeleteApplication implements webhooksv1.ServerInterface.
 func (h *Handler) DeleteApplication(w http.ResponseWriter, r *http.Request, applicationId string, params webhooksv1.DeleteApplicationParams) {
-	h.Repo.DeleteApplications(r.Context(), []string{applicationId})
+	webhooks.Error(w, h.Repo.DeleteApplications(r.Context(), []string{applicationId}))
 }
 
 // DeleteApplications implements webhooksv1.ServerInterface.
 func (h *Handler) DeleteApplications(w http.ResponseWriter, r *http.Request) {
-	h.Repo.DeleteApplications(r.Context(), []string{})
+	var req webhooksv1.DeleteApplicationsPayload
+	if err := media.Req(r, &req); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	webhooks.Error(w, h.Repo.DeleteApplications(r.Context(), lo.Map[struct{Id *string "json:\"id,omitempty\""}](req, func(ids struct{Id *string "json:\"id,omitempty\""}, _ int) string { return *ids.Id })))
 }
 
 // GetApplication implements webhooksv1.ServerInterface.
@@ -65,6 +72,7 @@ func (h *Handler) GetApplication(w http.ResponseWriter, r *http.Request, applica
 
 // ListApplications implements webhooksv1.ServerInterface.
 func (h *Handler) ListApplications(w http.ResponseWriter, r *http.Request, params webhooksv1.ListApplicationsParams) {
+	DefaultLimit(&params)
 	if res, err := h.Repo.ListApplications(r.Context(), h.Convert.ApplicationQuery(params)); err != nil {
 		webhooks.Error(w, err)
 	} else if media.ShouldRender(r) {
@@ -94,4 +102,11 @@ func (h *Handler) GetApplicationStats(w http.ResponseWriter, r *http.Request, ap
 // UpdateApplication implements webhooksv1.ServerInterface.
 func (h *Handler) UpdateApplication(w http.ResponseWriter, r *http.Request, applicationId string, params webhooksv1.UpdateApplicationParams) {
 	panic("unimplemented")
+}
+
+
+func DefaultLimit(params *webhooksv1.ListApplicationsParams) {
+	if params.Limit == nil {
+		params.Limit = lo.ToPtr(20)
+	}
 }

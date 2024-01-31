@@ -32,7 +32,7 @@ type Converter interface {
 	Application(webhooks.Application) webhooksv1.Application
 	Applications([]webhooks.Application) []webhooksv1.Application
 
-	// goverter:ignore Offset CreatedAfter
+	// goverter:ignore CreatedAfter
 	// goverter:useZeroValueOnPointerInconsistency
 	ApplicationQuery(webhooksv1.ListApplicationsParams) webhooks.ApplicationQuery
 
