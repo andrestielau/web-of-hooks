@@ -37,13 +37,13 @@ type Querier interface {
 	ListAttempts(ctx context.Context, params ListAttemptsParams) ([]MessageAttempt, error)
 
 	// CreateEndpoints inserts endpoints into the database
-	CreateEndpoints(ctx context.Context, endpoints []NewEndpoint) ([]Endpoint, error)
+	CreateEndpoints(ctx context.Context, endpoints []NewEndpoint) ([]EndpointDetails, error)
 
 	// DeleteEndpoints deletes endpoints by uid
 	DeleteEndpoints(ctx context.Context, ids []string) (pgconn.CommandTag, error)
 
 	// GetEndpoints gets endpoints by id
-	GetEndpoints(ctx context.Context, ids []string) ([]Endpoint, error)
+	GetEndpoints(ctx context.Context, ids []string) ([]EndpointDetails, error)
 
 	// ListEndpoints lists endpoints
 	ListEndpoints(ctx context.Context, params ListEndpointsParams) ([]Endpoint, error)
@@ -140,6 +140,12 @@ type Endpoint struct {
 	UpdatedAt     time.Time    `json:"updated_at"`
 }
 
+// EndpointDetails represents the Postgres composite type "endpoint_details".
+type EndpointDetails struct {
+	Endpoint      Endpoint `json:"endpoint"`
+	FilterTypeIds []string `json:"filter_type_ids"`
+}
+
 // EventType represents the Postgres composite type "event_type".
 type EventType struct {
 	ID        *int32    `json:"id"`
@@ -195,7 +201,7 @@ type NewEndpoint struct {
 	RateLimit     *int32       `json:"rate_limit"`
 	Metadata      pgtype.JSONB `json:"metadata"`
 	Description   string       `json:"description"`
-	FilterTypes   []string     `json:"filter_types"`
+	FilterTypeIds []string     `json:"filter_type_ids"`
 	Channels      []string     `json:"channels"`
 }
 
@@ -324,6 +330,16 @@ func (tr *typeResolver) newApplication() pgtype.ValueTranscoder {
 	)
 }
 
+// newEndpointDetails creates a new pgtype.ValueTranscoder for the Postgres
+// composite type 'endpoint_details'.
+func (tr *typeResolver) newEndpointDetails() pgtype.ValueTranscoder {
+	return tr.newCompositeValue(
+		"endpoint_details",
+		compositeField{name: "endpoint", typeName: "endpoint", defaultVal: tr.newEndpoint()},
+		compositeField{name: "filter_type_ids", typeName: "_text", defaultVal: &pgtype.TextArray{}},
+	)
+}
+
 // newEndpoint creates a new pgtype.ValueTranscoder for the Postgres
 // composite type 'endpoint'.
 func (tr *typeResolver) newEndpoint() pgtype.ValueTranscoder {
@@ -432,7 +448,7 @@ func (tr *typeResolver) newNewEndpoint() pgtype.ValueTranscoder {
 		compositeField{name: "rate_limit", typeName: "int4", defaultVal: &pgtype.Int4{}},
 		compositeField{name: "metadata", typeName: "jsonb", defaultVal: &pgtype.JSONB{}},
 		compositeField{name: "description", typeName: "text", defaultVal: &pgtype.Text{}},
-		compositeField{name: "filter_types", typeName: "_text", defaultVal: &pgtype.TextArray{}},
+		compositeField{name: "filter_type_ids", typeName: "_text", defaultVal: &pgtype.TextArray{}},
 		compositeField{name: "channels", typeName: "_text", defaultVal: &pgtype.TextArray{}},
 	)
 }
@@ -447,7 +463,7 @@ func (tr *typeResolver) newNewEndpointRaw(v NewEndpoint) []interface{} {
 		v.RateLimit,
 		v.Metadata,
 		v.Description,
-		v.FilterTypes,
+		v.FilterTypeIds,
 		v.Channels,
 	}
 }

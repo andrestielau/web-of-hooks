@@ -5,13 +5,13 @@ CREATE TYPE webhooks.new_endpoint AS (
     rate_limit INT,
     metadata JSONB,
     description TEXT,
-    filter_types TEXT[],
+    filter_type_ids TEXT[],
     channels TEXT[]
 );
 
 CREATE TABLE webhooks.endpoint (
     id SERIAL PRIMARY KEY,
-    url TEXT NOT NULL,
+    url TEXT UNIQUE NOT NULL,
     name TEXT NOT NULL DEFAULT '',
     application_id INT NOT NULL REFERENCES webhooks.application(id),
     uid UUID UNIQUE NOT NULL DEFAULT generate_ulid(),
@@ -37,3 +37,8 @@ CREATE TABLE webhooks.endpoint_channel (
     channel_id INT REFERENCES webhooks.channel(id),
     PRIMARY KEY(endpoint_id, channel_id)
 );
+
+CREATE TYPE webhooks.endpoint_details AS (
+    endpoint webhooks.endpoint,
+    filter_type_ids TEXT[]
+)

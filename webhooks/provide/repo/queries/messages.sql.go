@@ -66,7 +66,9 @@ const createMessagesSQL = `WITH new_messages AS (
         event_id,
         payload
     )::webhooks.message,
-    (SELECT ARRAY_AGG(a::webhooks.message_attempt) FROM new_attempts a WHERE id = a.message_id)
+    (SELECT ARRAY_AGG(a::webhooks.message_attempt) 
+    FROM new_attempts a 
+    WHERE id = a.message_id)
 )::webhooks.message_details FROM new_messages;`
 
 // CreateMessages implements Querier.CreateMessages.

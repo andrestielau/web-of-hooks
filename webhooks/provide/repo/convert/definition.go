@@ -33,6 +33,8 @@ type Converter interface {
 	NewEndpoint(webhooks.NewEndpoint) queries.NewEndpoint
 	NewEndpoints([]webhooks.NewEndpoint) []queries.NewEndpoint
 	EndpointQuery(webhooks.EndpointQuery) queries.ListEndpointsParams
+	EndpointDetail(queries.EndpointDetails) webhooks.EndpointDetails
+	EndpointDetails([]queries.EndpointDetails) []webhooks.EndpointDetails
 
 	Secret(queries.Secret) webhooks.Secret
 	Secrets([]queries.Secret) []webhooks.Secret

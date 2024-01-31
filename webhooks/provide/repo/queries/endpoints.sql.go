@@ -8,49 +8,80 @@ import (
 	"github.com/jackc/pgconn"
 )
 
-const createEndpointsSQL = `INSERT INTO webhooks.endpoint (
-    application_id,
-    url,
-    name,
-    rate_limit,
-    metadata,
-    description
-) 
-SELECT 
-    a.id,
-    u.url,
-    u.name,
-    u.rate_limit,
-    u.metadata,
-    u.description
-FROM unnest($1::webhooks.new_endpoint[]) u
-JOIN webhooks.application a ON u.application_id = a.uid
-RETURNING (
-    id,
-    url,
-    name,
-    application_id,
-    uid,
-    rate_limit,
-    metadata,
-    disabled,
-    description,
-    created_at,
-    updated_at
-)::webhooks.endpoint;`
+const createEndpointsSQL = `WITH inserted AS (
+    INSERT INTO webhooks.endpoint (
+        application_id,
+        url,
+        name,
+        rate_limit,
+        metadata,
+        description
+    ) 
+    SELECT 
+        a.id,
+        u.url,
+        u.name,
+        u.rate_limit,
+        u.metadata,
+        u.description
+    FROM unnest($1::webhooks.new_endpoint[]) u
+    JOIN webhooks.application a ON u.application_id = a.uid
+    RETURNING
+        id,
+        url,
+        name,
+        application_id,
+        uid,
+        rate_limit,
+        metadata,
+        disabled,
+        description,
+        created_at,
+        updated_at
+), inserted_filters AS (
+    INSERT INTO webhooks.endpoint_filter (
+        event_type_id,
+        endpoint_id
+    )
+    SELECT 
+        e.id,
+        i.id
+    FROM unnest($1::webhooks.new_endpoint[]) n, 
+        unnest(filter_type_ids::UUID[]) f,
+        webhooks.event_type e,
+        inserted i 
+    WHERE e.uid = f AND i.url = n.url
+) SELECT ((
+        i.id,
+        i.url,
+        i.name,
+        i.application_id,
+        i.uid,
+        i.rate_limit,
+        i.metadata,
+        i.disabled,
+        i.description,
+        i.created_at,
+        i.updated_at
+    )::webhooks.endpoint,
+    u.filter_type_ids
+)::webhooks.endpoint_details 
+FROM inserted i
+INNER JOIN unnest($1::webhooks.new_endpoint[]) u
+    ON i.url = u.url;`
 
 // CreateEndpoints implements Querier.CreateEndpoints.
-func (q *DBQuerier) CreateEndpoints(ctx context.Context, endpoints []NewEndpoint) ([]Endpoint, error) {
+func (q *DBQuerier) CreateEndpoints(ctx context.Context, endpoints []NewEndpoint) ([]EndpointDetails, error) {
 	ctx = context.WithValue(ctx, "pggen_query_name", "CreateEndpoints")
 	rows, err := q.conn.Query(ctx, createEndpointsSQL, q.types.newNewEndpointArrayInit(endpoints))
 	if err != nil {
 		return nil, fmt.Errorf("query CreateEndpoints: %w", err)
 	}
 	defer rows.Close()
-	items := []Endpoint{}
-	rowRow := q.types.newEndpoint()
+	items := []EndpointDetails{}
+	rowRow := q.types.newEndpointDetails()
 	for rows.Next() {
-		var item Endpoint
+		var item EndpointDetails
 		if err := rows.Scan(rowRow); err != nil {
 			return nil, fmt.Errorf("scan CreateEndpoints row: %w", err)
 		}
@@ -77,34 +108,39 @@ func (q *DBQuerier) DeleteEndpoints(ctx context.Context, ids []string) (pgconn.C
 	return cmdTag, err
 }
 
-const getEndpointsSQL = `SELECT (
-    id,
-    url,
-    name,
-    application_id,
-    uid,
-    rate_limit,
-    metadata,
-    disabled,
-    description,
-    created_at,
-    updated_at
-)::webhooks.endpoint
-FROM webhooks.endpoint
+const getEndpointsSQL = `SELECT ((
+        id,
+        url,
+        name,
+        application_id,
+        uid,
+        rate_limit,
+        metadata,
+        disabled,
+        description,
+        created_at,
+        updated_at
+    )::webhooks.endpoint,
+    (SELECT ARRAY_AGG(e.uid::UUID)
+    FROM webhooks.event_type e
+    INNER JOIN webhooks.endpoint_filter f 
+        ON f.event_type_id = e.id  
+    WHERE f.endpoint_id = id)
+)::webhooks.endpoint_details FROM webhooks.endpoint
 WHERE uid = ANY($1::uuid[]);`
 
 // GetEndpoints implements Querier.GetEndpoints.
-func (q *DBQuerier) GetEndpoints(ctx context.Context, ids []string) ([]Endpoint, error) {
+func (q *DBQuerier) GetEndpoints(ctx context.Context, ids []string) ([]EndpointDetails, error) {
 	ctx = context.WithValue(ctx, "pggen_query_name", "GetEndpoints")
 	rows, err := q.conn.Query(ctx, getEndpointsSQL, ids)
 	if err != nil {
 		return nil, fmt.Errorf("query GetEndpoints: %w", err)
 	}
 	defer rows.Close()
-	items := []Endpoint{}
-	rowRow := q.types.newEndpoint()
+	items := []EndpointDetails{}
+	rowRow := q.types.newEndpointDetails()
 	for rows.Next() {
-		var item Endpoint
+		var item EndpointDetails
 		if err := rows.Scan(rowRow); err != nil {
 			return nil, fmt.Errorf("scan GetEndpoints row: %w", err)
 		}

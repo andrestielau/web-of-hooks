@@ -62,24 +62,24 @@ func (r *Repository) ListAttempts(ctx context.Context, query webhooks.AttemptQue
 	return r.Convert.Attempts(res), nil
 }
 
-func (r *Repository) CreateEndpoints(ctx context.Context, endpoints []webhooks.NewEndpoint) ([]webhooks.Endpoint, error) {
+func (r *Repository) CreateEndpoints(ctx context.Context, endpoints []webhooks.NewEndpoint) ([]webhooks.EndpointDetails, error) {
 	res, err := r.Querier.CreateEndpoints(ctx, r.Convert.NewEndpoints(endpoints))
 	if err != nil {
 		return nil, err
 	}
-	return r.Convert.Endpoints(res), nil
+	return r.Convert.EndpointDetails(res), nil
 }
 func (r *Repository) DeleteEndpoints(ctx context.Context, ids []string) error {
 	_, err := r.Querier.DeleteEndpoints(ctx, ids)
 	return err
 }
 
-func (r *Repository) GetEndpoints(ctx context.Context, ids []string) ([]webhooks.Endpoint, error) {
+func (r *Repository) GetEndpoints(ctx context.Context, ids []string) ([]webhooks.EndpointDetails, error) {
 	res, err := r.Querier.GetEndpoints(ctx, ids)
 	if err != nil {
 		return nil, err
 	}
-	return r.Convert.Endpoints(res), nil
+	return r.Convert.EndpointDetails(res), nil
 }
 
 func (r *Repository) ListEndpoints(ctx context.Context, query webhooks.EndpointQuery) ([]webhooks.Endpoint, error) {

@@ -87,21 +87,22 @@ func TestDequeue(t *testing.T) {
 		var filterTypes []string
 		switch i % 4 {
 		case 1:
-			filterTypes = []string{"e1"}
+			filterTypes = []string{eventTypeUids[0]}
 		case 2:
-			filterTypes = []string{"e2", "e3"}
+			filterTypes = []string{eventTypeUids[1], eventTypeUids[2]}
 		case 3:
-			filterTypes = []string{"e1", "e3"}
+			filterTypes = []string{eventTypeUids[0], eventTypeUids[2]}
 		}
 		return webhooks.NewEndpoint{
-			Url:           fmt.Sprintf("http://app%d.com/endpoint%d", i/2+1, i+1),
+			Url:           fmt.Sprintf("http://app%s.com/endpoint%d", appUids[i/endpointsPerApp], i+1),
 			Name:          fmt.Sprintf("Endpoint%d-%s", i, uuid.NewString()),
 			RateLimit:     lo.ToPtr[int32](rand.Int31() % 20),
 			Description:   "description " + strconv.Itoa(i),
 			ApplicationID: appUids[i/endpointsPerApp],
-			FilterTypes:   filterTypes,
+			FilterTypeIds: filterTypes,
 		}
 	})
+
 	res3, err := r.CreateEndpoints(ctx, newEndpoints)
 	require.NoError(t, err)
 	require.Len(t, res3, len(newEndpoints))

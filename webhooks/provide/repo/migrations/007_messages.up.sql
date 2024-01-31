@@ -22,8 +22,8 @@ CREATE TABLE webhooks.message_attempt (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     status INT NOT NULL DEFAULT 0, -- 0 pending, 1 on-worker, 2 complete
     retry INT NOT NULL DEFAULT 0,
-    response_status INT,
-    response TEXT
+    response_status INT NOT NULL DEFAULT 0,
+    response TEXT NOT NULL DEFAULT ''
 );
 CREATE TYPE webhooks.message_details AS (
     message webhooks.message,

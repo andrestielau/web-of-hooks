@@ -38,9 +38,9 @@ type Repository interface {
 	DeleteAttempts(context.Context, []string) error
 	GetAttempts(context.Context, []string) ([]Attempt, error)
 	ListAttempts(context.Context, AttemptQuery) ([]Attempt, error)
-	CreateEndpoints(context.Context, []NewEndpoint) ([]Endpoint, error)
+	CreateEndpoints(context.Context, []NewEndpoint) ([]EndpointDetails, error)
 	DeleteEndpoints(context.Context, []string) error
-	GetEndpoints(context.Context, []string) ([]Endpoint, error)
+	GetEndpoints(context.Context, []string) ([]EndpointDetails, error)
 	ListEndpoints(context.Context, EndpointQuery) ([]Endpoint, error)
 	CreateEventTypes(context.Context, []NewEventType) ([]EventType, error)
 	DeleteEventTypes(context.Context, []string) error
@@ -100,7 +100,7 @@ type NewEndpoint struct {
 	RateLimit     *int32
 	Metadata      string
 	Description   string
-	FilterTypes   []string
+	FilterTypeIds []string
 	Channels      []string
 }
 type EndpointQuery struct {
@@ -120,6 +120,10 @@ type Endpoint struct {
 	UpdatedAt     time.Time
 	Description   string
 	ApplicationID *int32
+}
+type EndpointDetails struct {
+	Endpoint
+	FilterTypeIds []string
 }
 type NewMessage struct {
 	ApplicationID string
