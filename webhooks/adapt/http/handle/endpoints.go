@@ -3,10 +3,9 @@ package handle
 import (
 	"net/http"
 	"woh/package/utils/media"
+	"woh/webhooks"
 	webhooksv1 "woh/webhooks/adapt/http/v1"
 	"woh/webhooks/render/page/applications"
-
-	"github.com/andrestielau/web-of-hooks/webhooks"
 )
 
 // CreateEndpoints implements webhooksv1.ServerInterface.

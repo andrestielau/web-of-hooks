@@ -2,14 +2,18 @@ package repo_test
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"math/rand"
+	"os"
 	"strconv"
 	"testing"
+	"time"
 
 	"woh/package/actor/sql/pgx"
 	"woh/webhooks"
 	"woh/webhooks/provide/repo"
+	"woh/webhooks/provide/repo/queries"
 
 	"github.com/google/uuid"
 	"github.com/samber/lo"
@@ -158,4 +162,15 @@ func TestDequeue(t *testing.T) {
 		messageUids[i] = msg.Uid
 		// TODO:Check Attempts
 	}
+	workerId := uuid.NewString()
+	start := time.Now()
+	r.SetLastSeen(ctx, workerId)
+	dequeued := lo.Must(r.Querier.DequeueAttempts(ctx, queries.DequeueAttemptsParams{
+		ID:    workerId,
+		Start: start,
+		Limit: 1000,
+	}))
+	e := json.NewEncoder(os.Stdout)
+	e.SetIndent(" ", " ")
+	e.Encode(dequeued)
 }

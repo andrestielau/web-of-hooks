@@ -5,7 +5,7 @@ import (
 	"woh/package/utils/media"
 	webhooksv1 "woh/webhooks/adapt/http/v1"
 
-	"github.com/andrestielau/web-of-hooks/webhooks/render/page/messages"
+	"woh/webhooks/render/page/messages"
 )
 
 // CreateAttempt implements webhooksv1.ServerInterface.

@@ -23,7 +23,7 @@ WITH last_seen AS (
         COUNT(*) as n, -- number of workers
         COUNT(first_seen_at < pggen.arg('start')) as i -- number of workers that started before caller
     FROM webhooks.worker
-    WHERE last_seen_at = now() - interval '30 second' -- exclude idle workers
+    WHERE last_seen_at > now() - interval '10 second' -- exclude idle workers
 ), app_ids AS ( -- applications for worker
     SELECT 
         id 
@@ -39,7 +39,7 @@ WITH last_seen AS (
     INNER JOIN webhooks.endpoint e
         ON a.endpoint_id = e.id
     WHERE (status = 0 OR 
-        (status = 1 AND a.updated_at < now() - interval '30 second')) -- repick old messages 
+        (status = 1 AND a.updated_at < now() - interval '10 second')) -- repick old messages 
         AND e.application_id IN (SELECT id FROM app_ids) -- damn sql, why cant it be just app_ids?
     LIMIT pggen.arg('limit') 
 ), dequeue AS (
