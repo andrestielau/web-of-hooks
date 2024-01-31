@@ -21,7 +21,7 @@ func (h *Handler) CreateSecret(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if res, err := h.Repo.CreateSecrets(r.Context(), h.Convert.NewSecrets(req)); err != nil {
-		errs, stop := webhooks.Errors(w, err)
+		errs, stop := webhooks.HttpErrors(w, err)
 		if stop {
 			return
 		}
@@ -38,7 +38,7 @@ func (h *Handler) CreateSecret(w http.ResponseWriter, r *http.Request) {
 
 // DeleteSecret implements webhooksv1.ServerInterface.
 func (h *Handler) DeleteSecret(w http.ResponseWriter, r *http.Request, applicationId string, params webhooksv1.DeleteSecretParams) {
-	webhooks.Error(w, h.Repo.DeleteSecrets(r.Context(), []string{applicationId}))
+	webhooks.HttpError(w, h.Repo.DeleteSecrets(r.Context(), []string{applicationId}))
 }
 
 // DeleteSecrets implements webhooksv1.ServerInterface.
@@ -48,7 +48,7 @@ func (h *Handler) DeleteSecrets(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	webhooks.Error(w, h.Repo.DeleteSecrets(r.Context(), lo.Map[struct {
+	webhooks.HttpError(w, h.Repo.DeleteSecrets(r.Context(), lo.Map[struct {
 		Id *string "json:\"id,omitempty\""
 	}](req, func(ids struct {
 		Id *string "json:\"id,omitempty\""
@@ -60,7 +60,7 @@ func (h *Handler) DeleteSecrets(w http.ResponseWriter, r *http.Request) {
 // GetSecret implements webhooksv1.ServerInterface.
 func (h *Handler) GetSecret(w http.ResponseWriter, r *http.Request, secretId string) {
 	var ret webhooksv1.Secret
-	if res, err := h.Repo.GetSecrets(r.Context(), []string{secretId}); webhooks.Error(w, err) {
+	if res, err := h.Repo.GetSecrets(r.Context(), []string{secretId}); webhooks.HttpError(w, err) {
 		return
 	} else if len(res) == 0 {
 		http.Error(w, fmt.Sprintf("Secret with uid %s not found", secretId), http.StatusNotFound)
@@ -81,7 +81,7 @@ func (h *Handler) ListSecrets(w http.ResponseWriter, r *http.Request, params web
 		params.Limit = lo.ToPtr(20)
 	}
 	if res, err := h.Repo.ListSecrets(r.Context(), h.Convert.SecretQuery(params)); err != nil {
-		webhooks.Error(w, err)
+		webhooks.HttpError(w, err)
 	} else if media.ShouldRender(r) {
 		applications.Secrets(applications.SecretViewModel{
 			Data: res,

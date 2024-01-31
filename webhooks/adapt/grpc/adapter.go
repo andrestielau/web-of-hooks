@@ -7,6 +7,7 @@ import (
 	"woh/webhooks/adapt/grpc/handle"
 	webhooksv1 "woh/webhooks/adapt/grpc/v1"
 
+	"woh/webhooks/adapt/grpc/convert"
 	"github.com/google/wire"
 	"google.golang.org/grpc"
 )
@@ -23,6 +24,7 @@ func New(opts Options) *Adapter {
 		Handler: func(s *grpc.Server) {
 			webhooksv1.RegisterWebHookServiceServer(s, opts.Handler)
 		},
+		Addr: ":3001",
 	})
 	a.SpawnAll(actor.Actors{
 		webhooks.SecretsKey: opts.Handler.Secrets,
@@ -34,7 +36,9 @@ func New(opts Options) *Adapter {
 }
 
 var Set = wire.NewSet(
+	wire.Bind(new(convert.Converter), new(*convert.ConverterImpl)),
 	wire.Struct(new(handle.Handler), "*"),
+	wire.Value(&convert.ConverterImpl{}),
 	wire.Struct(new(Options), "*"),
 	New,
 )

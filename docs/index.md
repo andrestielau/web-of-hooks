@@ -61,9 +61,10 @@ Entities
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| id | [string](#string) |  |  |
+| id | [int32](#int32) |  |  |
 | uid | [string](#string) |  |  |
 | name | [string](#string) |  |  |
+| tenantId | [string](#string) |  |  |
 | rateLimit | [int32](#int32) |  |  |
 | metadata | [App.MetadataEntry](#webhooks-v1-App-MetadataEntry) | repeated |  |
 
@@ -515,6 +516,7 @@ Req/Res
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | data | [App](#webhooks-v1-App) | repeated |  |
+| errors | [Error](#webhooks-v1-Error) | repeated |  |
 
 
 
@@ -613,7 +615,7 @@ Req/Res
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | limit | [int32](#int32) |  |  |
-| cursor | [string](#string) |  |  |
+| offset | [int32](#int32) |  |  |
 | desc | [bool](#bool) |  |  |
 
 

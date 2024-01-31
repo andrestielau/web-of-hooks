@@ -7,7 +7,8 @@ import (
 	"strings"
 
 	"woh/package/utils"
-	webhooksv1 "woh/webhooks/adapt/http/v1"
+	webhooksgrpcv1 "woh/webhooks/adapt/grpc/v1"
+	webhookshttpv1 "woh/webhooks/adapt/http/v1"
 
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
@@ -15,54 +16,88 @@ import (
 	"github.com/samber/lo"
 )
 
-func Error(w http.ResponseWriter, err error) bool {
-	var e utils.Error
-
+func convertError(err error) *utils.Error {
 	if err == nil {
-		return false
+		return nil
 	}
-
 	if IsPLSQLColumnNullableViolation(err) {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return true
+		return utils.NewError(http.StatusBadRequest, "", err.Error())
 	} else if IsPLSQLForeignKeyConstraintViolation(err) {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return true
+		return utils.NewError(http.StatusBadRequest, "", err.Error())
 	} else if IsPLSQLDuplicateKey(err) {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return true
+		return utils.NewError(http.StatusBadRequest, "", err.Error())
 	} else if IsInvalidUUID(err) {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return true
+		return utils.NewError(http.StatusBadRequest, "", err.Error())
 	} else if errors.Is(err, pgx.ErrNoRows) {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return true
-	} else if errors.As(err, &e) {
-		http.Error(w, e.Reason, e.Code)
-		return true
+		return utils.NewError(http.StatusBadRequest, "", err.Error())
 	}
 	var plSQLError *pgconn.PgError
 	if errors.As(err, &plSQLError) {
 		log.Println(plSQLError.Code)
 	}
 
+	return utils.NewError(http.StatusInternalServerError, "", err.Error())
+}
+
+func HttpError(w http.ResponseWriter, err error) bool {
+	var e utils.Error
+
+	error := convertError(err)
+	if error == nil {
+		return false
+	}
+
+	if errors.As(err, &e) {
+		http.Error(w, e.Reason, e.Code)
+		return true
+	}
+
 	http.Error(w, err.Error(), http.StatusInternalServerError)
 	return true
 }
 
-func Errors(w http.ResponseWriter, err error) ([]webhooksv1.ErrorItem, bool) {
+func HttpErrors(w http.ResponseWriter, err error) ([]webhookshttpv1.ErrorItem, bool) {
 	var e utils.Errors
 	if !errors.As(err, &e) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return nil, true
 	}
-	return lo.Map(e, func(e utils.Error, _ int) webhooksv1.ErrorItem {
-		return webhooksv1.ErrorItem{
+	return lo.Map(e, func(e utils.Error, _ int) webhookshttpv1.ErrorItem {
+		return webhookshttpv1.ErrorItem{
 			Code:   e.Code,
 			Index:  e.Index,
 			Reason: e.Reason,
 		}
 	}), false
+}
+
+func GrpcError(err error) *webhooksgrpcv1.Error {
+	var e utils.Error
+
+	error := convertError(err)
+	if error == nil {
+		return nil
+	}
+
+	if errors.As(err, &e) {
+		return &webhooksgrpcv1.Error{
+			Code:   int32(e.Code),
+			Index:  e.Index,
+			Reason: e.Reason,
+		}
+	}
+
+	return &webhooksgrpcv1.Error{
+		Code:   http.StatusInternalServerError,
+		Index:  "",
+		Reason: err.Error(),
+	}
+}
+
+func GrpcErrors(err error) []*webhooksgrpcv1.Error {
+	errors := make([]*webhooksgrpcv1.Error, 1)
+	errors[0] = GrpcError(err)
+	return errors
 }
 
 // IsPLSQLColumnNullableViolation determines if the provided error is a PLSQL non-null constraint violation

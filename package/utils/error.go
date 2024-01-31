@@ -12,6 +12,13 @@ type Error struct {
 	Index  string
 	Reason string
 }
+func NewError(code int, index string, reason string) *Error {
+	return &Error{
+		Code:   code,
+		Index:  index,
+		Reason: reason,
+	}
+}
 
 func (e Error) Error() string {
 	return fmt.Sprintf("error %d at %s: %s", e.Code, e.Index, e.Reason)

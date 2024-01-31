@@ -18,7 +18,7 @@ func (h *Handler) CreateEndpoints(w http.ResponseWriter, r *http.Request, applic
 		return
 	}
 	if res, err := h.Repo.CreateEndpoints(r.Context(), h.Convert.NewEndpoints(req)); err != nil {
-		errs, stop := webhooks.Errors(w, err)
+		errs, stop := webhooks.HttpErrors(w, err)
 		if stop {
 			return
 		}
@@ -46,7 +46,7 @@ func (h *Handler) DisableEndpoints(w http.ResponseWriter, r *http.Request, appli
 // GetEndpoint implements webhooksv1.ServerInterface.
 func (h *Handler) GetEndpoint(w http.ResponseWriter, r *http.Request, endpointId string) {
 	var ret webhooksv1.Endpoint
-	if res, err := h.Repo.GetEndpoints(r.Context(), []string{endpointId}); webhooks.Error(w, err) {
+	if res, err := h.Repo.GetEndpoints(r.Context(), []string{endpointId}); webhooks.HttpError(w, err) {
 		return
 	} else if len(res) == 1 {
 		ret = h.Convert.EndpointDetail(res[0])

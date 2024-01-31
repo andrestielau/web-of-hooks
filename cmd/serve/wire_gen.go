@@ -14,6 +14,7 @@ import (
 	"woh/package/actor/third/gps/sub"
 	"woh/webhooks/adapt/cron"
 	"woh/webhooks/adapt/grpc"
+	convert2 "woh/webhooks/adapt/grpc/convert"
 	handle2 "woh/webhooks/adapt/grpc/handle"
 	"woh/webhooks/adapt/http"
 	"woh/webhooks/adapt/http/convert"
@@ -41,9 +42,11 @@ func Adapters() actor.Actors {
 		Handler: handler,
 	}
 	adapter := http.New(httpOptions)
+	convertConverterImpl := _wireConvertConverterImplValue
 	handleHandler := &handle2.Handler{
 		Repo:    provider,
 		Secrets: secretsProvider,
+		Convert: convertConverterImpl,
 	}
 	grpcOptions := grpc.Options{
 		Handler: handleHandler,
@@ -78,5 +81,6 @@ func Adapters() actor.Actors {
 }
 
 var (
-	_wireConverterImplValue = &convert.ConverterImpl{}
+	_wireConverterImplValue        = &convert.ConverterImpl{}
+	_wireConvertConverterImplValue = &convert2.ConverterImpl{}
 )
