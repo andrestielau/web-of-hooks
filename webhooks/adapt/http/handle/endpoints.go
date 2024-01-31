@@ -24,7 +24,7 @@ func (h *Handler) CreateEndpoints(w http.ResponseWriter, r *http.Request, applic
 		}
 		ret.Errors = errs
 	} else {
-		ret.Data = h.Convert.Endpoints(res)
+		ret.Data = h.Convert.EndpointDetails(res)
 	}
 	if media.ShouldRender(r) {
 		// TODO: partial
@@ -49,7 +49,7 @@ func (h *Handler) GetEndpoint(w http.ResponseWriter, r *http.Request, endpointId
 	if res, err := h.Repo.GetEndpoints(r.Context(), []string{endpointId}); webhooks.Error(w, err) {
 		return
 	} else if len(res) == 1 {
-		ret = h.Convert.Endpoint(res[0])
+		ret = h.Convert.EndpointDetail(res[0])
 	}
 	if media.ShouldRender(r) {
 		// TODO: partial

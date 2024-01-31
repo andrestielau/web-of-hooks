@@ -48,6 +48,14 @@ type Converter interface {
 	// goverter:useZeroValueOnPointerInconsistency
 	Endpoint(webhooks.Endpoint) webhooksv1.Endpoint
 	Endpoints([]webhooks.Endpoint) []webhooksv1.Endpoint
+	// goverter:map Endpoint.Uid Id
+	// goverter:map Endpoint.Url Url
+	// goverter:map Endpoint.Name Name
+	// goverter:map Endpoint.RateLimit RateLimit
+	// goverter:ignore Channels Description
+	// goverter:map FilterTypeIds FilterTypes
+	EndpointDetail(webhooks.EndpointDetails) webhooksv1.Endpoint
+	EndpointDetails([]webhooks.EndpointDetails) []webhooksv1.Endpoint
 
 	// goverter:ignore Offset After
 	// goverter:useZeroValueOnPointerInconsistency
