@@ -18,7 +18,6 @@ SELECT
     u.description
 FROM unnest(pggen.arg('endpoints')::webhooks.new_endpoint[]) u
 JOIN webhooks.application a ON u.application_id = a.uid
-ON CONFLICT DO NOTHING
 RETURNING (
     id,
     url,

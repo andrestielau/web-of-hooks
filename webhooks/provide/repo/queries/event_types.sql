@@ -10,8 +10,8 @@ FROM unnest(pggen.arg('event_types')::webhooks.new_event_type[]) u
 ON CONFLICT DO NOTHING
 RETURNING (
     id,
-    uid,
     key,
+    uid,
     created_at
 ):: webhooks.event_type;
 
@@ -23,8 +23,8 @@ DELETE FROM webhooks.event_type WHERE key = ANY(pggen.arg('keys')::TEXT[]);
 -- name: GetEventTypes :many
 SELECT (
     id,
-    uid,
     key,
+    uid,
     created_at
 ):: webhooks.event_type
 FROM webhooks.event_type
@@ -34,8 +34,8 @@ WHERE uid = ANY(pggen.arg('ids')::uuid[]);
 -- name: ListEventTypes :many
 SELECT (
     id,
-    uid,
     key,
+    uid,
     created_at
 ):: webhooks.event_type
 FROM webhooks.event_type

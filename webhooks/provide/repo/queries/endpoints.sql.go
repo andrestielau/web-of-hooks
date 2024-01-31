@@ -25,7 +25,6 @@ SELECT
     u.description
 FROM unnest($1::webhooks.new_endpoint[]) u
 JOIN webhooks.application a ON u.application_id = a.uid
-ON CONFLICT DO NOTHING
 RETURNING (
     id,
     url,

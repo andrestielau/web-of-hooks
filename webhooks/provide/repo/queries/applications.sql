@@ -9,12 +9,12 @@ INSERT INTO webhooks.application (
     metadata
 ) 
 SELECT 
-    u.name,
-    u.tenant_id,
-    u.rate_limit,
-    u.metadata
-FROM unnest(pggen.arg('applications')::webhooks.new_application[]) u
-ON CONFLICT DO NOTHING
+    name,
+    tenant_id,
+    rate_limit,
+    metadata
+FROM unnest(pggen.arg('applications')::webhooks.new_application[])
+ON CONFLICT(tenant_id, name) DO NOTHING
 RETURNING (
     id,
     name,

@@ -13,7 +13,7 @@ import (
 // goverter:output:file ./generated.go
 // goverter:output:package github.com/andrestielau/web-of-hooks/webhooks/adapt/http/convert
 type Converter interface {
-	// goverter:map Key Id
+	// goverter:map Uid Id
 	// goverter:ignore CreatedAt
 	// goverter:useZeroValueOnPointerInconsistency
 	EventType(webhooks.EventType) webhooksv1.EventType

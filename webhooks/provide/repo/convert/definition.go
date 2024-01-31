@@ -11,7 +11,7 @@ import (
 // goverter:output:file ./generated.go
 // goverter:output:package github.com/andrestielau/web-of-hooks/webhooks/provide/repo/convert
 type Converter interface {
-	// goverter:ignore Key
+	// goverter:useZeroValueOnPointerInconsistency
 	EventType(queries.EventType) webhooks.EventType
 	EventTypes([]queries.EventType) []webhooks.EventType
 	NewEventType(webhooks.NewEventType) queries.NewEventType

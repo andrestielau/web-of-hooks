@@ -67,6 +67,8 @@ type EventTypeQuery struct {
 }
 
 type EventType struct {
+	ID  int32
+	Uid string
 	Key string
 }
 

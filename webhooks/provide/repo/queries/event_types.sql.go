@@ -17,8 +17,8 @@ FROM unnest($1::webhooks.new_event_type[]) u
 ON CONFLICT DO NOTHING
 RETURNING (
     id,
-    uid,
     key,
+    uid,
     created_at
 ):: webhooks.event_type;`
 
@@ -62,8 +62,8 @@ func (q *DBQuerier) DeleteEventTypes(ctx context.Context, keys []string) (pgconn
 
 const getEventTypesSQL = `SELECT (
     id,
-    uid,
     key,
+    uid,
     created_at
 ):: webhooks.event_type
 FROM webhooks.event_type
@@ -97,8 +97,8 @@ func (q *DBQuerier) GetEventTypes(ctx context.Context, ids []string) ([]EventTyp
 
 const listEventTypesSQL = `SELECT (
     id,
-    uid,
     key,
+    uid,
     created_at
 ):: webhooks.event_type
 FROM webhooks.event_type

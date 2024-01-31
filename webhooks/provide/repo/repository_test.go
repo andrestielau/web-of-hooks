@@ -1,4 +1,4 @@
-package queries_test
+package repo_test
 
 import (
 	"context"
@@ -35,16 +35,18 @@ func TestDequeue(t *testing.T) {
 	require.NoError(t, err)
 	require.Len(t, res, len(newEventTypes))
 
-	eventTypeKeys := make([]string, numEventTypes)
+	eventTypeIds := make([]*int32, numEventTypes)
+	eventTypeUids := make([]string, numEventTypes)
 	for _, eventType := range res {
 		require.NotEmpty(t, eventType.Key)
 		expect, i, ok := lo.FindIndexOf(newEventTypes, func(e webhooks.NewEventType) bool {
 			return e.Key == eventType.Key
 		})
 		require.True(t, ok)
-		require.Nil(t, eventTypeKeys[i])
+		require.Nil(t, eventTypeIds[i])
 		require.Equal(t, eventType.Key, expect.Key)
-		eventTypeKeys[i] = eventType.Key
+		eventTypeUids[i] = eventType.Uid
+		eventTypeIds[i] = &eventType.ID
 	}
 
 	numTenants := 2 // 20 ants (icebreaker)
@@ -56,15 +58,15 @@ func TestDequeue(t *testing.T) {
 	newApplications := lo.Times(numTenants*appsPerTenant, func(i int) webhooks.NewApplication {
 		return webhooks.NewApplication{
 			TenantID:  tenantIds[i%numTenants],
-			Name:      fmt.Sprintf("app%d-%s", i, uuid.NewString()),
-			RateLimit: lo.ToPtr[int32](min(rand.Int31(), 20)),
+			Name:      fmt.Sprintf("app%d-%s", i+1, uuid.NewString()),
+			RateLimit: lo.ToPtr[int32](rand.Int31() % 20),
 		}
 	})
 	res2, err := r.CreateApplications(ctx, newApplications)
 	require.NoError(t, err)
 	require.Len(t, res2, len(newApplications))
 
-	appIds := make([]int32, len(newApplications))
+	appIds := make([]*int32, len(newApplications))
 	appUids := make([]string, len(newApplications))
 	for _, app := range res2 { // TODO: check metadata
 		require.NotNil(t, app.ID)
@@ -76,7 +78,7 @@ func TestDequeue(t *testing.T) {
 		require.Nil(t, appIds[i])
 		require.Equal(t, expect.TenantID, app.TenantID)
 		require.Equal(t, expect.RateLimit, app.RateLimit)
-		appIds[i] = *app.ID
+		appIds[i] = app.ID
 		appUids[i] = app.Uid
 	}
 
@@ -94,7 +96,7 @@ func TestDequeue(t *testing.T) {
 		return webhooks.NewEndpoint{
 			Url:           fmt.Sprintf("http://app%d.com/endpoint%d", i/2+1, i+1),
 			Name:          fmt.Sprintf("Endpoint%d-%s", i, uuid.NewString()),
-			RateLimit:     lo.ToPtr[int32](min(rand.Int31(), 10)),
+			RateLimit:     lo.ToPtr[int32](rand.Int31() % 20),
 			Description:   "description " + strconv.Itoa(i),
 			ApplicationID: appUids[i/endpointsPerApp],
 			FilterTypes:   filterTypes,
@@ -102,14 +104,13 @@ func TestDequeue(t *testing.T) {
 	})
 	res3, err := r.CreateEndpoints(ctx, newEndpoints)
 	require.NoError(t, err)
-	require.Len(t, res2, len(newEndpoints))
-	endpointIds := make([]int32, len(newEndpoints))
+	require.Len(t, res3, len(newEndpoints))
+	endpointIds := make([]*int32, len(newEndpoints))
 	endpointUids := make([]string, len(newEndpoints))
 	for _, endpoint := range res3 {
 		require.NotNil(t, endpoint.ID)
 		require.NotEmpty(t, endpoint.Uid)
-		require.NotNil(t, endpoint.Disabled)
-		require.False(t, *endpoint.Disabled)
+		require.Nil(t, endpoint.Disabled)
 		expect, i, ok := lo.FindIndexOf(newEndpoints, func(e webhooks.NewEndpoint) bool {
 			return e.Name == endpoint.Name
 		})
@@ -123,13 +124,13 @@ func TestDequeue(t *testing.T) {
 		require.Equal(t, expect.RateLimit, endpoint.RateLimit)
 		require.Equal(t, expect.Description, endpoint.Description)
 		require.Equal(t, expect.Url, endpoint.Url)
-		endpointIds[i] = *endpoint.ID
+		endpointIds[i] = endpoint.ID
 		endpointUids[i] = endpoint.Uid
 	}
 
 	newMessages := lo.Times(numTenants*appsPerTenant*numEventTypes, func(i int) webhooks.NewMessage {
 		return webhooks.NewMessage{
-			EventTypeID:   eventTypeKeys[i%len(newEventTypes)],
+			EventTypeID:   eventTypeUids[i%len(newEventTypes)],
 			ApplicationID: appUids[i/(appsPerTenant*numTenants)],
 			EventID:       fmt.Sprintf("msg%d-%s", i, uuid.NewString()),
 			Payload:       "something-" + uuid.NewString(),
@@ -137,8 +138,8 @@ func TestDequeue(t *testing.T) {
 	})
 	res4, err := r.CreateMessages(ctx, newMessages)
 	require.NoError(t, err)
-	require.Len(t, res2, len(newMessages))
-	messageIds := make([]int32, len(newMessages))
+	require.Len(t, res4, len(newMessages))
+	messageIds := make([]*int32, len(newMessages))
 	messageUids := make([]string, len(newMessages))
 	for _, msg := range res4 {
 		require.NotNil(t, msg.ID)
@@ -149,8 +150,11 @@ func TestDequeue(t *testing.T) {
 		})
 		require.True(t, ok)
 		require.Nil(t, messageIds[i])
-		require.Empty(t, messageUids[i])
+		require.NotNil(t, msg.ID)
+		require.NotEmpty(t, msg.Uid)
 		require.Equal(t, expect.Payload, msg.Payload)
+		messageIds[i] = msg.ID
+		messageUids[i] = msg.Uid
 		// TODO:Check Attempts
 	}
 }

@@ -61,7 +61,7 @@ const dequeueAttemptsSQL = `WITH last_seen AS (
     LIMIT $3 
 ), dequeue AS (
     UPDATE webhooks.message_attempt a
-    SET status = 1 
+    SET status = 1, updated_at = now()
     FROM selected s
     WHERE a.id = s.attempt_id
 )
