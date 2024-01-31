@@ -35,6 +35,8 @@ require (
 	woh v0.0.0-00010101000000-000000000000
 )
 
+require github.com/apapsch/go-jsonmerge/v2 v2.0.0 // indirect
+
 require (
 	cloud.google.com/go v0.110.10 // indirect
 	cloud.google.com/go/compute v1.23.3 // indirect
@@ -49,7 +51,6 @@ require (
 	github.com/a-h/parse v0.0.0-20230402144745-e6c8bc86e846 // indirect
 	github.com/a-h/protocol v0.0.0-20230224160810-b4eec67c1c22 // indirect
 	github.com/aokoli/goutils v1.0.1 // indirect
-	github.com/apapsch/go-jsonmerge/v2 v2.0.0 // indirect
 	github.com/bep/godartsass v0.16.0 // indirect
 	github.com/bep/golibsass v1.1.0 // indirect
 	github.com/bmatcuk/doublestar v1.3.4 // indirect

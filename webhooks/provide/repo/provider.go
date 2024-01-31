@@ -22,7 +22,9 @@ func New(o pgx.Options) *Provider {
 }
 
 func (a *Provider) Start(ctx context.Context) (first bool, err error) {
-	if first, err = a.Provider.Start(ctx); !first || err != nil {
+	a.Base.Lock()
+	defer a.Base.Unlock()
+	if first, err = a.Provider.BaseStart(ctx); !first || err != nil {
 		return
 	}
 	a.Repository = &Repository{

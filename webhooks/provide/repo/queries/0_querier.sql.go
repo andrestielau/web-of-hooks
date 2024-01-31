@@ -87,6 +87,9 @@ type Querier interface {
 	// Update secret value by uid
 	UpdateSecret(ctx context.Context, value string, uid string) (pgconn.CommandTag, error)
 
+	// SetLastSeen
+	SetLastSeen(ctx context.Context, id string) (pgconn.CommandTag, error)
+
 	// DequeueAttempts dequeues pending attempts for app with a hacked-up consistent hashing
 	DequeueAttempts(ctx context.Context, params DequeueAttemptsParams) ([]DequeueAttemptsRow, error)
 }

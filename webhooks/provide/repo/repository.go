@@ -171,3 +171,8 @@ func (r *Repository) ListSecrets(ctx context.Context, query webhooks.SecretQuery
 	}
 	return r.Convert.Secrets(res), nil
 }
+
+func (r *Repository) SetLastSeen(ctx context.Context, workerId string) error {
+	_, err := r.Querier.SetLastSeen(ctx, workerId)
+	return err
+}

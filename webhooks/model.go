@@ -54,6 +54,7 @@ type Repository interface {
 	GetSecrets(context.Context, []string) ([]Secret, error)
 	DeleteSecrets(context.Context, []string) error
 	ListSecrets(context.Context, SecretQuery) ([]Secret, error)
+	SetLastSeen(context.Context, string) error
 }
 
 type NewEventType struct {

@@ -1,3 +1,13 @@
+-- SetLastSeen
+-- name: SetLastSeen :exec
+INSERT INTO webhooks.worker (
+    id
+) VALUES (
+    pggen.arg('id')
+) ON CONFLICT(id)
+    DO UPDATE SET 
+        last_seen_at = now();
+
 -- DequeueAttempts dequeues pending attempts for app with a hacked-up consistent hashing
 -- name: DequeueAttempts :many
 WITH last_seen AS (

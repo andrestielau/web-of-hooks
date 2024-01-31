@@ -64,7 +64,9 @@ func Adapters() actor.Actors {
 		Options: subOptions,
 	}
 	subsAdapter := subs.New(subsOptions)
+	workerId := cron.ProvideWorkerId()
 	cronHandler := &cron.Handler{
+		Id:   workerId,
 		Repo: provider,
 	}
 	cronOptions := cron.Options{

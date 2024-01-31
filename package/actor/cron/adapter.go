@@ -30,7 +30,13 @@ func (a *Adapter) Start(ctx context.Context) (first bool, err error) {
 	if first, err = a.Base.Start(ctx); !first || err != nil {
 		return first, err
 	}
+	a.Run(ctx)
+	return true, nil
+}
+
+func (a *Adapter) Run(ctx context.Context) {
 	a.t = time.NewTicker(a.opts.Period)
+	a.closer = make(chan struct{})
 	go func() {
 		defer close(a.closer)
 		for range a.t.C {
@@ -39,15 +45,15 @@ func (a *Adapter) Start(ctx context.Context) (first bool, err error) {
 			}
 		}
 	}()
-	return true, nil
 }
+
 func (a *Adapter) run(ctx context.Context) (stop bool) {
 	defer func() {
 		if r := recover(); r != nil {
 			log.Println(r)
+			stop = true
 			return
 		}
-		stop = true
 	}()
 	a.opts.Handler(ctx)
 	return stop

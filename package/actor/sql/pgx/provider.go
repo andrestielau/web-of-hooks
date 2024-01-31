@@ -25,7 +25,12 @@ func New(opts Options) *Provider {
 }
 
 func (a *Provider) Start(ctx context.Context) (first bool, err error) {
-	if first, err = a.Base.Start(ctx); !first || err != nil {
+	a.Base.Lock()
+	defer a.Base.Unlock()
+	return a.BaseStart(ctx)
+}
+func (a *Provider) BaseStart(ctx context.Context) (first bool, err error) {
+	if first, err = a.Base.BaseStart(ctx); !first || err != nil {
 		return
 	}
 	a.Conn, err = pgx.Connect(ctx, a.opts.URL)

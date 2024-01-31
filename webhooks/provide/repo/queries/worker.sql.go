@@ -5,8 +5,27 @@ package queries
 import (
 	"context"
 	"fmt"
+	"github.com/jackc/pgconn"
 	"time"
 )
+
+const setLastSeenSQL = `INSERT INTO webhooks.worker (
+    id
+) VALUES (
+    $1
+) ON CONFLICT(id)
+    DO UPDATE SET 
+        last_seen_at = now();`
+
+// SetLastSeen implements Querier.SetLastSeen.
+func (q *DBQuerier) SetLastSeen(ctx context.Context, id string) (pgconn.CommandTag, error) {
+	ctx = context.WithValue(ctx, "pggen_query_name", "SetLastSeen")
+	cmdTag, err := q.conn.Exec(ctx, setLastSeenSQL, id)
+	if err != nil {
+		return cmdTag, fmt.Errorf("exec query SetLastSeen: %w", err)
+	}
+	return cmdTag, err
+}
 
 const dequeueAttemptsSQL = `WITH last_seen AS (
     INSERT INTO webhooks.worker (
