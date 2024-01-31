@@ -45,6 +45,8 @@ WITH new_messages AS (
         endpoint_id,
         message_id,
         created_at,
+        updated_at,
+        retry,
         status,
         response_status,
         response

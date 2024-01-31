@@ -23,12 +23,8 @@ func New(opts Options) *Adapter {
 		webhooks.RepoKey:    opts.Handler.Repo,
 	}
 	a.SpawnAll(actor.Actors{
-		"Send": cron.New(cron.Options{
-			Handler: opts.Handler.Send,
-			Period:  time.Minute,
-		}).SpawnAll(deps),
-		"Sign": cron.New(cron.Options{
-			Handler: opts.Handler.Sign,
+		"Work": cron.New(cron.Options{
+			Handler: opts.Handler.Work,
 			Period:  time.Minute,
 		}).SpawnAll(deps),
 	})

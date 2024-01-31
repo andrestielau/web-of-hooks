@@ -4,16 +4,17 @@
 -- name: DeleteAttempts :exec
 DELETE FROM webhooks.message_attempt WHERE uid = ANY(pggen.arg('ids')::UUID[]);
 
-
 -- GetAttempts gets attempts by id
 -- name: GetAttempts :many
 SELECT (
     id,
     uid,
-    endpoint_id ,
-    message_id ,
+    endpoint_id,
+    message_id,
     created_at,
+    updated_at,
     status,
+    retry,
     response_status,
     response
 )::webhooks.message_attempt
@@ -25,10 +26,12 @@ WHERE uid = ANY(pggen.arg('ids')::uuid[]);
 SELECT (
     id,
     uid,
-    endpoint_id ,
-    message_id ,
+    endpoint_id,
+    message_id,
     created_at,
+    updated_at,
     status,
+    retry,
     response_status,
     response
 )::webhooks.message_attempt

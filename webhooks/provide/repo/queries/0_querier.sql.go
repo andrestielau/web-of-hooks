@@ -86,6 +86,9 @@ type Querier interface {
 
 	// Update secret value by uid
 	UpdateSecret(ctx context.Context, value string, uid string) (pgconn.CommandTag, error)
+
+	// DequeueAttempts dequeues pending attempts for app with a hacked-up consistent hashing
+	DequeueAttempts(ctx context.Context, params DequeueAttemptsParams) ([]DequeueAttemptsRow, error)
 }
 
 var _ Querier = &DBQuerier{}
@@ -160,7 +163,9 @@ type MessageAttempt struct {
 	EndpointID     *int32    `json:"endpoint_id"`
 	MessageID      *int32    `json:"message_id"`
 	CreatedAt      time.Time `json:"created_at"`
+	UpdatedAt      time.Time `json:"updated_at"`
 	Status         *int32    `json:"status"`
+	Retry          *int32    `json:"retry"`
 	ResponseStatus *int32    `json:"response_status"`
 	Response       string    `json:"response"`
 }
@@ -357,7 +362,9 @@ func (tr *typeResolver) newMessageAttempt() pgtype.ValueTranscoder {
 		compositeField{name: "endpoint_id", typeName: "int4", defaultVal: &pgtype.Int4{}},
 		compositeField{name: "message_id", typeName: "int4", defaultVal: &pgtype.Int4{}},
 		compositeField{name: "created_at", typeName: "timestamptz", defaultVal: &pgtype.Timestamptz{}},
+		compositeField{name: "updated_at", typeName: "timestamptz", defaultVal: &pgtype.Timestamptz{}},
 		compositeField{name: "status", typeName: "int4", defaultVal: &pgtype.Int4{}},
+		compositeField{name: "retry", typeName: "int4", defaultVal: &pgtype.Int4{}},
 		compositeField{name: "response_status", typeName: "int4", defaultVal: &pgtype.Int4{}},
 		compositeField{name: "response", typeName: "text", defaultVal: &pgtype.Text{}},
 	)

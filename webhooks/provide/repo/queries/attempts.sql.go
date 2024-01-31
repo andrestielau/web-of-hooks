@@ -23,10 +23,12 @@ func (q *DBQuerier) DeleteAttempts(ctx context.Context, ids []string) (pgconn.Co
 const getAttemptsSQL = `SELECT (
     id,
     uid,
-    endpoint_id ,
-    message_id ,
+    endpoint_id,
+    message_id,
     created_at,
+    updated_at,
     status,
+    retry,
     response_status,
     response
 )::webhooks.message_attempt
@@ -62,10 +64,12 @@ func (q *DBQuerier) GetAttempts(ctx context.Context, ids []string) ([]MessageAtt
 const listAttemptsSQL = `SELECT (
     id,
     uid,
-    endpoint_id ,
-    message_id ,
+    endpoint_id,
+    message_id,
     created_at,
+    updated_at,
     status,
+    retry,
     response_status,
     response
 )::webhooks.message_attempt

@@ -19,7 +19,9 @@ CREATE TABLE webhooks.message_attempt (
     endpoint_id INT REFERENCES webhooks.endpoint(id),
     message_id INT REFERENCES webhooks.message(id),
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-    status INT NOT NULL DEFAULT 0,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    status INT NOT NULL DEFAULT 0, -- 0 pending, 1 on-worker, 2 complete
+    retry INT NOT NULL DEFAULT 0,
     response_status INT,
     response TEXT
 );
