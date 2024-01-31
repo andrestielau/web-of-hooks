@@ -1,15 +1,10 @@
 package convert
 
 import (
-	"errors"
-	"net/http"
 	"time"
 
-	"woh/package/utils"
 	"woh/webhooks"
 	webhooksv1 "woh/webhooks/adapt/http/v1"
-
-	"github.com/samber/lo"
 )
 
 // goverter:converter
@@ -93,28 +88,4 @@ type Converter interface {
 
 func TimeToString(t time.Time) string {
 	return t.String()
-}
-
-func Error(w http.ResponseWriter, err error) bool {
-	var e utils.Error
-	if !errors.As(err, &e) {
-		http.Error(w, e.Reason, e.Code)
-		return true
-	}
-	return false
-}
-
-func Errors(w http.ResponseWriter, err error) ([]webhooksv1.ErrorItem, bool) {
-	var e utils.Errors
-	if !errors.As(err, &e) {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return nil, true
-	}
-	return lo.Map(e, func(e utils.Error, _ int) webhooksv1.ErrorItem {
-		return webhooksv1.ErrorItem{
-			Code:   e.Code,
-			Index:  e.Index,
-			Reason: e.Reason,
-		}
-	}), false
 }

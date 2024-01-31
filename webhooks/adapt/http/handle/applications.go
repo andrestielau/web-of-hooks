@@ -1,13 +1,15 @@
 package handle
 
 import (
+	"fmt"
+	"log"
 	"net/http"
+	"woh/webhooks"
 	webhooksv1 "woh/webhooks/adapt/http/v1"
 
 	"woh/package/utils/media"
 
-	"github.com/andrestielau/web-of-hooks/webhooks/adapt/http/convert"
-	"github.com/andrestielau/web-of-hooks/webhooks/render/page/applications"
+	"woh/webhooks/render/page/applications"
 )
 
 // CreateApplications implements webhooksv1.ServerInterface.
@@ -19,7 +21,7 @@ func (h *Handler) CreateApplications(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if res, err := h.Repo.CreateApplications(r.Context(), h.Convert.NewApplications(req)); err != nil {
-		errs, stop := convert.Errors(w, err)
+		errs, stop := webhooks.Errors(w, err)
 		if stop {
 			return
 		}
@@ -47,7 +49,10 @@ func (h *Handler) DeleteApplications(w http.ResponseWriter, r *http.Request) {
 // GetApplication implements webhooksv1.ServerInterface.
 func (h *Handler) GetApplication(w http.ResponseWriter, r *http.Request, applicationId string) {
 	var ret webhooksv1.Application
-	if res, err := h.Repo.GetApplications(r.Context(), []string{applicationId}); convert.Error(w, err) {
+	if res, err := h.Repo.GetApplications(r.Context(), []string{applicationId}); webhooks.Error(w, err) {
+		return
+	} else if len(res) == 0 {
+		http.Error(w, fmt.Sprintf("Application with uid %s not found", applicationId), http.StatusNotFound)
 		return
 	} else if len(res) == 1 {
 		ret = h.Convert.Application(res[0])
@@ -62,7 +67,7 @@ func (h *Handler) GetApplication(w http.ResponseWriter, r *http.Request, applica
 // ListApplications implements webhooksv1.ServerInterface.
 func (h *Handler) ListApplications(w http.ResponseWriter, r *http.Request, params webhooksv1.ListApplicationsParams) {
 	if res, err := h.Repo.ListApplications(r.Context(), h.Convert.ApplicationQuery(params)); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		webhooks.Error(w, err)
 	} else if media.ShouldRender(r) {
 		applications.Applications(applications.ApplicationsViewModel{
 			Data: res,
@@ -75,7 +80,7 @@ func (h *Handler) ListApplications(w http.ResponseWriter, r *http.Request, param
 // GetApplicationStats implements webhooksv1.ServerInterface.
 func (h *Handler) GetApplicationStats(w http.ResponseWriter, r *http.Request, applicationId string) {
 	var ret webhooksv1.Application
-	if res, err := h.Repo.GetApplications(r.Context(), []string{applicationId}); convert.Error(w, err) {
+	if res, err := h.Repo.GetApplications(r.Context(), []string{applicationId}); webhooks.Error(w, err) {
 		return
 	} else if len(res) == 1 {
 		ret = h.Convert.Application(res[0])

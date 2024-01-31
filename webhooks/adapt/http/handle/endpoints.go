@@ -6,7 +6,7 @@ import (
 	webhooksv1 "woh/webhooks/adapt/http/v1"
 	"woh/webhooks/render/page/applications"
 
-	"woh/webhooks/adapt/http/convert"
+	"github.com/andrestielau/web-of-hooks/webhooks"
 )
 
 // CreateEndpoints implements webhooksv1.ServerInterface.
@@ -18,7 +18,7 @@ func (h *Handler) CreateEndpoints(w http.ResponseWriter, r *http.Request, applic
 		return
 	}
 	if res, err := h.Repo.CreateEndpoints(r.Context(), h.Convert.NewEndpoints(req)); err != nil {
-		errs, stop := convert.Errors(w, err)
+		errs, stop := webhooks.Errors(w, err)
 		if stop {
 			return
 		}
@@ -46,7 +46,7 @@ func (h *Handler) DisableEndpoints(w http.ResponseWriter, r *http.Request, appli
 // GetEndpoint implements webhooksv1.ServerInterface.
 func (h *Handler) GetEndpoint(w http.ResponseWriter, r *http.Request, endpointId string) {
 	var ret webhooksv1.Endpoint
-	if res, err := h.Repo.GetEndpoints(r.Context(), []string{endpointId}); convert.Error(w, err) {
+	if res, err := h.Repo.GetEndpoints(r.Context(), []string{endpointId}); webhooks.Error(w, err) {
 		return
 	} else if len(res) == 1 {
 		ret = h.Convert.Endpoint(res[0])
