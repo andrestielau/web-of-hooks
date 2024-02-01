@@ -2,6 +2,7 @@ CREATE TYPE webhooks.new_endpoint AS (
     url TEXT,
     name TEXT,
     application_id UUID,
+    secret_id UUID,
     rate_limit INT,
     metadata JSONB,
     description TEXT,
@@ -23,9 +24,8 @@ CREATE TABLE webhooks.endpoint (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 CREATE TABLE webhooks.endpoint_secret (
-    endpoint_id INT REFERENCES webhooks.endpoint(id),
-    secret_id INT REFERENCES webhooks.secret(id),
-    PRIMARY KEY(endpoint_id, secret_id)
+    endpoint_id INT PRIMARY KEY REFERENCES webhooks.endpoint(id),
+    secret_id INT REFERENCES webhooks.secret(id)
 );
 CREATE TABLE webhooks.endpoint_filter (
     endpoint_id INT REFERENCES webhooks.endpoint(id),
@@ -40,5 +40,6 @@ CREATE TABLE webhooks.endpoint_channel (
 
 CREATE TYPE webhooks.endpoint_details AS (
     endpoint webhooks.endpoint,
-    filter_type_ids TEXT[]
+    filter_type_ids TEXT[],
+    secret TEXT
 )

@@ -781,6 +781,8 @@ components:
           type: string
         description:
           type: string
+        secretId:
+          type: string
         rateLimit:
           type: integer
           format: int32
@@ -796,6 +798,7 @@ components:
             type: string
       required:
         - url
+        - secretId
     Endpoint:
       type: object
       x-examples:

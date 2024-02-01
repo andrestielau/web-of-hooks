@@ -36,7 +36,7 @@ type Converter interface {
 	NewEndpoints([]*webhooksv1.Endpoint) []webhooks.NewEndpoint
 
 	// goverter:map Uid Id
-	// goverter:ignore Channels FilterTypes Secret Version Metadata
+	// goverter:ignore Channels FilterTypes SecretId Version Metadata
 	// goverter:useZeroValueOnPointerInconsistency
 	Endpoint(webhooks.Endpoint) *webhooksv1.Endpoint
 	Endpoints([]webhooks.Endpoint) []*webhooksv1.Endpoint

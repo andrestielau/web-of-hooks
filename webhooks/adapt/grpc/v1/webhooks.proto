@@ -31,7 +31,7 @@ message Endpoint {
     string id = 1;
     string uid = 2;
     string url = 3;
-    string secret = 4;
+    string secret_id = 4;
     string description = 5;
     bool disabled = 6;
     int32 version = 7;

@@ -302,7 +302,7 @@ Req/Res
 | id | [string](#string) |  |  |
 | uid | [string](#string) |  |  |
 | url | [string](#string) |  |  |
-| secret | [string](#string) |  |  |
+| secret_id | [string](#string) |  |  |
 | description | [string](#string) |  |  |
 | disabled | [bool](#bool) |  |  |
 | version | [int32](#int32) |  |  |

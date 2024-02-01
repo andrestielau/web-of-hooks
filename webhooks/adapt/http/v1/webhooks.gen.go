@@ -104,6 +104,7 @@ type NewEndpoint struct {
 	FilterTypeIds *[]string `json:"filterTypeIds,omitempty"`
 	Name          *string   `json:"name,omitempty"`
 	RateLimit     *int32    `json:"rateLimit,omitempty"`
+	SecretId      string    `json:"secretId"`
 	Url           string    `json:"url"`
 }
 

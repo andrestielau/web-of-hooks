@@ -39,7 +39,19 @@ const createEndpointsSQL = `WITH inserted AS (
         description,
         created_at,
         updated_at
-), inserted_filters AS (
+), linked_secrets AS (
+    INSERT INTO webhooks.endpoint_secret (
+        secret_id,
+        endpoint_id
+    )
+    SELECT 
+        s.id,
+        i.id
+    FROM unnest($1::webhooks.new_endpoint[]) n,
+        webhooks.secret s,
+        inserted i 
+    WHERE s.uid = n.secret_id AND i.url = n.url
+) , inserted_filters AS (
     INSERT INTO webhooks.endpoint_filter (
         event_type_id,
         endpoint_id
@@ -65,7 +77,8 @@ const createEndpointsSQL = `WITH inserted AS (
         i.created_at,
         i.updated_at
     )::webhooks.endpoint,
-    u.filter_type_ids
+    u.filter_type_ids,
+    '' --secret
 )::webhooks.endpoint_details 
 FROM inserted i
 INNER JOIN unnest($1::webhooks.new_endpoint[]) u
@@ -126,7 +139,10 @@ const getEndpointsSQL = `SELECT ((
     FROM webhooks.event_type e
     INNER JOIN webhooks.endpoint_filter f 
         ON f.event_type_id = e.id  
-    WHERE f.endpoint_id = id)
+    WHERE f.endpoint_id = id),
+    (SELECT value FROM webhooks.secret s, webhooks.endpoint_secret es
+    WHERE es.endpoint_id = id AND s.id = es.secret_id 
+    LIMIT 1)
 )::webhooks.endpoint_details FROM webhooks.endpoint
 WHERE uid = ANY($1::uuid[]);`
 

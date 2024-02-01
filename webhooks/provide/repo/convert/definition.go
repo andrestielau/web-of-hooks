@@ -30,6 +30,7 @@ type Converter interface {
 	Endpoint(queries.Endpoint) webhooks.Endpoint
 	Endpoints([]queries.Endpoint) []webhooks.Endpoint
 	// goverter:ignore Metadata
+	// goverter:map SecretId SecretID
 	NewEndpoint(webhooks.NewEndpoint) queries.NewEndpoint
 	NewEndpoints([]webhooks.NewEndpoint) []queries.NewEndpoint
 	EndpointQuery(webhooks.EndpointQuery) queries.ListEndpointsParams

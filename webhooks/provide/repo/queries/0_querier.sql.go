@@ -147,6 +147,7 @@ type Endpoint struct {
 type EndpointDetails struct {
 	Endpoint      Endpoint `json:"endpoint"`
 	FilterTypeIds []string `json:"filter_type_ids"`
+	Secret        string   `json:"secret"`
 }
 
 // EventType represents the Postgres composite type "event_type".
@@ -201,6 +202,7 @@ type NewEndpoint struct {
 	Url           string       `json:"url"`
 	Name          string       `json:"name"`
 	ApplicationID string       `json:"application_id"`
+	SecretID      string       `json:"secret_id"`
 	RateLimit     *int32       `json:"rate_limit"`
 	Metadata      pgtype.JSONB `json:"metadata"`
 	Description   string       `json:"description"`
@@ -340,6 +342,7 @@ func (tr *typeResolver) newEndpointDetails() pgtype.ValueTranscoder {
 		"endpoint_details",
 		compositeField{name: "endpoint", typeName: "endpoint", defaultVal: tr.newEndpoint()},
 		compositeField{name: "filter_type_ids", typeName: "_text", defaultVal: &pgtype.TextArray{}},
+		compositeField{name: "secret", typeName: "text", defaultVal: &pgtype.Text{}},
 	)
 }
 
@@ -448,6 +451,7 @@ func (tr *typeResolver) newNewEndpoint() pgtype.ValueTranscoder {
 		compositeField{name: "url", typeName: "text", defaultVal: &pgtype.Text{}},
 		compositeField{name: "name", typeName: "text", defaultVal: &pgtype.Text{}},
 		compositeField{name: "application_id", typeName: "uuid", defaultVal: &pgtype.UUID{}},
+		compositeField{name: "secret_id", typeName: "uuid", defaultVal: &pgtype.UUID{}},
 		compositeField{name: "rate_limit", typeName: "int4", defaultVal: &pgtype.Int4{}},
 		compositeField{name: "metadata", typeName: "jsonb", defaultVal: &pgtype.JSONB{}},
 		compositeField{name: "description", typeName: "text", defaultVal: &pgtype.Text{}},
@@ -463,6 +467,7 @@ func (tr *typeResolver) newNewEndpointRaw(v NewEndpoint) []interface{} {
 		v.Url,
 		v.Name,
 		v.ApplicationID,
+		v.SecretID,
 		v.RateLimit,
 		v.Metadata,
 		v.Description,
