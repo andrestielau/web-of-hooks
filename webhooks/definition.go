@@ -48,4 +48,5 @@ type Repository interface {
 	DeleteSecrets(context.Context, []string) error
 	ListSecrets(context.Context, SecretQuery) ([]Secret, error)
 	ListApplicationSecrets(context.Context, string) ([]Secret, error)
+	EmitEvent(context.Context, NewEvent) ([]Message, error)
 }
