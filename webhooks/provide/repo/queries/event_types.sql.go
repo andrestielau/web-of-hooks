@@ -96,6 +96,41 @@ func (q *DBQuerier) GetEventTypes(ctx context.Context, ids []string) ([]EventTyp
 	return items, err
 }
 
+const getEventTypesByKeysSQL = `SELECT (
+    id,
+    key,
+    uid,
+    created_at
+):: webhooks.event_type
+FROM webhooks.event_type
+WHERE key = ANY($1);`
+
+// GetEventTypesByKeys implements Querier.GetEventTypesByKeys.
+func (q *DBQuerier) GetEventTypesByKeys(ctx context.Context, keys []string) ([]EventType, error) {
+	ctx = context.WithValue(ctx, "pggen_query_name", "GetEventTypesByKeys")
+	rows, err := q.conn.Query(ctx, getEventTypesByKeysSQL, keys)
+	if err != nil {
+		return nil, fmt.Errorf("query GetEventTypesByKeys: %w", err)
+	}
+	defer rows.Close()
+	items := []EventType{}
+	rowRow := q.types.newEventType()
+	for rows.Next() {
+		var item EventType
+		if err := rows.Scan(rowRow); err != nil {
+			return nil, fmt.Errorf("scan GetEventTypesByKeys row: %w", err)
+		}
+		if err := rowRow.AssignTo(&item); err != nil {
+			return nil, fmt.Errorf("assign GetEventTypesByKeys row: %w", err)
+		}
+		items = append(items, item)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("close GetEventTypesByKeys rows: %w", err)
+	}
+	return items, err
+}
+
 const listEventTypesSQL = `SELECT (
     id,
     key,

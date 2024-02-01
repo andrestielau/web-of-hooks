@@ -1642,6 +1642,124 @@ func (x *ListMessagesResponse) GetErrors() []*Error {
 	return nil
 }
 
+type EmitEventRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	TenantId      string   `protobuf:"bytes,1,opt,name=tenant_id,json=tenantId,proto3" json:"tenant_id,omitempty"`
+	EventTypeKeys []string `protobuf:"bytes,2,rep,name=event_type_keys,json=eventTypeKeys,proto3" json:"event_type_keys,omitempty"`
+	ReferenceId   string   `protobuf:"bytes,3,opt,name=reference_id,json=referenceId,proto3" json:"reference_id,omitempty"`
+}
+
+func (x *EmitEventRequest) Reset() {
+	*x = EmitEventRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_webhooks_adapt_grpc_v1_webhooks_proto_msgTypes[28]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *EmitEventRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*EmitEventRequest) ProtoMessage() {}
+
+func (x *EmitEventRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_webhooks_adapt_grpc_v1_webhooks_proto_msgTypes[28]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use EmitEventRequest.ProtoReflect.Descriptor instead.
+func (*EmitEventRequest) Descriptor() ([]byte, []int) {
+	return file_webhooks_adapt_grpc_v1_webhooks_proto_rawDescGZIP(), []int{28}
+}
+
+func (x *EmitEventRequest) GetTenantId() string {
+	if x != nil {
+		return x.TenantId
+	}
+	return ""
+}
+
+func (x *EmitEventRequest) GetEventTypeKeys() []string {
+	if x != nil {
+		return x.EventTypeKeys
+	}
+	return nil
+}
+
+func (x *EmitEventRequest) GetReferenceId() string {
+	if x != nil {
+		return x.ReferenceId
+	}
+	return ""
+}
+
+type EmitEventResponse struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Data   []*Message `protobuf:"bytes,1,rep,name=data,proto3" json:"data,omitempty"`
+	Errors []*Error   `protobuf:"bytes,2,rep,name=errors,proto3" json:"errors,omitempty"`
+}
+
+func (x *EmitEventResponse) Reset() {
+	*x = EmitEventResponse{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_webhooks_adapt_grpc_v1_webhooks_proto_msgTypes[29]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *EmitEventResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*EmitEventResponse) ProtoMessage() {}
+
+func (x *EmitEventResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_webhooks_adapt_grpc_v1_webhooks_proto_msgTypes[29]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use EmitEventResponse.ProtoReflect.Descriptor instead.
+func (*EmitEventResponse) Descriptor() ([]byte, []int) {
+	return file_webhooks_adapt_grpc_v1_webhooks_proto_rawDescGZIP(), []int{29}
+}
+
+func (x *EmitEventResponse) GetData() []*Message {
+	if x != nil {
+		return x.Data
+	}
+	return nil
+}
+
+func (x *EmitEventResponse) GetErrors() []*Error {
+	if x != nil {
+		return x.Errors
+	}
+	return nil
+}
+
 type PageRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1655,7 +1773,7 @@ type PageRequest struct {
 func (x *PageRequest) Reset() {
 	*x = PageRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_webhooks_adapt_grpc_v1_webhooks_proto_msgTypes[28]
+		mi := &file_webhooks_adapt_grpc_v1_webhooks_proto_msgTypes[30]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1668,7 +1786,7 @@ func (x *PageRequest) String() string {
 func (*PageRequest) ProtoMessage() {}
 
 func (x *PageRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_webhooks_adapt_grpc_v1_webhooks_proto_msgTypes[28]
+	mi := &file_webhooks_adapt_grpc_v1_webhooks_proto_msgTypes[30]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1681,7 +1799,7 @@ func (x *PageRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PageRequest.ProtoReflect.Descriptor instead.
 func (*PageRequest) Descriptor() ([]byte, []int) {
-	return file_webhooks_adapt_grpc_v1_webhooks_proto_rawDescGZIP(), []int{28}
+	return file_webhooks_adapt_grpc_v1_webhooks_proto_rawDescGZIP(), []int{30}
 }
 
 func (x *PageRequest) GetLimit() int32 {
@@ -1718,7 +1836,7 @@ type Error struct {
 func (x *Error) Reset() {
 	*x = Error{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_webhooks_adapt_grpc_v1_webhooks_proto_msgTypes[29]
+		mi := &file_webhooks_adapt_grpc_v1_webhooks_proto_msgTypes[31]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1731,7 +1849,7 @@ func (x *Error) String() string {
 func (*Error) ProtoMessage() {}
 
 func (x *Error) ProtoReflect() protoreflect.Message {
-	mi := &file_webhooks_adapt_grpc_v1_webhooks_proto_msgTypes[29]
+	mi := &file_webhooks_adapt_grpc_v1_webhooks_proto_msgTypes[31]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1744,7 +1862,7 @@ func (x *Error) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Error.ProtoReflect.Descriptor instead.
 func (*Error) Descriptor() ([]byte, []int) {
-	return file_webhooks_adapt_grpc_v1_webhooks_proto_rawDescGZIP(), []int{29}
+	return file_webhooks_adapt_grpc_v1_webhooks_proto_rawDescGZIP(), []int{31}
 }
 
 func (x *Error) GetCode() int32 {
@@ -2074,7 +2192,7 @@ func file_webhooks_adapt_grpc_v1_webhooks_proto_rawDescGZIP() []byte {
 	return file_webhooks_adapt_grpc_v1_webhooks_proto_rawDescData
 }
 
-var file_webhooks_adapt_grpc_v1_webhooks_proto_msgTypes = make([]protoimpl.MessageInfo, 35)
+var file_webhooks_adapt_grpc_v1_webhooks_proto_msgTypes = make([]protoimpl.MessageInfo, 37)
 var file_webhooks_adapt_grpc_v1_webhooks_proto_goTypes = []interface{}{
 	(*App)(nil),                     // 0: webhooks.v1.App
 	(*Endpoint)(nil),                // 1: webhooks.v1.Endpoint
@@ -2104,76 +2222,82 @@ var file_webhooks_adapt_grpc_v1_webhooks_proto_goTypes = []interface{}{
 	(*ListEndpointsResponse)(nil),   // 25: webhooks.v1.ListEndpointsResponse
 	(*ListMessagesRequest)(nil),     // 26: webhooks.v1.ListMessagesRequest
 	(*ListMessagesResponse)(nil),    // 27: webhooks.v1.ListMessagesResponse
-	(*PageRequest)(nil),             // 28: webhooks.v1.PageRequest
-	(*Error)(nil),                   // 29: webhooks.v1.Error
-	nil,                             // 30: webhooks.v1.App.MetadataEntry
-	nil,                             // 31: webhooks.v1.Endpoint.MetadataEntry
-	nil,                             // 32: webhooks.v1.GetAppsResponse.DataEntry
-	nil,                             // 33: webhooks.v1.GetEndpointsResponse.DataEntry
-	nil,                             // 34: webhooks.v1.GetMessagesResponse.DataEntry
+	(*EmitEventRequest)(nil),        // 28: webhooks.v1.EmitEventRequest
+	(*EmitEventResponse)(nil),       // 29: webhooks.v1.EmitEventResponse
+	(*PageRequest)(nil),             // 30: webhooks.v1.PageRequest
+	(*Error)(nil),                   // 31: webhooks.v1.Error
+	nil,                             // 32: webhooks.v1.App.MetadataEntry
+	nil,                             // 33: webhooks.v1.Endpoint.MetadataEntry
+	nil,                             // 34: webhooks.v1.GetAppsResponse.DataEntry
+	nil,                             // 35: webhooks.v1.GetEndpointsResponse.DataEntry
+	nil,                             // 36: webhooks.v1.GetMessagesResponse.DataEntry
 }
 var file_webhooks_adapt_grpc_v1_webhooks_proto_depIdxs = []int32{
-	30, // 0: webhooks.v1.App.metadata:type_name -> webhooks.v1.App.MetadataEntry
-	31, // 1: webhooks.v1.Endpoint.metadata:type_name -> webhooks.v1.Endpoint.MetadataEntry
+	32, // 0: webhooks.v1.App.metadata:type_name -> webhooks.v1.App.MetadataEntry
+	33, // 1: webhooks.v1.Endpoint.metadata:type_name -> webhooks.v1.Endpoint.MetadataEntry
 	0,  // 2: webhooks.v1.CreateAppsRequest.data:type_name -> webhooks.v1.App
 	0,  // 3: webhooks.v1.CreateAppsResponse.data:type_name -> webhooks.v1.App
-	29, // 4: webhooks.v1.CreateAppsResponse.errors:type_name -> webhooks.v1.Error
+	31, // 4: webhooks.v1.CreateAppsResponse.errors:type_name -> webhooks.v1.Error
 	1,  // 5: webhooks.v1.CreateEndpointsRequest.data:type_name -> webhooks.v1.Endpoint
 	1,  // 6: webhooks.v1.CreateEndpointsResponse.data:type_name -> webhooks.v1.Endpoint
-	29, // 7: webhooks.v1.CreateEndpointsResponse.errors:type_name -> webhooks.v1.Error
+	31, // 7: webhooks.v1.CreateEndpointsResponse.errors:type_name -> webhooks.v1.Error
 	2,  // 8: webhooks.v1.CreateMessagesRequest.data:type_name -> webhooks.v1.Message
 	2,  // 9: webhooks.v1.CreateMessagesResponse.data:type_name -> webhooks.v1.Message
-	29, // 10: webhooks.v1.CreateMessagesResponse.errors:type_name -> webhooks.v1.Error
-	29, // 11: webhooks.v1.DeleteAppsResponse.errors:type_name -> webhooks.v1.Error
-	29, // 12: webhooks.v1.DeleteEndpointsResponse.errors:type_name -> webhooks.v1.Error
-	29, // 13: webhooks.v1.DeleteMessagesResponse.errors:type_name -> webhooks.v1.Error
-	32, // 14: webhooks.v1.GetAppsResponse.data:type_name -> webhooks.v1.GetAppsResponse.DataEntry
-	29, // 15: webhooks.v1.GetAppsResponse.errors:type_name -> webhooks.v1.Error
-	33, // 16: webhooks.v1.GetEndpointsResponse.data:type_name -> webhooks.v1.GetEndpointsResponse.DataEntry
-	29, // 17: webhooks.v1.GetEndpointsResponse.errors:type_name -> webhooks.v1.Error
-	34, // 18: webhooks.v1.GetMessagesResponse.data:type_name -> webhooks.v1.GetMessagesResponse.DataEntry
-	29, // 19: webhooks.v1.GetMessagesResponse.errors:type_name -> webhooks.v1.Error
-	28, // 20: webhooks.v1.ListAppsRequest.page:type_name -> webhooks.v1.PageRequest
+	31, // 10: webhooks.v1.CreateMessagesResponse.errors:type_name -> webhooks.v1.Error
+	31, // 11: webhooks.v1.DeleteAppsResponse.errors:type_name -> webhooks.v1.Error
+	31, // 12: webhooks.v1.DeleteEndpointsResponse.errors:type_name -> webhooks.v1.Error
+	31, // 13: webhooks.v1.DeleteMessagesResponse.errors:type_name -> webhooks.v1.Error
+	34, // 14: webhooks.v1.GetAppsResponse.data:type_name -> webhooks.v1.GetAppsResponse.DataEntry
+	31, // 15: webhooks.v1.GetAppsResponse.errors:type_name -> webhooks.v1.Error
+	35, // 16: webhooks.v1.GetEndpointsResponse.data:type_name -> webhooks.v1.GetEndpointsResponse.DataEntry
+	31, // 17: webhooks.v1.GetEndpointsResponse.errors:type_name -> webhooks.v1.Error
+	36, // 18: webhooks.v1.GetMessagesResponse.data:type_name -> webhooks.v1.GetMessagesResponse.DataEntry
+	31, // 19: webhooks.v1.GetMessagesResponse.errors:type_name -> webhooks.v1.Error
+	30, // 20: webhooks.v1.ListAppsRequest.page:type_name -> webhooks.v1.PageRequest
 	0,  // 21: webhooks.v1.ListAppsResponse.data:type_name -> webhooks.v1.App
-	29, // 22: webhooks.v1.ListAppsResponse.errors:type_name -> webhooks.v1.Error
-	28, // 23: webhooks.v1.ListEndpointsRequest.page:type_name -> webhooks.v1.PageRequest
+	31, // 22: webhooks.v1.ListAppsResponse.errors:type_name -> webhooks.v1.Error
+	30, // 23: webhooks.v1.ListEndpointsRequest.page:type_name -> webhooks.v1.PageRequest
 	1,  // 24: webhooks.v1.ListEndpointsResponse.data:type_name -> webhooks.v1.Endpoint
-	29, // 25: webhooks.v1.ListEndpointsResponse.errors:type_name -> webhooks.v1.Error
-	28, // 26: webhooks.v1.ListMessagesRequest.page:type_name -> webhooks.v1.PageRequest
+	31, // 25: webhooks.v1.ListEndpointsResponse.errors:type_name -> webhooks.v1.Error
+	30, // 26: webhooks.v1.ListMessagesRequest.page:type_name -> webhooks.v1.PageRequest
 	2,  // 27: webhooks.v1.ListMessagesResponse.data:type_name -> webhooks.v1.Message
-	29, // 28: webhooks.v1.ListMessagesResponse.errors:type_name -> webhooks.v1.Error
-	0,  // 29: webhooks.v1.GetAppsResponse.DataEntry.value:type_name -> webhooks.v1.App
-	1,  // 30: webhooks.v1.GetEndpointsResponse.DataEntry.value:type_name -> webhooks.v1.Endpoint
-	2,  // 31: webhooks.v1.GetMessagesResponse.DataEntry.value:type_name -> webhooks.v1.Message
-	16, // 32: webhooks.v1.WebHookService.GetApps:input_type -> webhooks.v1.GetAppsRequest
-	22, // 33: webhooks.v1.WebHookService.ListApps:input_type -> webhooks.v1.ListAppsRequest
-	4,  // 34: webhooks.v1.WebHookService.CreateApps:input_type -> webhooks.v1.CreateAppsRequest
-	10, // 35: webhooks.v1.WebHookService.DeleteApps:input_type -> webhooks.v1.DeleteAppsRequest
-	18, // 36: webhooks.v1.WebHookService.GetEndpoints:input_type -> webhooks.v1.GetEndpointsRequest
-	24, // 37: webhooks.v1.WebHookService.ListEndpoints:input_type -> webhooks.v1.ListEndpointsRequest
-	6,  // 38: webhooks.v1.WebHookService.CreateEndpoints:input_type -> webhooks.v1.CreateEndpointsRequest
-	12, // 39: webhooks.v1.WebHookService.DeleteEndpoints:input_type -> webhooks.v1.DeleteEndpointsRequest
-	20, // 40: webhooks.v1.WebHookService.GetMessages:input_type -> webhooks.v1.GetMessagesRequest
-	26, // 41: webhooks.v1.WebHookService.ListMessages:input_type -> webhooks.v1.ListMessagesRequest
-	8,  // 42: webhooks.v1.WebHookService.CreateMessages:input_type -> webhooks.v1.CreateMessagesRequest
-	14, // 43: webhooks.v1.WebHookService.DeleteMessages:input_type -> webhooks.v1.DeleteMessagesRequest
-	17, // 44: webhooks.v1.WebHookService.GetApps:output_type -> webhooks.v1.GetAppsResponse
-	23, // 45: webhooks.v1.WebHookService.ListApps:output_type -> webhooks.v1.ListAppsResponse
-	5,  // 46: webhooks.v1.WebHookService.CreateApps:output_type -> webhooks.v1.CreateAppsResponse
-	11, // 47: webhooks.v1.WebHookService.DeleteApps:output_type -> webhooks.v1.DeleteAppsResponse
-	19, // 48: webhooks.v1.WebHookService.GetEndpoints:output_type -> webhooks.v1.GetEndpointsResponse
-	25, // 49: webhooks.v1.WebHookService.ListEndpoints:output_type -> webhooks.v1.ListEndpointsResponse
-	7,  // 50: webhooks.v1.WebHookService.CreateEndpoints:output_type -> webhooks.v1.CreateEndpointsResponse
-	13, // 51: webhooks.v1.WebHookService.DeleteEndpoints:output_type -> webhooks.v1.DeleteEndpointsResponse
-	21, // 52: webhooks.v1.WebHookService.GetMessages:output_type -> webhooks.v1.GetMessagesResponse
-	27, // 53: webhooks.v1.WebHookService.ListMessages:output_type -> webhooks.v1.ListMessagesResponse
-	9,  // 54: webhooks.v1.WebHookService.CreateMessages:output_type -> webhooks.v1.CreateMessagesResponse
-	15, // 55: webhooks.v1.WebHookService.DeleteMessages:output_type -> webhooks.v1.DeleteMessagesResponse
-	44, // [44:56] is the sub-list for method output_type
-	32, // [32:44] is the sub-list for method input_type
-	32, // [32:32] is the sub-list for extension type_name
-	32, // [32:32] is the sub-list for extension extendee
-	0,  // [0:32] is the sub-list for field type_name
+	31, // 28: webhooks.v1.ListMessagesResponse.errors:type_name -> webhooks.v1.Error
+	2,  // 29: webhooks.v1.EmitEventResponse.data:type_name -> webhooks.v1.Message
+	31, // 30: webhooks.v1.EmitEventResponse.errors:type_name -> webhooks.v1.Error
+	0,  // 31: webhooks.v1.GetAppsResponse.DataEntry.value:type_name -> webhooks.v1.App
+	1,  // 32: webhooks.v1.GetEndpointsResponse.DataEntry.value:type_name -> webhooks.v1.Endpoint
+	2,  // 33: webhooks.v1.GetMessagesResponse.DataEntry.value:type_name -> webhooks.v1.Message
+	16, // 34: webhooks.v1.WebHookService.GetApps:input_type -> webhooks.v1.GetAppsRequest
+	22, // 35: webhooks.v1.WebHookService.ListApps:input_type -> webhooks.v1.ListAppsRequest
+	4,  // 36: webhooks.v1.WebHookService.CreateApps:input_type -> webhooks.v1.CreateAppsRequest
+	10, // 37: webhooks.v1.WebHookService.DeleteApps:input_type -> webhooks.v1.DeleteAppsRequest
+	18, // 38: webhooks.v1.WebHookService.GetEndpoints:input_type -> webhooks.v1.GetEndpointsRequest
+	24, // 39: webhooks.v1.WebHookService.ListEndpoints:input_type -> webhooks.v1.ListEndpointsRequest
+	6,  // 40: webhooks.v1.WebHookService.CreateEndpoints:input_type -> webhooks.v1.CreateEndpointsRequest
+	12, // 41: webhooks.v1.WebHookService.DeleteEndpoints:input_type -> webhooks.v1.DeleteEndpointsRequest
+	20, // 42: webhooks.v1.WebHookService.GetMessages:input_type -> webhooks.v1.GetMessagesRequest
+	26, // 43: webhooks.v1.WebHookService.ListMessages:input_type -> webhooks.v1.ListMessagesRequest
+	8,  // 44: webhooks.v1.WebHookService.CreateMessages:input_type -> webhooks.v1.CreateMessagesRequest
+	14, // 45: webhooks.v1.WebHookService.DeleteMessages:input_type -> webhooks.v1.DeleteMessagesRequest
+	28, // 46: webhooks.v1.WebHookService.EmitEvent:input_type -> webhooks.v1.EmitEventRequest
+	17, // 47: webhooks.v1.WebHookService.GetApps:output_type -> webhooks.v1.GetAppsResponse
+	23, // 48: webhooks.v1.WebHookService.ListApps:output_type -> webhooks.v1.ListAppsResponse
+	5,  // 49: webhooks.v1.WebHookService.CreateApps:output_type -> webhooks.v1.CreateAppsResponse
+	11, // 50: webhooks.v1.WebHookService.DeleteApps:output_type -> webhooks.v1.DeleteAppsResponse
+	19, // 51: webhooks.v1.WebHookService.GetEndpoints:output_type -> webhooks.v1.GetEndpointsResponse
+	25, // 52: webhooks.v1.WebHookService.ListEndpoints:output_type -> webhooks.v1.ListEndpointsResponse
+	7,  // 53: webhooks.v1.WebHookService.CreateEndpoints:output_type -> webhooks.v1.CreateEndpointsResponse
+	13, // 54: webhooks.v1.WebHookService.DeleteEndpoints:output_type -> webhooks.v1.DeleteEndpointsResponse
+	21, // 55: webhooks.v1.WebHookService.GetMessages:output_type -> webhooks.v1.GetMessagesResponse
+	27, // 56: webhooks.v1.WebHookService.ListMessages:output_type -> webhooks.v1.ListMessagesResponse
+	9,  // 57: webhooks.v1.WebHookService.CreateMessages:output_type -> webhooks.v1.CreateMessagesResponse
+	15, // 58: webhooks.v1.WebHookService.DeleteMessages:output_type -> webhooks.v1.DeleteMessagesResponse
+	29, // 59: webhooks.v1.WebHookService.EmitEvent:output_type -> webhooks.v1.EmitEventResponse
+	47, // [47:60] is the sub-list for method output_type
+	34, // [34:47] is the sub-list for method input_type
+	34, // [34:34] is the sub-list for extension type_name
+	34, // [34:34] is the sub-list for extension extendee
+	0,  // [0:34] is the sub-list for field type_name
 }
 
 func init() { file_webhooks_adapt_grpc_v1_webhooks_proto_init() }
@@ -2519,7 +2643,7 @@ func file_webhooks_adapt_grpc_v1_webhooks_proto_init() {
 			}
 		}
 		file_webhooks_adapt_grpc_v1_webhooks_proto_msgTypes[28].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*PageRequest); i {
+			switch v := v.(*EmitEventRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -2531,6 +2655,30 @@ func file_webhooks_adapt_grpc_v1_webhooks_proto_init() {
 			}
 		}
 		file_webhooks_adapt_grpc_v1_webhooks_proto_msgTypes[29].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*EmitEventResponse); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_webhooks_adapt_grpc_v1_webhooks_proto_msgTypes[30].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*PageRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_webhooks_adapt_grpc_v1_webhooks_proto_msgTypes[31].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Error); i {
 			case 0:
 				return &v.state
@@ -2543,14 +2691,14 @@ func file_webhooks_adapt_grpc_v1_webhooks_proto_init() {
 			}
 		}
 	}
-	file_webhooks_adapt_grpc_v1_webhooks_proto_msgTypes[28].OneofWrappers = []interface{}{}
+	file_webhooks_adapt_grpc_v1_webhooks_proto_msgTypes[30].OneofWrappers = []interface{}{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_webhooks_adapt_grpc_v1_webhooks_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   35,
+			NumMessages:   37,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

@@ -31,6 +31,7 @@ const (
 	WebHookService_ListMessages_FullMethodName    = "/webhooks.v1.WebHookService/ListMessages"
 	WebHookService_CreateMessages_FullMethodName  = "/webhooks.v1.WebHookService/CreateMessages"
 	WebHookService_DeleteMessages_FullMethodName  = "/webhooks.v1.WebHookService/DeleteMessages"
+	WebHookService_EmitEvent_FullMethodName       = "/webhooks.v1.WebHookService/EmitEvent"
 )
 
 // WebHookServiceClient is the client API for WebHookService service.
@@ -49,6 +50,7 @@ type WebHookServiceClient interface {
 	ListMessages(ctx context.Context, in *ListMessagesRequest, opts ...grpc.CallOption) (*ListMessagesResponse, error)
 	CreateMessages(ctx context.Context, in *CreateMessagesRequest, opts ...grpc.CallOption) (*CreateMessagesResponse, error)
 	DeleteMessages(ctx context.Context, in *DeleteMessagesRequest, opts ...grpc.CallOption) (*DeleteMessagesResponse, error)
+	EmitEvent(ctx context.Context, in *EmitEventRequest, opts ...grpc.CallOption) (*EmitEventResponse, error)
 }
 
 type webHookServiceClient struct {
@@ -167,6 +169,15 @@ func (c *webHookServiceClient) DeleteMessages(ctx context.Context, in *DeleteMes
 	return out, nil
 }
 
+func (c *webHookServiceClient) EmitEvent(ctx context.Context, in *EmitEventRequest, opts ...grpc.CallOption) (*EmitEventResponse, error) {
+	out := new(EmitEventResponse)
+	err := c.cc.Invoke(ctx, WebHookService_EmitEvent_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // WebHookServiceServer is the server API for WebHookService service.
 // All implementations should embed UnimplementedWebHookServiceServer
 // for forward compatibility
@@ -183,6 +194,7 @@ type WebHookServiceServer interface {
 	ListMessages(context.Context, *ListMessagesRequest) (*ListMessagesResponse, error)
 	CreateMessages(context.Context, *CreateMessagesRequest) (*CreateMessagesResponse, error)
 	DeleteMessages(context.Context, *DeleteMessagesRequest) (*DeleteMessagesResponse, error)
+	EmitEvent(context.Context, *EmitEventRequest) (*EmitEventResponse, error)
 }
 
 // UnimplementedWebHookServiceServer should be embedded to have forward compatible implementations.
@@ -224,6 +236,9 @@ func (UnimplementedWebHookServiceServer) CreateMessages(context.Context, *Create
 }
 func (UnimplementedWebHookServiceServer) DeleteMessages(context.Context, *DeleteMessagesRequest) (*DeleteMessagesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteMessages not implemented")
+}
+func (UnimplementedWebHookServiceServer) EmitEvent(context.Context, *EmitEventRequest) (*EmitEventResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method EmitEvent not implemented")
 }
 
 // UnsafeWebHookServiceServer may be embedded to opt out of forward compatibility for this service.
@@ -453,6 +468,24 @@ func _WebHookService_DeleteMessages_Handler(srv interface{}, ctx context.Context
 	return interceptor(ctx, in, info, handler)
 }
 
+func _WebHookService_EmitEvent_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(EmitEventRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(WebHookServiceServer).EmitEvent(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: WebHookService_EmitEvent_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(WebHookServiceServer).EmitEvent(ctx, req.(*EmitEventRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // WebHookService_ServiceDesc is the grpc.ServiceDesc for WebHookService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -507,6 +540,10 @@ var WebHookService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteMessages",
 			Handler:    _WebHookService_DeleteMessages_Handler,
+		},
+		{
+			MethodName: "EmitEvent",
+			Handler:    _WebHookService_EmitEvent_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

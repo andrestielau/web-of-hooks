@@ -6,6 +6,7 @@ import (
 	webhooksv1 "woh/webhooks/adapt/grpc/v1"
 
 	"woh/webhooks"
+
 	"github.com/samber/lo"
 )
 
@@ -67,4 +68,17 @@ func (h *Handler) ListMessages(ctx context.Context, request *webhooksv1.ListMess
 		})
 		return &webhooksv1.ListMessagesResponse{Data: messages}, nil
 	}
+}
+
+// EmitEvent implements webhooksv1.WebHookServiceServer.
+func (h *Handler) EmitEvent(ctx context.Context, request *webhooksv1.EmitEventRequest) (*webhooksv1.EmitEventResponse, error) {
+	response := webhooksv1.EmitEventResponse{}
+	if res, err := h.Repo.EmitEvent(ctx, h.Convert.NewEvent(request)); err != nil {
+		response.Errors = webhooks.GrpcErrors(err)
+		return &response, nil
+	} else {
+		response.Data = h.Convert.Messages(res)
+	}
+	return &response, nil
+
 }

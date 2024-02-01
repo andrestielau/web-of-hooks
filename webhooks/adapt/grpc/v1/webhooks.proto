@@ -16,6 +16,7 @@ service WebHookService {
     rpc ListMessages(ListMessagesRequest) returns (ListMessagesResponse);
     rpc CreateMessages(CreateMessagesRequest) returns (CreateMessagesResponse);
     rpc DeleteMessages(DeleteMessagesRequest) returns (DeleteMessagesResponse);
+    rpc EmitEvent(EmitEventRequest) returns (EmitEventResponse);
 }
 
 // Entities
@@ -141,6 +142,16 @@ message ListMessagesRequest {
     PageRequest page = 2;
 }
 message ListMessagesResponse {
+    repeated Message data = 1;
+    repeated Error errors = 2;
+}
+
+message EmitEventRequest {
+    string tenant_id = 1;
+    repeated string event_type_keys = 2;
+    string reference_id = 3;
+}
+message EmitEventResponse {
     repeated Message data = 1;
     repeated Error errors = 2;
 }

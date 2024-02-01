@@ -60,6 +60,9 @@ type Querier interface {
 	// GetEventTypes gets event-types by id
 	GetEventTypes(ctx context.Context, ids []string) ([]EventType, error)
 
+	// GetEventTypes gets event-types by id
+	GetEventTypesByKeys(ctx context.Context, keys []string) ([]EventType, error)
+
 	// ListEventTypes lists event-types
 	ListEventTypes(ctx context.Context, params ListEventTypesParams) ([]EventType, error)
 

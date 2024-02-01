@@ -68,6 +68,10 @@ type Converter interface {
 	// goverter:ignore CreatedAfter
 	// goverter:useZeroValueOnPointerInconsistency
 	// AttemptQuery(*webhooksv1.ListAttemptsRequest) webhooks.AttemptQuery
+
+	// goverter:useZeroValueOnPointerInconsistency
+	NewEvent(*webhooksv1.EmitEventRequest) webhooks.NewEvent
+	NewEvents([]*webhooksv1.EmitEventRequest) []webhooks.NewEvent
 }
 
 func TimeToString(t time.Time) string {

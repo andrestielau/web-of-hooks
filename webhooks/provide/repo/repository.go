@@ -2,10 +2,14 @@ package repo
 
 import (
 	"context"
+	"encoding/json"
 
 	"woh/webhooks"
 	"woh/webhooks/provide/repo/convert"
 	"woh/webhooks/provide/repo/queries"
+
+	"github.com/google/uuid"
+	"github.com/samber/lo"
 )
 
 type Repository struct {
@@ -197,4 +201,47 @@ func (r *Repository) ListApplicationSecrets(ctx context.Context, application_uid
 		return nil, err
 	}
 	return r.Convert.Secrets(res), nil
+}
+
+func (r *Repository) EmitEvent(ctx context.Context, event webhooks.NewEvent) ([]webhooks.Message, error) {
+	eventTypes, err := r.Querier.GetEventTypesByKeys(ctx, event.EventTypeKeys)
+	if err != nil {
+		return nil, err
+	}
+	messages := []queries.Message{}
+
+	for _, eventType := range eventTypes {
+
+		eventId := uuid.NewString()
+		payload := webhooks.Payload{
+			EventTypeKey: eventType.Key,
+			ReferenceID:  event.ReferenceID,
+		}
+		jsonPayload, err := json.Marshal(payload)
+		if err != nil {
+			return nil, err
+		}
+
+		applicationIds := []string{}
+		// TODO get Applications/endpoints by filter type
+
+		for _, applicationId := range applicationIds {
+			newMessage := webhooks.NewMessage{
+				ApplicationID: applicationId,
+				EventTypeID:   eventType.Uid,
+				EventID:       eventId,
+				Payload:       string(jsonPayload),
+			}
+			messageDetails, err := r.Querier.CreateMessages(ctx, r.Convert.NewMessages([]webhooks.NewMessage{newMessage}))
+			if err != nil {
+				return nil, err
+			}
+
+			messages = append(messages, lo.Map(messageDetails, func(detail queries.MessageDetails, _ int) queries.Message {
+				return detail.Message
+			})...)
+		}
+	}
+
+	return r.Convert.Messages(messages), nil
 }

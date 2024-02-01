@@ -19,6 +19,8 @@
     - [DeleteEndpointsResponse](#webhooks-v1-DeleteEndpointsResponse)
     - [DeleteMessagesRequest](#webhooks-v1-DeleteMessagesRequest)
     - [DeleteMessagesResponse](#webhooks-v1-DeleteMessagesResponse)
+    - [EmitEventRequest](#webhooks-v1-EmitEventRequest)
+    - [EmitEventResponse](#webhooks-v1-EmitEventResponse)
     - [Endpoint](#webhooks-v1-Endpoint)
     - [Endpoint.MetadataEntry](#webhooks-v1-Endpoint-MetadataEntry)
     - [Error](#webhooks-v1-Error)
@@ -284,6 +286,39 @@ Req/Res
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
+| errors | [Error](#webhooks-v1-Error) | repeated |  |
+
+
+
+
+
+
+<a name="webhooks-v1-EmitEventRequest"></a>
+
+### EmitEventRequest
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| tenant_id | [string](#string) |  |  |
+| event_type_keys | [string](#string) | repeated |  |
+| reference_id | [string](#string) |  |  |
+
+
+
+
+
+
+<a name="webhooks-v1-EmitEventResponse"></a>
+
+### EmitEventResponse
+
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| data | [Message](#webhooks-v1-Message) | repeated |  |
 | errors | [Error](#webhooks-v1-Error) | repeated |  |
 
 
@@ -650,6 +685,7 @@ Req/Res
 | ListMessages | [ListMessagesRequest](#webhooks-v1-ListMessagesRequest) | [ListMessagesResponse](#webhooks-v1-ListMessagesResponse) |  |
 | CreateMessages | [CreateMessagesRequest](#webhooks-v1-CreateMessagesRequest) | [CreateMessagesResponse](#webhooks-v1-CreateMessagesResponse) |  |
 | DeleteMessages | [DeleteMessagesRequest](#webhooks-v1-DeleteMessagesRequest) | [DeleteMessagesResponse](#webhooks-v1-DeleteMessagesResponse) |  |
+| EmitEvent | [EmitEventRequest](#webhooks-v1-EmitEventRequest) | [EmitEventResponse](#webhooks-v1-EmitEventResponse) |  |
 
  
 

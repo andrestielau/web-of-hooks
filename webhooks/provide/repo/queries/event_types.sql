@@ -30,6 +30,17 @@ SELECT (
 FROM webhooks.event_type
 WHERE uid = ANY(pggen.arg('ids')::uuid[]);
 
+-- GetEventTypes gets event-types by id
+-- name: GetEventTypesByKeys :many
+SELECT (
+    id,
+    key,
+    uid,
+    created_at
+):: webhooks.event_type
+FROM webhooks.event_type
+WHERE key = ANY(pggen.arg('keys'));
+
 -- ListEventTypes lists event-types
 -- name: ListEventTypes :many
 SELECT (

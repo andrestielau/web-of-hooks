@@ -4,6 +4,12 @@ import (
 	"time"
 )
 
+type NewEvent struct {
+	TenantId      string
+	EventTypeKeys []string
+	ReferenceID   string
+}
+
 type NewEventType struct {
 	Key string
 }
@@ -136,4 +142,9 @@ type Secret struct {
 	Value         string
 	CreatedAt     time.Time
 	UpdatedAt     time.Time
+}
+
+type Payload struct {
+	EventTypeKey string
+	ReferenceID  string
 }
