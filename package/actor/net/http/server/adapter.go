@@ -35,9 +35,9 @@ func (a *Adapter) Start(ctx context.Context) (first bool, err error) {
 	a.Server = &http.Server{Addr: a.opts.Addr, Handler: a.opts.Handler}
 	go func() {
 		defer a.closer.Close()
-		log.Println("serving at " + a.Addr)
+		log.Println("http serving at " + a.Addr)
 		if err := a.Server.ListenAndServe(); err != nil {
-			log.Println(err)
+			log.Println("http server", err)
 		}
 	}()
 	return

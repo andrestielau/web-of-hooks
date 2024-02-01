@@ -50,6 +50,9 @@ type Converter interface {
 	MessageDetail(queries.MessageDetails) webhooks.MessageDetails
 	MessageDetails([]queries.MessageDetails) []webhooks.MessageDetails
 
+	// goverter:map MessageID MessageId
+	// goverter:map EndpointID EndpointId
+	// goverter:useZeroValueOnPointerInconsistency
 	Attempt(queries.MessageAttempt) webhooks.Attempt
 	Attempts([]queries.MessageAttempt) []webhooks.Attempt
 	AttemptQuery(webhooks.AttemptQuery) queries.ListAttemptsParams

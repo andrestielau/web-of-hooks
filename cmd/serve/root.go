@@ -23,20 +23,20 @@ var Root = cmd.New("serve",
 func runServe(cmd *cobra.Command, args []string) {
 	sys := actor.NewSystem(cmd.Context())          // Create Actor System
 	defer sys.Stop()                               // Wait for Adapters to close
-	lo.Must0(sys.Start(Adapters()))                // Start Adapters
+	lo.Must0(sys.Start(lo.Must(Adapters())))       // Start Adapters
 	utils.WaitSig(syscall.SIGINT, syscall.SIGTERM) // Wait for signals
 }
 
 func ChooseAdapters(
 	h *http.Adapter,
 	g *grpc.Adapter,
-	s *subs.Adapter,
 	c *cron.Adapter,
+	s *subs.Adapter,
 ) actor.Actors {
 	return actor.Actors{
 		"http": h,
 		"grpc": g,
-		"subs": s,
 		"cron": c,
+		"subs": s,
 	}
 }

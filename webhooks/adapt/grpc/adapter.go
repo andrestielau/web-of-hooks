@@ -8,6 +8,7 @@ import (
 	webhooksv1 "woh/webhooks/adapt/grpc/v1"
 
 	"woh/webhooks/adapt/grpc/convert"
+
 	"github.com/google/wire"
 	"google.golang.org/grpc"
 )

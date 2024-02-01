@@ -5,7 +5,6 @@ package serve
 
 import (
 	"woh/package/actor"
-	"woh/package/actor/third/gps"
 	"woh/webhooks/adapt/cron"
 	"woh/webhooks/adapt/grpc"
 	"woh/webhooks/adapt/http"
@@ -13,16 +12,22 @@ import (
 	"woh/webhooks/provide/repo"
 	"woh/webhooks/provide/secrets"
 
+	"woh/package/actor/router"
+	"woh/package/actor/third/gps/pub"
+	"woh/package/actor/third/gps/sub"
+
 	"github.com/google/wire"
 )
 
-func Adapters() actor.Actors {
+func Adapters() (actor.Actors, error) {
 	panic(wire.Build(
 		// Providers
 		secrets.Set,
 		repo.Set,
+		pub.Set,
+		sub.Set,
+		router.Set,
 		// Adapters
-		gps.Set,
 		subs.Set,
 		grpc.Set,
 		http.Set,

@@ -11,6 +11,8 @@ import (
 	"github.com/google/wire"
 )
 
+const Key = "Subscriber"
+
 type Options struct {
 	Config googlecloud.SubscriberConfig
 	Logger watermill.LoggerAdapter
@@ -47,16 +49,18 @@ func (a *Adapter) Stop(ctx context.Context) (last bool, err error) {
 }
 
 var DefaultConfig = googlecloud.SubscriberConfig{
-	ProjectID:                "demo",
+	ProjectID:                "demo", // TODO: change this before deploy-pr
 	GenerateSubscriptionName: googlecloud.TopicSubscriptionName,
 }
 
-func ProvideOptions() googlecloud.SubscriberConfig {
+func ProvideConfig() googlecloud.SubscriberConfig {
 	o := DefaultConfig
 	return o
 }
 
 var Set = wire.NewSet(
+	wire.Bind(new(message.Subscriber), new(*Adapter)), // TODO: generalize this
 	wire.Struct(new(Options), "*"),
+	ProvideConfig,
 	New,
 )

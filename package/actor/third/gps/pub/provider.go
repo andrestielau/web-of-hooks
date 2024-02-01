@@ -8,7 +8,10 @@ import (
 	"github.com/ThreeDotsLabs/watermill"
 	"github.com/ThreeDotsLabs/watermill-googlecloud/pkg/googlecloud"
 	"github.com/ThreeDotsLabs/watermill/message"
+	"github.com/google/wire"
 )
+
+const Key = "Publisher"
 
 type Options struct {
 	Config googlecloud.PublisherConfig
@@ -44,3 +47,19 @@ func (a *Provider) Stop(ctx context.Context) (last bool, err error) {
 	}
 	return
 }
+
+var DefaultConfig = googlecloud.PublisherConfig{
+	ProjectID: "demo", // TODO: change this before deploy-pr
+}
+
+func ProvideConfig() googlecloud.PublisherConfig {
+	o := DefaultConfig
+	return o
+}
+
+var Set = wire.NewSet(
+	wire.Bind(new(message.Publisher), new(*Provider)), // TODO: generalize this
+	wire.Struct(new(Options), "*"),
+	ProvideConfig,
+	New,
+)

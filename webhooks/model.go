@@ -6,15 +6,6 @@ import (
 	"woh/package/actor"
 )
 
-const ManagerKey = "webhooks-manager"
-
-type Manager interface {
-	actor.Actor
-	Repo() Repository
-	Secrets() Secrets
-	CreateEndpoints(context.Context) error
-}
-
 const WorkerKey = "webhooks-worker"
 
 type Worker interface {
@@ -54,7 +45,6 @@ type Repository interface {
 	GetSecrets(context.Context, []string) ([]Secret, error)
 	DeleteSecrets(context.Context, []string) error
 	ListSecrets(context.Context, SecretQuery) ([]Secret, error)
-	SetLastSeen(context.Context, string) error
 }
 
 type NewEventType struct {
@@ -160,9 +150,16 @@ type AttemptQuery struct {
 	After  string
 }
 type Attempt struct {
-	ID        *int32
-	Uid       string
-	CreatedAt time.Time
+	ID             *int32
+	Uid            string
+	EndpointId     int32
+	MessageId      int32
+	Status         int32
+	Retry          int32
+	ResponseStatus int32
+	Response       string
+	CreatedAt      time.Time
+	UpdatedAt      time.Time
 }
 type NewSecret struct {
 	ApplicationID *int32

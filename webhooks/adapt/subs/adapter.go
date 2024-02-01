@@ -1,37 +1,49 @@
 package subs
 
 import (
+	"woh/package/actor"
+	"woh/package/actor/router"
+	"woh/package/actor/third/gps/pub"
 	"woh/package/actor/third/gps/sub"
 	webhooks "woh/webhooks"
-
-	"woh/package/actor"
+	"woh/webhooks/adapt/subs/dispatcher"
+	"woh/webhooks/adapt/subs/projector"
+	"woh/webhooks/adapt/subs/subscriber"
 
 	"github.com/google/wire"
 )
 
 type Options struct {
-	Handler *Handler
-	sub.Options
+	Subscriber subscriber.Handler
+	Dispatcher dispatcher.Handler
+	Projector  projector.Handler
+	Repo       webhooks.Repository // This should be in childrent but that's too much work for now
+	Pub        *pub.Provider
+	Sub        *sub.Adapter
+	*router.Adapter
 }
 type Adapter struct {
-	*sub.Adapter
+	*router.Adapter
 }
 
 func New(opts Options) *Adapter {
-	a := sub.New(opts.Options)
-	a.SpawnAll(actor.Actors{
-		webhooks.SecretsKey: opts.Handler.Secrets,
-		webhooks.RepoKey:    opts.Handler.Repo,
+	opts.Adapter.Handle(map[string]router.HandlerOptions{
+		"subscriber": {In: "subscriber", Sub: opts.Sub, Out: "subscriber", Pub: opts.Pub, Func: opts.Subscriber.Handle},
+		"dispatcher": {In: "dispatcher", Sub: opts.Sub, Out: "dispatcher", Pub: opts.Pub, Func: opts.Dispatcher.Handle},
+		"projector":  {In: "projector", Sub: opts.Sub, Out: "projector", Pub: opts.Pub, Func: opts.Projector.Handle},
 	})
-	return &Adapter{
-		Adapter: a,
-	}
+	opts.Adapter.SpawnAll(actor.Actors{
+		webhooks.RepoKey: opts.Repo,
+		pub.Key:          opts.Pub,
+		sub.Key:          opts.Sub,
+	})
+	return &Adapter{Adapter: opts.Adapter}
 }
 
 var Set = wire.NewSet(
-	wire.Struct(new(Handler), "*"),
+	wire.Struct(new(subscriber.Handler), "*"),
+	wire.Struct(new(dispatcher.Handler), "*"),
+	wire.Struct(new(projector.Handler), "*"),
 	wire.Struct(new(Options), "*"),
-	sub.ProvideOptions,
-	sub.Set, // TODO: this might fail with more subscribers
 	New,
 )
