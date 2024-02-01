@@ -11,5 +11,7 @@ type Handler struct {
 }
 
 func (h *Handler) Handle(msg *message.Message) ([]*message.Message, error) {
+	// Send Messages to database
+	// Ideally batched
 	return nil, nil
 }

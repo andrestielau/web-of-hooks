@@ -25,7 +25,6 @@ import (
 	"woh/webhooks/adapt/subs"
 	"woh/webhooks/adapt/subs/dispatcher"
 	"woh/webhooks/adapt/subs/projector"
-	"woh/webhooks/adapt/subs/subscriber"
 	"woh/webhooks/provide/repo"
 	"woh/webhooks/provide/secrets"
 )
@@ -73,9 +72,6 @@ func Adapters() (actor.Actors, error) {
 		Monitor: monitorHandler,
 	}
 	cronAdapter := cron.New(cronOptions)
-	subscriberHandler := subscriber.Handler{
-		Repo: provider,
-	}
 	dispatcherHandler := dispatcher.Handler{
 		Repo: provider,
 	}
@@ -98,7 +94,6 @@ func Adapters() (actor.Actors, error) {
 	}
 	routerAdapter := router.New(routerOptions)
 	subsOptions := subs.Options{
-		Subscriber: subscriberHandler,
 		Dispatcher: dispatcherHandler,
 		Projector:  projectorHandler,
 		Repo:       provider,

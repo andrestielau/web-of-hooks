@@ -158,17 +158,6 @@ func TestDequeue(t *testing.T) {
 		messageUids[i] = msg.Uid
 		// TODO:Check Attempts
 	}
-	// workerId := uuid.NewString()
-	// start := time.Now()
-	// r.SetLastSeen(ctx, workerId)
-	// dequeued := lo.Must(r.Querier.DequeueAttempts(ctx, queries.DequeueAttemptsParams{
-	// 	ID:    workerId,
-	// 	Start: start,
-	// 	Limit: 1000,
-	// }))
-	// e := json.NewEncoder(os.Stdout)
-	// e.SetIndent(" ", " ")
-	// e.Encode(dequeued)
 }
 
 func TestPopulate(t *testing.T) {

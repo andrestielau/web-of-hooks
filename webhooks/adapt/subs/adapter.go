@@ -8,13 +8,11 @@ import (
 	webhooks "woh/webhooks"
 	"woh/webhooks/adapt/subs/dispatcher"
 	"woh/webhooks/adapt/subs/projector"
-	"woh/webhooks/adapt/subs/subscriber"
 
 	"github.com/google/wire"
 )
 
 type Options struct {
-	Subscriber subscriber.Handler
 	Dispatcher dispatcher.Handler
 	Projector  projector.Handler
 	Repo       webhooks.Repository // This should be in childrent but that's too much work for now
@@ -28,7 +26,6 @@ type Adapter struct {
 
 func New(opts Options) *Adapter {
 	opts.Adapter.Handle(map[string]router.HandlerOptions{
-		"subscriber": {In: "subscriber", Sub: opts.Sub, Out: "subscriber", Pub: opts.Pub, Func: opts.Subscriber.Handle},
 		"dispatcher": {In: "dispatcher", Sub: opts.Sub, Out: "dispatcher", Pub: opts.Pub, Func: opts.Dispatcher.Handle},
 		"projector":  {In: "projector", Sub: opts.Sub, Out: "projector", Pub: opts.Pub, Func: opts.Projector.Handle},
 	})
@@ -41,7 +38,6 @@ func New(opts Options) *Adapter {
 }
 
 var Set = wire.NewSet(
-	wire.Struct(new(subscriber.Handler), "*"),
 	wire.Struct(new(dispatcher.Handler), "*"),
 	wire.Struct(new(projector.Handler), "*"),
 	wire.Struct(new(Options), "*"),
