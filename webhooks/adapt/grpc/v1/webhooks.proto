@@ -134,6 +134,7 @@ message ListEndpointsRequest {
 }
 message ListEndpointsResponse {
     repeated Endpoint data = 1;
+    repeated Error errors = 2;
 }
 message ListMessagesRequest {
     string tenant_id = 1;
@@ -141,6 +142,7 @@ message ListMessagesRequest {
 }
 message ListMessagesResponse {
     repeated Message data = 1;
+    repeated Error errors = 2;
 }
 
 message PageRequest {

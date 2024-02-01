@@ -548,6 +548,7 @@ Req/Res
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | data | [Endpoint](#webhooks-v1-Endpoint) | repeated |  |
+| errors | [Error](#webhooks-v1-Error) | repeated |  |
 
 
 
@@ -579,6 +580,7 @@ Req/Res
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | data | [Message](#webhooks-v1-Message) | repeated |  |
+| errors | [Error](#webhooks-v1-Error) | repeated |  |
 
 
 

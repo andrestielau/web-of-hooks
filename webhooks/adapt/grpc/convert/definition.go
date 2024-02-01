@@ -32,42 +32,42 @@ type Converter interface {
 
 	// goverter:ignore Name ApplicationID Metadata FilterTypeIds
 	// goverter:useZeroValueOnPointerInconsistency
-	NewEndpoint(webhooksv1.Endpoint) webhooks.NewEndpoint
-	NewEndpoints([]webhooksv1.Endpoint) []webhooks.NewEndpoint
+	NewEndpoint(*webhooksv1.Endpoint) webhooks.NewEndpoint
+	NewEndpoints([]*webhooksv1.Endpoint) []webhooks.NewEndpoint
 
 	// goverter:map Uid Id
 	// goverter:ignore Channels FilterTypes Secret Version Metadata
 	// goverter:useZeroValueOnPointerInconsistency
-	Endpoint(webhooks.Endpoint) webhooksv1.Endpoint
-	Endpoints([]webhooks.Endpoint) []webhooksv1.Endpoint
+	Endpoint(webhooks.Endpoint) *webhooksv1.Endpoint
+	Endpoints([]webhooks.Endpoint) []*webhooksv1.Endpoint
 
 	// goverter:ignore Offset After
 	// goverter:useZeroValueOnPointerInconsistency
-	EndpointQuery(webhooksv1.PageRequest) webhooks.EndpointQuery
+	EndpointQuery(*webhooksv1.PageRequest) webhooks.EndpointQuery
 
 	// goverter:ignore ApplicationID EventTypeID EventID Payload
 	// goverter:useZeroValueOnPointerInconsistency
-	NewMessage(webhooksv1.Message) webhooks.NewMessage
-	NewMessages([]webhooksv1.Message) []webhooks.NewMessage
+	NewMessage(*webhooksv1.Message) webhooks.NewMessage
+	NewMessages([]*webhooksv1.Message) []webhooks.NewMessage
 
 	// goverter:map Uid Id
 	// goverter:ignore EventType EventId Timestamp Payload Tags Channels
 	// goverter:useZeroValueOnPointerInconsistency
-	Message(webhooks.Message) webhooksv1.Message
-	Messages([]webhooks.Message) []webhooksv1.Message
+	Message(webhooks.Message) *webhooksv1.Message
+	Messages([]webhooks.Message) []*webhooksv1.Message
 
 	// goverter:ignore Offset After
 	// goverter:useZeroValueOnPointerInconsistency
-	MessageQuery(webhooksv1.PageRequest) webhooks.MessageQuery
+	MessageQuery(*webhooksv1.PageRequest) webhooks.MessageQuery
 
 	// goverter:map Uid Id
 	// goverter:useZeroValueOnPointerInconsistency
-	Attempt(webhooks.Attempt) webhooksv1.Attempt
-	Attempts([]webhooks.Attempt) []webhooksv1.Attempt
+	Attempt(webhooks.Attempt) *webhooksv1.Attempt
+	Attempts([]webhooks.Attempt) []*webhooksv1.Attempt
 
 	// goverter:ignore Offset After
 	// goverter:useZeroValueOnPointerInconsistency
-	// AttemptQuery(webhooksv1.ListAttemptsRequest) webhooks.AttemptQuery
+	// AttemptQuery(*webhooksv1.ListAttemptsRequest) webhooks.AttemptQuery
 }
 
 func TimeToString(t time.Time) string {
