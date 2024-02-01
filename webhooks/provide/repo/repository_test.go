@@ -180,16 +180,19 @@ func TestPopulate(t *testing.T) {
 	defer a.Stop(ctx)
 
 	r := a.Repository
-	// CREATE EVENTS
+	// CREATE EVENTS TYPE
+
 	numEventTypes := 3
 	newEventTypes := lo.Times(numEventTypes, func(i int) webhooks.NewEventType {
 		return webhooks.NewEventType{
 			Key: uuid.NewString(), // TODO: key shouldn't be uuid
 		}
 	})
+	
 	res, err := r.CreateEventTypes(ctx, newEventTypes)
 	require.NoError(t, err)
 	require.Len(t, res, len(newEventTypes))
+	numEventTypes = len(newEventTypes)
 
 	eventTypeIds := make([]*int32, numEventTypes)
 	eventTypeUids := make([]string, numEventTypes)
@@ -209,6 +212,9 @@ func TestPopulate(t *testing.T) {
 	tenantIds := lo.Times(numTenants, func(i int) string {
 		return fmt.Sprintf("tenant%d-%s", i, uuid.NewString())
 	})
+
+	_, err = r.CreateEventTypes(ctx, []webhooks.NewEventType{{Key:"onboarding.approved"}, {Key:"depositattribution.pending"}})
+	require.NoError(t, err)
 
 	//CREATE APPLICATIONS
 	appsPerTenant := 2

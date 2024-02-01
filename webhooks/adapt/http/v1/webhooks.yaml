@@ -763,19 +763,19 @@ components:
       description: 'The URL you can receive WebHooks at.read '
       examples:
         - url: string
-          uid: string
+          application_uid: string
           name: string
           description: string
           rateLimit: 0
           secret: string
-          filterTypes:
+          filterTypeIds:
             - string
           channels:
             - string
       properties:
         url:
           type: string
-        id:
+        application_id:
           type: string
         name:
           type: string
@@ -784,9 +784,7 @@ components:
         rateLimit:
           type: integer
           format: int32
-        secret:
-          type: string
-        filterTypes:
+        filterTypeIds:
           type: array
           uniqueItems: true
           items:
@@ -838,7 +836,7 @@ components:
     NewMessage:
       type: object
       properties:
-        id:
+        application_id:
           type: string
         payload:
           type: string

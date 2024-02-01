@@ -98,22 +98,21 @@ type NewAttempt struct {
 
 // NewEndpoint The URL you can receive WebHooks at.read
 type NewEndpoint struct {
-	Channels    *[]string `json:"channels,omitempty"`
-	Description *string   `json:"description,omitempty"`
-	FilterTypes *[]string `json:"filterTypes,omitempty"`
-	Id          *string   `json:"id,omitempty"`
-	Name        *string   `json:"name,omitempty"`
-	RateLimit   *int32    `json:"rateLimit,omitempty"`
-	Secret      *string   `json:"secret,omitempty"`
-	Url         string    `json:"url"`
+	ApplicationId *string   `json:"application_id,omitempty"`
+	Channels      *[]string `json:"channels,omitempty"`
+	Description   *string   `json:"description,omitempty"`
+	FilterTypeIds *[]string `json:"filterTypeIds,omitempty"`
+	Name          *string   `json:"name,omitempty"`
+	RateLimit     *int32    `json:"rateLimit,omitempty"`
+	Url           string    `json:"url"`
 }
 
 // NewMessage defines model for NewMessage.
 type NewMessage struct {
-	EventId     *string `json:"eventId,omitempty"`
-	EventTypeId *string `json:"eventTypeId,omitempty"`
-	Id          *string `json:"id,omitempty"`
-	Payload     *string `json:"payload,omitempty"`
+	ApplicationId *string `json:"application_id,omitempty"`
+	EventId       *string `json:"eventId,omitempty"`
+	EventTypeId   *string `json:"eventTypeId,omitempty"`
+	Payload       *string `json:"payload,omitempty"`
 }
 
 // NewSecret defines model for NewSecret.

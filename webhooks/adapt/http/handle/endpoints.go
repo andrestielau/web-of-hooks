@@ -18,6 +18,11 @@ func (h *Handler) CreateEndpoints(w http.ResponseWriter, r *http.Request, applic
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+	
+	for i := range req {
+		req[i].ApplicationId = &applicationId
+	}
+
 	if res, err := h.Repo.CreateEndpoints(r.Context(), h.Convert.NewEndpoints(req)); err != nil {
 		errs, stop := webhooks.HttpErrors(w, err)
 		if stop {
