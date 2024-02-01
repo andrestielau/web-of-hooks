@@ -95,7 +95,26 @@ SELECT (
     payload
 )::webhooks.message
 FROM webhooks.message
-WHERE uid > pggen.arg('after')
+WHERE created_at > pggen.arg('created_after') 
 ORDER BY uid
+LIMIT pggen.arg('limit')
+OFFSET pggen.arg('offset');
+
+-- ListApplicationMessages lists event-types
+-- name: ListApplicationMessages :many
+SELECT (
+    m.id ,
+    m.application_id ,
+    m.event_type_id ,
+    m.uid ,
+    m.created_at,
+    m.event_id,
+    m.payload
+)::webhooks.message
+FROM webhooks.message m
+JOIN webhooks.application ON m.application_id = webhooks.application.id
+WHERE m.created_at > pggen.arg('created_after') 
+AND webhooks.application.uid = pggen.arg('application_uid')::uuid
+ORDER BY m.uid
 LIMIT pggen.arg('limit')
 OFFSET pggen.arg('offset');

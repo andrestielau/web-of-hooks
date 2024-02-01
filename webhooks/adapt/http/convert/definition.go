@@ -19,7 +19,7 @@ type Converter interface {
 	EventType(webhooks.EventType) webhooksv1.EventType
 	EventTypes([]webhooks.EventType) []webhooksv1.EventType
 
-	// goverter:ignore Offset After
+	// goverter:ignore CreatedAfter
 	// goverter:useZeroValueOnPointerInconsistency
 	EventTypeQuery(webhooksv1.ListEventTypesParams) webhooks.EventTypeQuery
 
@@ -57,7 +57,7 @@ type Converter interface {
 	EndpointDetail(webhooks.EndpointDetails) webhooksv1.Endpoint
 	EndpointDetails([]webhooks.EndpointDetails) []webhooksv1.Endpoint
 
-	// goverter:ignore Offset After
+	// goverter:ignore CreatedAfter
 	// goverter:useZeroValueOnPointerInconsistency
 	EndpointQuery(webhooksv1.ListEndpointsParams) webhooks.EndpointQuery
 
@@ -69,7 +69,7 @@ type Converter interface {
 	Secret(webhooks.Secret) webhooksv1.Secret
 	Secrets([]webhooks.Secret) []webhooksv1.Secret
 
-	// goverter:ignore After
+	// goverter:ignore CreatedAfter
 	// goverter:useZeroValueOnPointerInconsistency
 	SecretQuery(webhooksv1.ListSecretsParams) webhooks.SecretQuery
 
@@ -84,7 +84,7 @@ type Converter interface {
 	Message(webhooks.Message) webhooksv1.Message
 	Messages([]webhooks.Message) []webhooksv1.Message
 
-	// goverter:ignore Offset After
+	// goverter:ignore CreatedAfter
 	// goverter:useZeroValueOnPointerInconsistency
 	MessageQuery(webhooksv1.ListMessagesParams) webhooks.MessageQuery
 
@@ -94,7 +94,7 @@ type Converter interface {
 	Attempt(webhooks.Attempt) webhooksv1.Attempt
 	Attempts([]webhooks.Attempt) []webhooksv1.Attempt
 
-	// goverter:ignore Offset After
+	// goverter:ignore CreatedAfter
 	// goverter:useZeroValueOnPointerInconsistency
 	AttemptQuery(webhooksv1.ListAttemptsParams) webhooks.AttemptQuery
 }

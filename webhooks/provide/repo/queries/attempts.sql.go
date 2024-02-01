@@ -6,6 +6,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/jackc/pgconn"
+	"time"
 )
 
 const deleteAttemptsSQL = `DELETE FROM webhooks.message_attempt WHERE uid = ANY($1::UUID[]);`
@@ -74,21 +75,21 @@ const listAttemptsSQL = `SELECT (
     response
 )::webhooks.message_attempt
 FROM webhooks.message_attempt
-WHERE uid > $1 
+WHERE created_at > $1 
 ORDER BY uid
 LIMIT $2
 OFFSET $3;`
 
 type ListAttemptsParams struct {
-	After  string `json:"after"`
-	Limit  int    `json:"limit"`
-	Offset int    `json:"offset"`
+	CreatedAfter time.Time `json:"created_after"`
+	Limit        int       `json:"limit"`
+	Offset       int       `json:"offset"`
 }
 
 // ListAttempts implements Querier.ListAttempts.
 func (q *DBQuerier) ListAttempts(ctx context.Context, params ListAttemptsParams) ([]MessageAttempt, error) {
 	ctx = context.WithValue(ctx, "pggen_query_name", "ListAttempts")
-	rows, err := q.conn.Query(ctx, listAttemptsSQL, params.After, params.Limit, params.Offset)
+	rows, err := q.conn.Query(ctx, listAttemptsSQL, params.CreatedAfter, params.Limit, params.Offset)
 	if err != nil {
 		return nil, fmt.Errorf("query ListAttempts: %w", err)
 	}

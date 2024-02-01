@@ -6,6 +6,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/jackc/pgconn"
+	"time"
 )
 
 const createSecretsSQL = `INSERT INTO webhooks.secret (
@@ -14,8 +15,9 @@ const createSecretsSQL = `INSERT INTO webhooks.secret (
 ) 
 SELECT 
     u.value,
-    u.application_id
+    a.id
 FROM unnest($1::webhooks.new_secret[]) u
+ JOIN webhooks.application a ON u.application_id = a.uid
 ON CONFLICT DO NOTHING
 RETURNING (
     id,
@@ -110,21 +112,21 @@ const listSecretsSQL = `SELECT (
     updated_at
 )::webhooks.secret
 FROM webhooks.secret
-WHERE uid > $1
+WHERE created_at > $1 
 ORDER BY uid
 LIMIT $2
 OFFSET $3;`
 
 type ListSecretsParams struct {
-	After  string `json:"after"`
-	Limit  int    `json:"limit"`
-	Offset int    `json:"offset"`
+	CreatedAfter time.Time `json:"created_after"`
+	Limit        int       `json:"limit"`
+	Offset       int       `json:"offset"`
 }
 
 // ListSecrets implements Querier.ListSecrets.
 func (q *DBQuerier) ListSecrets(ctx context.Context, params ListSecretsParams) ([]Secret, error) {
 	ctx = context.WithValue(ctx, "pggen_query_name", "ListSecrets")
-	rows, err := q.conn.Query(ctx, listSecretsSQL, params.After, params.Limit, params.Offset)
+	rows, err := q.conn.Query(ctx, listSecretsSQL, params.CreatedAfter, params.Limit, params.Offset)
 	if err != nil {
 		return nil, fmt.Errorf("query ListSecrets: %w", err)
 	}
@@ -157,4 +159,43 @@ func (q *DBQuerier) UpdateSecret(ctx context.Context, value string, uid string) 
 		return cmdTag, fmt.Errorf("exec query UpdateSecret: %w", err)
 	}
 	return cmdTag, err
+}
+
+const listApplicationSecretsSQL = `SELECT (
+    s.id,
+    s.uid,
+    s.application_id,
+    s.value,
+    s.created_at,
+    s.updated_at
+)::webhooks.secret
+FROM webhooks.secret s
+JOIN webhooks.application ON s.application_id = webhooks.application.id
+WHERE webhooks.application.uid = $1::uuid
+ORDER BY s.uid;`
+
+// ListApplicationSecrets implements Querier.ListApplicationSecrets.
+func (q *DBQuerier) ListApplicationSecrets(ctx context.Context, applicationUid string) ([]Secret, error) {
+	ctx = context.WithValue(ctx, "pggen_query_name", "ListApplicationSecrets")
+	rows, err := q.conn.Query(ctx, listApplicationSecretsSQL, applicationUid)
+	if err != nil {
+		return nil, fmt.Errorf("query ListApplicationSecrets: %w", err)
+	}
+	defer rows.Close()
+	items := []Secret{}
+	rowRow := q.types.newSecret()
+	for rows.Next() {
+		var item Secret
+		if err := rows.Scan(rowRow); err != nil {
+			return nil, fmt.Errorf("scan ListApplicationSecrets row: %w", err)
+		}
+		if err := rowRow.AssignTo(&item); err != nil {
+			return nil, fmt.Errorf("assign ListApplicationSecrets row: %w", err)
+		}
+		items = append(items, item)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("close ListApplicationSecrets rows: %w", err)
+	}
+	return items, err
 }

@@ -26,6 +26,7 @@ type Handler struct {
 var _ webhooksv1.ServerInterface = &Handler{}
 
 const status = "ok"
+const LIMIT_DEFAULT = 20
 
 var start = time.Now()
 

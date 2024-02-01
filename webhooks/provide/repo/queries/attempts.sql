@@ -36,7 +36,7 @@ SELECT (
     response
 )::webhooks.message_attempt
 FROM webhooks.message_attempt
-WHERE uid > pggen.arg('after') 
+WHERE created_at > pggen.arg('created_after') 
 ORDER BY uid
 LIMIT pggen.arg('limit')
 OFFSET pggen.arg('offset');

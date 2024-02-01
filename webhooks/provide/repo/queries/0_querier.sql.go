@@ -48,6 +48,9 @@ type Querier interface {
 	// ListEndpoints lists endpoints
 	ListEndpoints(ctx context.Context, params ListEndpointsParams) ([]Endpoint, error)
 
+	// ListApplicationEndpoints lists endpoints
+	ListApplicationEndpoints(ctx context.Context, params ListApplicationEndpointsParams) ([]Endpoint, error)
+
 	// CreateEventTypes inserts event types into the database
 	CreateEventTypes(ctx context.Context, eventTypes []NewEventType) ([]EventType, error)
 
@@ -72,6 +75,9 @@ type Querier interface {
 	// ListMessages lists event-types
 	ListMessages(ctx context.Context, params ListMessagesParams) ([]Message, error)
 
+	// ListApplicationMessages lists event-types
+	ListApplicationMessages(ctx context.Context, params ListApplicationMessagesParams) ([]Message, error)
+
 	// CreateSecrets creates secrets
 	CreateSecrets(ctx context.Context, secrets []NewSecret) ([]Secret, error)
 
@@ -86,6 +92,9 @@ type Querier interface {
 
 	// Update secret value by uid
 	UpdateSecret(ctx context.Context, value string, uid string) (pgconn.CommandTag, error)
+
+	// ListApplicationSecrets lists secrets of an application
+	ListApplicationSecrets(ctx context.Context, applicationUid string) ([]Secret, error)
 }
 
 var _ Querier = &DBQuerier{}
@@ -214,7 +223,7 @@ type NewMessage struct {
 
 // NewSecret represents the Postgres composite type "new_secret".
 type NewSecret struct {
-	ApplicationID *int32 `json:"application_id"`
+	ApplicationID string `json:"application_id"`
 	Value         string `json:"value"`
 }
 
@@ -507,7 +516,7 @@ func (tr *typeResolver) newNewMessageRaw(v NewMessage) []interface{} {
 func (tr *typeResolver) newNewSecret() pgtype.ValueTranscoder {
 	return tr.newCompositeValue(
 		"new_secret",
-		compositeField{name: "application_id", typeName: "int4", defaultVal: &pgtype.Int4{}},
+		compositeField{name: "application_id", typeName: "uuid", defaultVal: &pgtype.UUID{}},
 		compositeField{name: "value", typeName: "text", defaultVal: &pgtype.Text{}},
 	)
 }

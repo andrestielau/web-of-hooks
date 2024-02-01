@@ -726,8 +726,7 @@ components:
       type: object
       properties:
         application_id:
-          type: integer
-          format: int32
+          type: string
         value:
           type: string
       required:

@@ -6,6 +6,8 @@ import (
 	"woh/webhooks"
 	webhooksv1 "woh/webhooks/adapt/http/v1"
 	"woh/webhooks/render/page/applications"
+
+	"github.com/samber/lo"
 )
 
 // CreateEndpoints implements webhooksv1.ServerInterface.
@@ -64,7 +66,10 @@ func (h *Handler) GetEndpointStats(w http.ResponseWriter, r *http.Request, endpo
 
 // ListEndpoints implements webhooksv1.ServerInterface.
 func (h *Handler) ListEndpoints(w http.ResponseWriter, r *http.Request, applicationId string, params webhooksv1.ListEndpointsParams) {
-	if res, err := h.Repo.ListEndpoints(r.Context(), h.Convert.EndpointQuery(params)); err != nil {
+	if params.Limit == nil {
+		params.Limit = lo.ToPtr(LIMIT_DEFAULT)
+	}
+	if res, err := h.Repo.ListApplicationEndpoints(r.Context(), applicationId, h.Convert.EndpointQuery(params)); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	} else if media.ShouldRender(r) {
 		applications.Endpoints(applications.EndpointsViewModel{ // Todo decouple from DB

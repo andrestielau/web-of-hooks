@@ -41,7 +41,7 @@ type Converter interface {
 	Endpoint(webhooks.Endpoint) *webhooksv1.Endpoint
 	Endpoints([]webhooks.Endpoint) []*webhooksv1.Endpoint
 
-	// goverter:ignore Offset After
+	// goverter:ignore CreatedAfter
 	// goverter:useZeroValueOnPointerInconsistency
 	EndpointQuery(*webhooksv1.PageRequest) webhooks.EndpointQuery
 
@@ -56,7 +56,7 @@ type Converter interface {
 	Message(webhooks.Message) *webhooksv1.Message
 	Messages([]webhooks.Message) []*webhooksv1.Message
 
-	// goverter:ignore Offset After
+	// goverter:ignore CreatedAfter
 	// goverter:useZeroValueOnPointerInconsistency
 	MessageQuery(*webhooksv1.PageRequest) webhooks.MessageQuery
 
@@ -65,7 +65,7 @@ type Converter interface {
 	Attempt(webhooks.Attempt) *webhooksv1.Attempt
 	Attempts([]webhooks.Attempt) []*webhooksv1.Attempt
 
-	// goverter:ignore Offset After
+	// goverter:ignore CreatedAfter
 	// goverter:useZeroValueOnPointerInconsistency
 	// AttemptQuery(*webhooksv1.ListAttemptsRequest) webhooks.AttemptQuery
 }

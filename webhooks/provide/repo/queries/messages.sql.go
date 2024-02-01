@@ -6,6 +6,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/jackc/pgconn"
+	"time"
 )
 
 const createMessagesSQL = `WITH new_messages AS (
@@ -158,21 +159,21 @@ const listMessagesSQL = `SELECT (
     payload
 )::webhooks.message
 FROM webhooks.message
-WHERE uid > $1
+WHERE created_at > $1 
 ORDER BY uid
 LIMIT $2
 OFFSET $3;`
 
 type ListMessagesParams struct {
-	After  string `json:"after"`
-	Limit  int    `json:"limit"`
-	Offset int    `json:"offset"`
+	CreatedAfter time.Time `json:"created_after"`
+	Limit        int       `json:"limit"`
+	Offset       int       `json:"offset"`
 }
 
 // ListMessages implements Querier.ListMessages.
 func (q *DBQuerier) ListMessages(ctx context.Context, params ListMessagesParams) ([]Message, error) {
 	ctx = context.WithValue(ctx, "pggen_query_name", "ListMessages")
-	rows, err := q.conn.Query(ctx, listMessagesSQL, params.After, params.Limit, params.Offset)
+	rows, err := q.conn.Query(ctx, listMessagesSQL, params.CreatedAfter, params.Limit, params.Offset)
 	if err != nil {
 		return nil, fmt.Errorf("query ListMessages: %w", err)
 	}
@@ -191,6 +192,56 @@ func (q *DBQuerier) ListMessages(ctx context.Context, params ListMessagesParams)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, fmt.Errorf("close ListMessages rows: %w", err)
+	}
+	return items, err
+}
+
+const listApplicationMessagesSQL = `SELECT (
+    m.id ,
+    m.application_id ,
+    m.event_type_id ,
+    m.uid ,
+    m.created_at,
+    m.event_id,
+    m.payload
+)::webhooks.message
+FROM webhooks.message m
+JOIN webhooks.application ON m.application_id = webhooks.application.id
+WHERE m.created_at > $1 
+AND webhooks.application.uid = $2::uuid
+ORDER BY m.uid
+LIMIT $3
+OFFSET $4;`
+
+type ListApplicationMessagesParams struct {
+	CreatedAfter   time.Time `json:"created_after"`
+	ApplicationUid string    `json:"application_uid"`
+	Limit          int       `json:"limit"`
+	Offset         int       `json:"offset"`
+}
+
+// ListApplicationMessages implements Querier.ListApplicationMessages.
+func (q *DBQuerier) ListApplicationMessages(ctx context.Context, params ListApplicationMessagesParams) ([]Message, error) {
+	ctx = context.WithValue(ctx, "pggen_query_name", "ListApplicationMessages")
+	rows, err := q.conn.Query(ctx, listApplicationMessagesSQL, params.CreatedAfter, params.ApplicationUid, params.Limit, params.Offset)
+	if err != nil {
+		return nil, fmt.Errorf("query ListApplicationMessages: %w", err)
+	}
+	defer rows.Close()
+	items := []Message{}
+	rowRow := q.types.newMessage()
+	for rows.Next() {
+		var item Message
+		if err := rows.Scan(rowRow); err != nil {
+			return nil, fmt.Errorf("scan ListApplicationMessages row: %w", err)
+		}
+		if err := rowRow.AssignTo(&item); err != nil {
+			return nil, fmt.Errorf("assign ListApplicationMessages row: %w", err)
+		}
+		items = append(items, item)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("close ListApplicationMessages rows: %w", err)
 	}
 	return items, err
 }

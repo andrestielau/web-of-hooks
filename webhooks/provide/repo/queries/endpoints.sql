@@ -106,7 +106,30 @@ SELECT (
     updated_at
 )::webhooks.endpoint
 FROM webhooks.endpoint
-WHERE uid > pggen.arg('after') 
+WHERE created_at > pggen.arg('created_after')  
 ORDER BY uid
+LIMIT pggen.arg('limit')
+OFFSET pggen.arg('offset');
+
+-- ListApplicationEndpoints lists endpoints
+-- name: ListApplicationEndpoints :many
+SELECT (
+    e.id,
+    e.url,
+    e.name,
+    e.application_id,
+    e.uid,
+    e.rate_limit,
+    e.metadata,
+    e.disabled,
+    e.description,
+    e.created_at,
+    e.updated_at
+)::webhooks.endpoint
+FROM webhooks.endpoint e
+JOIN webhooks.application ON e.application_id = webhooks.application.id
+WHERE e.created_at > pggen.arg('created_after') 
+AND webhooks.application.uid = pggen.arg('application_uid')::uuid
+ORDER BY e.uid
 LIMIT pggen.arg('limit')
 OFFSET pggen.arg('offset');

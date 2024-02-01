@@ -78,7 +78,7 @@ func (h *Handler) GetSecret(w http.ResponseWriter, r *http.Request, secretId str
 // ListSecrets implements webhooksv1.ServerInterface.
 func (h *Handler) ListSecrets(w http.ResponseWriter, r *http.Request, params webhooksv1.ListSecretsParams) {
 	if params.Limit == nil {
-		params.Limit = lo.ToPtr(20)
+		params.Limit = lo.ToPtr(LIMIT_DEFAULT)
 	}
 	if res, err := h.Repo.ListSecrets(r.Context(), h.Convert.SecretQuery(params)); err != nil {
 		webhooks.HttpError(w, err)
@@ -96,13 +96,44 @@ func (h *Handler) RotateSecret(w http.ResponseWriter, r *http.Request, secretId 
 	panic("unimplemented")
 }
 
-
-// CreateSecret implements webhooksv1.ServerInterface.
+// CreateApplicationSecrets implements webhooksv1.ServerInterface.
 func (h *Handler) CreateApplicationSecrets(w http.ResponseWriter, r *http.Request, applicationId string) {
-	panic("unimplemented")
+	var req webhooksv1.CreateSecretsPayload
+	var ret webhooksv1.CreatedSecrets
+	if err := media.Req(r, &req); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	for i := range req {
+		req[i].ApplicationId = &applicationId
+	}
+
+	if res, err := h.Repo.CreateSecrets(r.Context(), h.Convert.NewSecrets(req)); err != nil {
+		errs, stop := webhooks.HttpErrors(w, err)
+		if stop {
+			return
+		}
+		ret.Errors = errs
+	} else {
+		ret.Data = h.Convert.Secrets(res)
+	}
+	if media.ShouldRender(r) {
+		// TODO: partial
+	} else if err := media.Res(w, media.Accept(r), ret); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
 }
 
 // ListApplicationSecrets implements webhooksv1.ServerInterface.
 func (h *Handler) ListApplicationSecrets(w http.ResponseWriter, r *http.Request, applicationId string) {
-	panic("unimplemented")
+	if res, err := h.Repo.ListApplicationSecrets(r.Context(), applicationId); err != nil {
+		webhooks.HttpError(w, err)
+	} else if media.ShouldRender(r) {
+		applications.Secrets(applications.SecretViewModel{
+			Data: res,
+		}, nil).Render(r.Context(), w)
+	} else {
+		media.Res(w, media.Accept(r), res)
+	}
 }

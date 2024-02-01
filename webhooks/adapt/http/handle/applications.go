@@ -77,7 +77,7 @@ func (h *Handler) GetApplication(w http.ResponseWriter, r *http.Request, applica
 // ListApplications implements webhooksv1.ServerInterface.
 func (h *Handler) ListApplications(w http.ResponseWriter, r *http.Request, params webhooksv1.ListApplicationsParams) {
 	if params.Limit == nil {
-		params.Limit = lo.ToPtr(20)
+		params.Limit = lo.ToPtr(LIMIT_DEFAULT)
 	}
 	if res, err := h.Repo.ListApplications(r.Context(), h.Convert.ApplicationQuery(params)); err != nil {
 		webhooks.HttpError(w, err)

@@ -118,8 +118,8 @@ type NewMessage struct {
 
 // NewSecret defines model for NewSecret.
 type NewSecret struct {
-	ApplicationId *int32 `json:"application_id,omitempty"`
-	Value         string `json:"value"`
+	ApplicationId *string `json:"application_id,omitempty"`
+	Value         string  `json:"value"`
 }
 
 // PageInfo defines model for PageInfo.

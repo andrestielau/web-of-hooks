@@ -33,6 +33,7 @@ type Repository interface {
 	DeleteEndpoints(context.Context, []string) error
 	GetEndpoints(context.Context, []string) ([]EndpointDetails, error)
 	ListEndpoints(context.Context, EndpointQuery) ([]Endpoint, error)
+	ListApplicationEndpoints(context.Context, string, EndpointQuery) ([]Endpoint, error)
 	CreateEventTypes(context.Context, []NewEventType) ([]EventType, error)
 	DeleteEventTypes(context.Context, []string) error
 	GetEventTypes(context.Context, []string) ([]EventType, error)
@@ -41,10 +42,12 @@ type Repository interface {
 	DeleteMessages(context.Context, []string) error
 	GetMessages(context.Context, []string) ([]MessageDetails, error)
 	ListMessages(context.Context, MessageQuery) ([]Message, error)
+	ListApplicationMessages(context.Context, string, MessageQuery) ([]Message, error)
 	CreateSecrets(context.Context, []NewSecret) ([]Secret, error)
 	GetSecrets(context.Context, []string) ([]Secret, error)
 	DeleteSecrets(context.Context, []string) error
 	ListSecrets(context.Context, SecretQuery) ([]Secret, error)
+	ListApplicationSecrets(context.Context, string) ([]Secret, error)
 }
 
 type NewEventType struct {
@@ -53,7 +56,7 @@ type NewEventType struct {
 type EventTypeQuery struct {
 	Limit  int
 	Offset int
-	After  string
+	CreatedAfter time.Time
 }
 
 type EventType struct {
@@ -96,7 +99,7 @@ type NewEndpoint struct {
 type EndpointQuery struct {
 	Limit  int
 	Offset int
-	After  string
+	CreatedAfter time.Time
 }
 type Endpoint struct {
 	ID            *int32
@@ -124,7 +127,7 @@ type NewMessage struct {
 type MessageQuery struct {
 	Limit  int
 	Offset int
-	After  string
+	CreatedAfter time.Time
 }
 type Message struct {
 	ID            *int32
@@ -147,7 +150,7 @@ type NewAttempt struct {
 type AttemptQuery struct {
 	Limit  int
 	Offset int
-	After  string
+	CreatedAfter time.Time
 }
 type Attempt struct {
 	ID             *int32
@@ -162,13 +165,13 @@ type Attempt struct {
 	UpdatedAt      time.Time
 }
 type NewSecret struct {
-	ApplicationID *int32
+	ApplicationID string
 	Value         string
 }
 type SecretQuery struct {
 	Limit  int
 	Offset int
-	After  string
+	CreatedAfter time.Time
 }
 type Secret struct {
 	ID            *int32

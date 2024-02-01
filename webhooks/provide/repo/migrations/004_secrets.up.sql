@@ -1,5 +1,5 @@
 CREATE TYPE webhooks.new_secret AS (
-    application_id INT,
+    application_id UUID,
     value TEXT
 );
 CREATE TABLE webhooks.secret (

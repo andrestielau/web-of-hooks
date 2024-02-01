@@ -90,6 +90,16 @@ func (r *Repository) ListEndpoints(ctx context.Context, query webhooks.EndpointQ
 	return r.Convert.Endpoints(res), nil
 }
 
+func (r *Repository) ListApplicationEndpoints(ctx context.Context, application_uid string, query webhooks.EndpointQuery) ([]webhooks.Endpoint, error) {
+	q := r.Convert.ApplicationEndpointQuery(query)
+	q.ApplicationUid = application_uid
+	res, err := r.Querier.ListApplicationEndpoints(ctx, q)
+	if err != nil {
+		return nil, err
+	}
+	return r.Convert.Endpoints(res), nil
+}
+
 func (r *Repository) CreateEventTypes(ctx context.Context, eventTypes []webhooks.NewEventType) ([]webhooks.EventType, error) {
 	res, err := r.Querier.CreateEventTypes(ctx, r.Convert.NewEventTypes(eventTypes))
 	if err != nil {
@@ -146,6 +156,15 @@ func (r *Repository) ListMessages(ctx context.Context, query webhooks.MessageQue
 	}
 	return r.Convert.Messages(res), nil
 }
+func (r *Repository) ListApplicationMessages(ctx context.Context, application_uid string, query webhooks.MessageQuery) ([]webhooks.Message, error) {
+	q := r.Convert.ApplicationMessageQuery(query)
+	q.ApplicationUid = application_uid
+	res, err := r.Querier.ListApplicationMessages(ctx, q)
+	if err != nil {
+		return nil, err
+	}
+	return r.Convert.Messages(res), nil
+}
 func (r *Repository) CreateSecrets(ctx context.Context, secrets []webhooks.NewSecret) ([]webhooks.Secret, error) {
 	res, err := r.Querier.CreateSecrets(ctx, r.Convert.NewSecrets(secrets))
 	if err != nil {
@@ -166,6 +185,14 @@ func (r *Repository) DeleteSecrets(ctx context.Context, ids []string) error {
 }
 func (r *Repository) ListSecrets(ctx context.Context, query webhooks.SecretQuery) ([]webhooks.Secret, error) {
 	res, err := r.Querier.ListSecrets(ctx, r.Convert.SecretQuery(query))
+	if err != nil {
+		return nil, err
+	}
+	return r.Convert.Secrets(res), nil
+}
+
+func (r *Repository) ListApplicationSecrets(ctx context.Context, application_uid string) ([]webhooks.Secret, error) {
+	res, err := r.Querier.ListApplicationSecrets(ctx, application_uid)
 	if err != nil {
 		return nil, err
 	}

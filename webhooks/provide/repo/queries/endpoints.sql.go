@@ -6,6 +6,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/jackc/pgconn"
+	"time"
 )
 
 const createEndpointsSQL = `WITH inserted AS (
@@ -169,21 +170,21 @@ const listEndpointsSQL = `SELECT (
     updated_at
 )::webhooks.endpoint
 FROM webhooks.endpoint
-WHERE uid > $1 
+WHERE created_at > $1  
 ORDER BY uid
 LIMIT $2
 OFFSET $3;`
 
 type ListEndpointsParams struct {
-	After  string `json:"after"`
-	Limit  int    `json:"limit"`
-	Offset int    `json:"offset"`
+	CreatedAfter time.Time `json:"created_after"`
+	Limit        int       `json:"limit"`
+	Offset       int       `json:"offset"`
 }
 
 // ListEndpoints implements Querier.ListEndpoints.
 func (q *DBQuerier) ListEndpoints(ctx context.Context, params ListEndpointsParams) ([]Endpoint, error) {
 	ctx = context.WithValue(ctx, "pggen_query_name", "ListEndpoints")
-	rows, err := q.conn.Query(ctx, listEndpointsSQL, params.After, params.Limit, params.Offset)
+	rows, err := q.conn.Query(ctx, listEndpointsSQL, params.CreatedAfter, params.Limit, params.Offset)
 	if err != nil {
 		return nil, fmt.Errorf("query ListEndpoints: %w", err)
 	}
@@ -202,6 +203,60 @@ func (q *DBQuerier) ListEndpoints(ctx context.Context, params ListEndpointsParam
 	}
 	if err := rows.Err(); err != nil {
 		return nil, fmt.Errorf("close ListEndpoints rows: %w", err)
+	}
+	return items, err
+}
+
+const listApplicationEndpointsSQL = `SELECT (
+    e.id,
+    e.url,
+    e.name,
+    e.application_id,
+    e.uid,
+    e.rate_limit,
+    e.metadata,
+    e.disabled,
+    e.description,
+    e.created_at,
+    e.updated_at
+)::webhooks.endpoint
+FROM webhooks.endpoint e
+JOIN webhooks.application ON e.application_id = webhooks.application.id
+WHERE e.created_at > $1 
+AND webhooks.application.uid = $2::uuid
+ORDER BY e.uid
+LIMIT $3
+OFFSET $4;`
+
+type ListApplicationEndpointsParams struct {
+	CreatedAfter   time.Time `json:"created_after"`
+	ApplicationUid string    `json:"application_uid"`
+	Limit          int       `json:"limit"`
+	Offset         int       `json:"offset"`
+}
+
+// ListApplicationEndpoints implements Querier.ListApplicationEndpoints.
+func (q *DBQuerier) ListApplicationEndpoints(ctx context.Context, params ListApplicationEndpointsParams) ([]Endpoint, error) {
+	ctx = context.WithValue(ctx, "pggen_query_name", "ListApplicationEndpoints")
+	rows, err := q.conn.Query(ctx, listApplicationEndpointsSQL, params.CreatedAfter, params.ApplicationUid, params.Limit, params.Offset)
+	if err != nil {
+		return nil, fmt.Errorf("query ListApplicationEndpoints: %w", err)
+	}
+	defer rows.Close()
+	items := []Endpoint{}
+	rowRow := q.types.newEndpoint()
+	for rows.Next() {
+		var item Endpoint
+		if err := rows.Scan(rowRow); err != nil {
+			return nil, fmt.Errorf("scan ListApplicationEndpoints row: %w", err)
+		}
+		if err := rowRow.AssignTo(&item); err != nil {
+			return nil, fmt.Errorf("assign ListApplicationEndpoints row: %w", err)
+		}
+		items = append(items, item)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("close ListApplicationEndpoints rows: %w", err)
 	}
 	return items, err
 }

@@ -33,6 +33,8 @@ type Converter interface {
 	NewEndpoint(webhooks.NewEndpoint) queries.NewEndpoint
 	NewEndpoints([]webhooks.NewEndpoint) []queries.NewEndpoint
 	EndpointQuery(webhooks.EndpointQuery) queries.ListEndpointsParams
+	// goverter:ignore ApplicationUid
+	ApplicationEndpointQuery(webhooks.EndpointQuery) queries.ListApplicationEndpointsParams
 	EndpointDetail(queries.EndpointDetails) webhooks.EndpointDetails
 	EndpointDetails([]queries.EndpointDetails) []webhooks.EndpointDetails
 
@@ -47,6 +49,8 @@ type Converter interface {
 	NewMessage(webhooks.NewMessage) queries.NewMessage
 	NewMessages([]webhooks.NewMessage) []queries.NewMessage
 	MessageQuery(webhooks.MessageQuery) queries.ListMessagesParams
+	// goverter:ignore ApplicationUid
+	ApplicationMessageQuery(webhooks.MessageQuery) queries.ListApplicationMessagesParams
 	MessageDetail(queries.MessageDetails) webhooks.MessageDetails
 	MessageDetails([]queries.MessageDetails) []webhooks.MessageDetails
 
