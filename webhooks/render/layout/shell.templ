@@ -14,8 +14,8 @@ script stickyHeader() {
 
 templ Shell(aside templ.Component) {
     @stickyHeader()
-    <nav id="navbar" class={C(`sticky top:0 h:15`)}>
-        <h1 class={C("fg:deepskyblue")}>WebHooks API</h1>
+    <nav id="navbar" class={C(`sticky top:0 h:30 mr:auto`)}>
+        <h1 class={C("fg:deepskyblue middle pt:5")}>WebHooksAPI</h1>
     </nav>
     <main class={C("vh bg:darkblue fg:deepskyblue")}>
         { children... }

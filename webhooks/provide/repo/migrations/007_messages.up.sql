@@ -1,6 +1,6 @@
 CREATE TYPE webhooks.new_message AS (
     application_id UUID,
-    event_type_id UUID,
+    event_type_id TEXT,
     event_id TEXT,
     payload TEXT
 );

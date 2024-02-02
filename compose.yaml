@@ -35,3 +35,19 @@ services:
     command: ["gcloud", "beta", "emulators", "pubsub", "start", "--host-port=0.0.0.0:8085", "--project=demo"]
     ports:
       - "8085:8085"
+
+  router:
+    build:
+      dockerfile: ./Dockerfile
+      context: .
+    command: ["/app/woh", "serve"]
+    environment:
+      PUBSUB_EMULATOR_HOST: pubsub:8085
+      ROUTER_DB_URL: postgres://postgres:postgres@postgres:5432?sslmode=disable
+    depends_on:
+      - postgres
+      - pubsub
+    ports:
+      - '2573:3000'
+      - '3524:3001'
+      

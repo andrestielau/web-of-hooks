@@ -111,6 +111,7 @@ var alias = map[string]string{
 	"bl":     "border-left",
 	"br":     "border-right",
 	"r":      "border-radius",
+	"jc":     "justify-content",
 	"w":      "width",
 	"h":      "height",
 	"z":      "z-index",

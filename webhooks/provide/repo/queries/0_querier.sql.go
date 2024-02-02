@@ -527,7 +527,7 @@ func (tr *typeResolver) newNewMessage() pgtype.ValueTranscoder {
 	return tr.newCompositeValue(
 		"new_message",
 		compositeField{name: "application_id", typeName: "uuid", defaultVal: &pgtype.UUID{}},
-		compositeField{name: "event_type_id", typeName: "uuid", defaultVal: &pgtype.UUID{}},
+		compositeField{name: "event_type_id", typeName: "text", defaultVal: &pgtype.Text{}},
 		compositeField{name: "event_id", typeName: "text", defaultVal: &pgtype.Text{}},
 		compositeField{name: "payload", typeName: "text", defaultVal: &pgtype.Text{}},
 	)

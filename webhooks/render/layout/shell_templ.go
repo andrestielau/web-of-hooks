@@ -46,7 +46,7 @@ func Shell(aside templ.Component) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var2 = []any{C(`sticky top:0 h:15`)}
+		var templ_7745c5c3_Var2 = []any{C(`sticky top:0 h:30 mr:auto`)}
 		templ_7745c5c3_Err = templ.RenderCSSItems(ctx, templ_7745c5c3_Buffer, templ_7745c5c3_Var2...)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
@@ -63,7 +63,7 @@ func Shell(aside templ.Component) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var3 = []any{C("fg:deepskyblue")}
+		var templ_7745c5c3_Var3 = []any{C("fg:deepskyblue middle pt:5")}
 		templ_7745c5c3_Err = templ.RenderCSSItems(ctx, templ_7745c5c3_Buffer, templ_7745c5c3_Var3...)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
@@ -76,7 +76,7 @@ func Shell(aside templ.Component) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\">WebHooks API</h1></nav>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\">WebHooksAPI</h1></nav>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

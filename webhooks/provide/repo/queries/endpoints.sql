@@ -51,10 +51,10 @@ WITH inserted AS (
         e.id,
         i.id
     FROM unnest(pggen.arg('endpoints')::webhooks.new_endpoint[]) n, 
-        unnest(filter_type_ids::UUID[]) f,
+        unnest(filter_type_ids::TEXT[]) f,
         webhooks.event_type e,
         inserted i 
-    WHERE e.uid = f AND i.url = n.url
+    WHERE e.key = f AND i.url = n.url
 ) SELECT ((
         i.id,
         i.url,

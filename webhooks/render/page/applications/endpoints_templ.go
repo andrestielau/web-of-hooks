@@ -138,7 +138,7 @@ func EndpointsError(err error) templ.Component {
 		var templ_7745c5c3_Var6 string
 		templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(err.Error())
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `webhooks/render/page/applications/endpoints.templ`, Line: 37, Col: 19}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `webhooks/render/page/applications/endpoints.templ`, Line: 36, Col: 19}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 		if templ_7745c5c3_Err != nil {
@@ -193,7 +193,7 @@ func EndpointItems(appId string, endpoints []webhooks.Endpoint) templ.Component 
 			var templ_7745c5c3_Var9 string
 			templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(e.Uid)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `webhooks/render/page/applications/endpoints.templ`, Line: 43, Col: 87}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `webhooks/render/page/applications/endpoints.templ`, Line: 42, Col: 87}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 			if templ_7745c5c3_Err != nil {
@@ -206,7 +206,7 @@ func EndpointItems(appId string, endpoints []webhooks.Endpoint) templ.Component 
 			var templ_7745c5c3_Var10 string
 			templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(e.Url)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `webhooks/render/page/applications/endpoints.templ`, Line: 43, Col: 96}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `webhooks/render/page/applications/endpoints.templ`, Line: 42, Col: 96}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 			if templ_7745c5c3_Err != nil {
@@ -329,7 +329,7 @@ func EndpointForm(vm EndpointFormViewModel) templ.Component {
 			var templ_7745c5c3_Var13 string
 			templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.JoinStringErrs(eventType)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `webhooks/render/page/applications/endpoints.templ`, Line: 72, Col: 38}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `webhooks/render/page/applications/endpoints.templ`, Line: 71, Col: 38}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var13))
 			if templ_7745c5c3_Err != nil {

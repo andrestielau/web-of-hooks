@@ -14,7 +14,7 @@ WITH new_messages AS (
         u.payload
     FROM unnest(pggen.arg('messages')::webhooks.new_message[]) u
     JOIN webhooks.application a ON u.application_id = a.uid
-    JOIN webhooks.event_type e ON u.event_type_id = e.uid
+    JOIN webhooks.event_type e ON u.event_type_id = e.key
     ON CONFLICT DO NOTHING
     RETURNING 
         id,

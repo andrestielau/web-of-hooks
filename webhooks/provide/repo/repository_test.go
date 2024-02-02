@@ -37,7 +37,7 @@ func TestDequeue(t *testing.T) {
 	require.Len(t, res, len(newEventTypes))
 
 	eventTypeIds := make([]*int32, numEventTypes)
-	eventTypeUids := make([]string, numEventTypes)
+	eventTypeKeys := make([]string, numEventTypes)
 	for _, eventType := range res {
 		require.NotEmpty(t, eventType.Key)
 		expect, i, ok := lo.FindIndexOf(newEventTypes, func(e webhooks.NewEventType) bool {
@@ -46,7 +46,7 @@ func TestDequeue(t *testing.T) {
 		require.True(t, ok)
 		require.Nil(t, eventTypeIds[i])
 		require.Equal(t, eventType.Key, expect.Key)
-		eventTypeUids[i] = eventType.Uid
+		eventTypeKeys[i] = eventType.Key
 		eventTypeIds[i] = &eventType.ID
 	}
 
@@ -114,11 +114,11 @@ func TestDequeue(t *testing.T) {
 		var filterTypes []string
 		switch i % 4 {
 		case 1:
-			filterTypes = []string{eventTypeUids[0]}
+			filterTypes = []string{eventTypeKeys[0]}
 		case 2:
-			filterTypes = []string{eventTypeUids[1], eventTypeUids[2]}
+			filterTypes = []string{eventTypeKeys[1], eventTypeKeys[2]}
 		case 3:
-			filterTypes = []string{eventTypeUids[0], eventTypeUids[2]}
+			filterTypes = []string{eventTypeKeys[0], eventTypeKeys[2]}
 		}
 		return webhooks.NewEndpoint{
 			Url:           fmt.Sprintf("http://app%s.com/endpoint%d", appUids[i/endpointsPerApp], i+1),
@@ -159,7 +159,7 @@ func TestDequeue(t *testing.T) {
 
 	newMessages := lo.Times(numTenants*appsPerTenant*numEventTypes, func(i int) webhooks.NewMessage {
 		return webhooks.NewMessage{
-			EventTypeID:   eventTypeUids[i%len(newEventTypes)],
+			EventTypeID:   eventTypeKeys[i%len(newEventTypes)],
 			ApplicationID: appUids[i/(appsPerTenant*numTenants)],
 			EventID:       fmt.Sprintf("msg%d-%s", i, uuid.NewString()),
 			Payload:       "something-" + uuid.NewString(),
