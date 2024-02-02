@@ -106,6 +106,32 @@ SELECT ((
 )::webhooks.endpoint_details FROM webhooks.endpoint
 WHERE uid = ANY(pggen.arg('ids')::uuid[]);
 
+-- GetEndpointsByUrl gets endpoints by url
+-- name: GetEndpointsByUrl :many
+SELECT ((
+        id,
+        url,
+        name,
+        application_id,
+        uid,
+        rate_limit,
+        metadata,
+        disabled,
+        description,
+        created_at,
+        updated_at
+    )::webhooks.endpoint,
+    (SELECT ARRAY_AGG(e.uid::UUID)
+    FROM webhooks.event_type e
+    INNER JOIN webhooks.endpoint_filter f 
+        ON f.event_type_id = e.id  
+    WHERE f.endpoint_id = id),
+    (SELECT value FROM webhooks.secret s, webhooks.endpoint_secret es
+    WHERE es.endpoint_id = id AND s.id = es.secret_id 
+    LIMIT 1)
+)::webhooks.endpoint_details FROM webhooks.endpoint
+WHERE url = ANY(pggen.arg('urls'));
+
 -- ListEndpoints lists endpoints
 -- name: ListEndpoints :many
 SELECT (

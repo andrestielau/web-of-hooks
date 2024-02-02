@@ -9,6 +9,7 @@ import (
 	"woh/webhooks/adapt/grpc"
 	"woh/webhooks/adapt/http"
 	"woh/webhooks/adapt/subs"
+	pubs "woh/webhooks/provide/pub"
 	"woh/webhooks/provide/repo"
 	"woh/webhooks/provide/secrets"
 
@@ -24,6 +25,7 @@ func Adapters() (actor.Actors, error) {
 		// Providers
 		secrets.Set,
 		repo.Set,
+		pubs.Set,
 		pub.Set,
 		sub.Set,
 		router.Set,

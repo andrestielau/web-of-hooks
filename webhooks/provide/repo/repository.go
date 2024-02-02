@@ -38,6 +38,14 @@ func (r *Repository) GetApplications(ctx context.Context, ids []string) ([]webho
 	return r.Convert.Applications(res), nil
 }
 
+func (r *Repository) GetApplicationsByName(ctx context.Context, names []string) ([]webhooks.Application, error) {
+	res, err := r.Querier.GetApplicationsByName(ctx, names)
+	if err != nil {
+		return nil, err
+	}
+	return r.Convert.Applications(res), nil
+}
+
 func (r *Repository) ListApplications(ctx context.Context, query webhooks.ApplicationQuery) ([]webhooks.Application, error) {
 	res, err := r.Querier.ListApplications(ctx, r.Convert.ApplicationQuery(query))
 	if err != nil {
@@ -86,6 +94,14 @@ func (r *Repository) GetEndpoints(ctx context.Context, ids []string) ([]webhooks
 	return r.Convert.EndpointDetails(res), nil
 }
 
+func (r *Repository) GetEndpointsByUrl(ctx context.Context, urls []string) ([]webhooks.EndpointDetails, error) {
+	res, err := r.Querier.GetEndpointsByUrl(ctx, urls)
+	if err != nil {
+		return nil, err
+	}
+	return r.Convert.EndpointDetails(res), nil
+}
+
 func (r *Repository) ListEndpoints(ctx context.Context, query webhooks.EndpointQuery) ([]webhooks.Endpoint, error) {
 	res, err := r.Querier.ListEndpoints(ctx, r.Convert.EndpointQuery(query))
 	if err != nil {
@@ -119,6 +135,14 @@ func (r *Repository) DeleteEventTypes(ctx context.Context, ids []string) error {
 
 func (r *Repository) GetEventTypes(ctx context.Context, ids []string) ([]webhooks.EventType, error) {
 	res, err := r.Querier.GetEventTypes(ctx, ids)
+	if err != nil {
+		return nil, err
+	}
+	return r.Convert.EventTypes(res), nil
+}
+
+func (r *Repository) GetEventTypesByKeys(ctx context.Context, keys []string) ([]webhooks.EventType, error) {
+	res, err := r.Querier.GetEventTypesByKeys(ctx, keys)
 	if err != nil {
 		return nil, err
 	}

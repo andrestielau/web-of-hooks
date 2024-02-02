@@ -72,6 +72,23 @@ func (h *Handler) ListMessages(ctx context.Context, request *webhooksv1.ListMess
 
 // EmitEvent implements webhooksv1.WebHookServiceServer.
 func (h *Handler) EmitEvent(ctx context.Context, request *webhooksv1.EmitEventRequest) (*webhooksv1.EmitEventResponse, error) {
+	//Publish EmitEvent to pubsub
+	errors := []*webhooksv1.Error{}
+	lo.ForEach(request.EventTypeKeys, func(eventTypeKey string, _ int) {
+		payload := webhooks.Payload{
+			TenantID:     request.TenantId,
+			EventTypeKey: eventTypeKey,
+			ReferenceID:  request.ReferenceId,
+		}
+		if err := h.Publisher.Publish(payload); err != nil {
+			errors = append(errors, webhooks.GrpcErrors(err)...)
+		}
+	})
+	if len(errors) > 0 {
+		return &webhooksv1.EmitEventResponse{Errors: errors}, nil
+	}
+
+	//Send EmitEvent to database
 	response := webhooksv1.EmitEventResponse{}
 	if res, err := h.Repo.EmitEvent(ctx, h.Convert.NewEvent(request)); err != nil {
 		response.Errors = webhooks.GrpcErrors(err)

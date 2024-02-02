@@ -25,6 +25,7 @@ type Repository interface {
 	CreateApplications(context.Context, []NewApplication) ([]Application, error)
 	DeleteApplications(context.Context, []string) error
 	GetApplications(context.Context, []string) ([]Application, error)
+	GetApplicationsByName(context.Context, []string) ([]Application, error)
 	ListApplications(context.Context, ApplicationQuery) ([]Application, error)
 	DeleteAttempts(context.Context, []string) error
 	GetAttempts(context.Context, []string) ([]Attempt, error)
@@ -32,11 +33,13 @@ type Repository interface {
 	CreateEndpoints(context.Context, []NewEndpoint) ([]EndpointDetails, error)
 	DeleteEndpoints(context.Context, []string) error
 	GetEndpoints(context.Context, []string) ([]EndpointDetails, error)
+	GetEndpointsByUrl(context.Context, []string) ([]EndpointDetails, error)
 	ListEndpoints(context.Context, EndpointQuery) ([]Endpoint, error)
 	ListApplicationEndpoints(context.Context, string, EndpointQuery) ([]Endpoint, error)
 	CreateEventTypes(context.Context, []NewEventType) ([]EventType, error)
 	DeleteEventTypes(context.Context, []string) error
 	GetEventTypes(context.Context, []string) ([]EventType, error)
+	GetEventTypesByKeys(context.Context, []string) ([]EventType, error)
 	ListEventTypes(context.Context, EventTypeQuery) ([]EventType, error)
 	CreateMessages(context.Context, []NewMessage) ([]MessageDetails, error)
 	DeleteMessages(context.Context, []string) error
@@ -49,4 +52,11 @@ type Repository interface {
 	ListSecrets(context.Context, SecretQuery) ([]Secret, error)
 	ListApplicationSecrets(context.Context, string) ([]Secret, error)
 	EmitEvent(context.Context, NewEvent) ([]Message, error)
+}
+
+const PublisherKey = "webhooks-pub"
+
+type Publisher interface {
+	actor.Actor
+	Publish(payload Payload) error
 }

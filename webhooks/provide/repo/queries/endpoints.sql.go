@@ -172,6 +172,56 @@ func (q *DBQuerier) GetEndpoints(ctx context.Context, ids []string) ([]EndpointD
 	return items, err
 }
 
+const getEndpointsByUrlSQL = `SELECT ((
+        id,
+        url,
+        name,
+        application_id,
+        uid,
+        rate_limit,
+        metadata,
+        disabled,
+        description,
+        created_at,
+        updated_at
+    )::webhooks.endpoint,
+    (SELECT ARRAY_AGG(e.uid::UUID)
+    FROM webhooks.event_type e
+    INNER JOIN webhooks.endpoint_filter f 
+        ON f.event_type_id = e.id  
+    WHERE f.endpoint_id = id),
+    (SELECT value FROM webhooks.secret s, webhooks.endpoint_secret es
+    WHERE es.endpoint_id = id AND s.id = es.secret_id 
+    LIMIT 1)
+)::webhooks.endpoint_details FROM webhooks.endpoint
+WHERE url = ANY($1);`
+
+// GetEndpointsByUrl implements Querier.GetEndpointsByUrl.
+func (q *DBQuerier) GetEndpointsByUrl(ctx context.Context, urls []string) ([]EndpointDetails, error) {
+	ctx = context.WithValue(ctx, "pggen_query_name", "GetEndpointsByUrl")
+	rows, err := q.conn.Query(ctx, getEndpointsByUrlSQL, urls)
+	if err != nil {
+		return nil, fmt.Errorf("query GetEndpointsByUrl: %w", err)
+	}
+	defer rows.Close()
+	items := []EndpointDetails{}
+	rowRow := q.types.newEndpointDetails()
+	for rows.Next() {
+		var item EndpointDetails
+		if err := rows.Scan(rowRow); err != nil {
+			return nil, fmt.Errorf("scan GetEndpointsByUrl row: %w", err)
+		}
+		if err := rowRow.AssignTo(&item); err != nil {
+			return nil, fmt.Errorf("assign GetEndpointsByUrl row: %w", err)
+		}
+		items = append(items, item)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("close GetEndpointsByUrl rows: %w", err)
+	}
+	return items, err
+}
+
 const listEndpointsSQL = `SELECT (
     id,
     url,

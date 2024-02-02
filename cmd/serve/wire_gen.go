@@ -25,6 +25,7 @@ import (
 	"woh/webhooks/adapt/subs"
 	"woh/webhooks/adapt/subs/dispatcher"
 	"woh/webhooks/adapt/subs/projector"
+	"woh/webhooks/provide/pub/publish"
 	"woh/webhooks/provide/repo"
 	"woh/webhooks/provide/secrets"
 )
@@ -48,15 +49,6 @@ func Adapters() (actor.Actors, error) {
 	}
 	adapter := http.New(httpOptions)
 	convertConverterImpl := _wireConvertConverterImplValue
-	handleHandler := &handle2.Handler{
-		Repo:    provider,
-		Secrets: secretsProvider,
-		Convert: convertConverterImpl,
-	}
-	grpcOptions := grpc.Options{
-		Handler: handleHandler,
-	}
-	grpcAdapter := grpc.New(grpcOptions)
 	publisherConfig := pub.ProvideConfig()
 	loggerAdapter := router.ProvideLogger()
 	pubOptions := pub.Options{
@@ -64,6 +56,19 @@ func Adapters() (actor.Actors, error) {
 		Logger: loggerAdapter,
 	}
 	pubProvider := pub.New(pubOptions)
+	publisher := publish.Publisher{
+		Pub: pubProvider,
+	}
+	handleHandler := &handle2.Handler{
+		Repo:      provider,
+		Secrets:   secretsProvider,
+		Convert:   convertConverterImpl,
+		Publisher: publisher,
+	}
+	grpcOptions := grpc.Options{
+		Handler: handleHandler,
+	}
+	grpcAdapter := grpc.New(grpcOptions)
 	monitorHandler := &monitor.Handler{
 		Publisher: pubProvider,
 		Repo:      provider,

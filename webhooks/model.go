@@ -146,6 +146,7 @@ type Secret struct {
 }
 
 type Payload struct {
+	TenantID     string
 	EventTypeKey string
 	ReferenceID  string
 }

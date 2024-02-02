@@ -110,6 +110,45 @@ func (q *DBQuerier) GetApplications(ctx context.Context, ids []string) ([]Applic
 	return items, err
 }
 
+const getApplicationsByNameSQL = `SELECT (
+    id,
+    name,
+    uid,
+    tenant_id,
+    rate_limit,
+    metadata,
+    created_at,
+    updated_at
+)::webhooks.application
+FROM webhooks.application
+WHERE name = ANY($1);`
+
+// GetApplicationsByName implements Querier.GetApplicationsByName.
+func (q *DBQuerier) GetApplicationsByName(ctx context.Context, names []string) ([]Application, error) {
+	ctx = context.WithValue(ctx, "pggen_query_name", "GetApplicationsByName")
+	rows, err := q.conn.Query(ctx, getApplicationsByNameSQL, names)
+	if err != nil {
+		return nil, fmt.Errorf("query GetApplicationsByName: %w", err)
+	}
+	defer rows.Close()
+	items := []Application{}
+	rowRow := q.types.newApplication()
+	for rows.Next() {
+		var item Application
+		if err := rows.Scan(rowRow); err != nil {
+			return nil, fmt.Errorf("scan GetApplicationsByName row: %w", err)
+		}
+		if err := rowRow.AssignTo(&item); err != nil {
+			return nil, fmt.Errorf("assign GetApplicationsByName row: %w", err)
+		}
+		items = append(items, item)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("close GetApplicationsByName rows: %w", err)
+	}
+	return items, err
+}
+
 const listApplicationsSQL = `SELECT (
     id,
     name,

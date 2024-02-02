@@ -24,6 +24,9 @@ type Querier interface {
 	// GetApplications gets applications by id
 	GetApplications(ctx context.Context, ids []string) ([]Application, error)
 
+	// GetApplicationsByName gets applications by name
+	GetApplicationsByName(ctx context.Context, names []string) ([]Application, error)
+
 	// ListApplications lists registered applications
 	ListApplications(ctx context.Context, params ListApplicationsParams) ([]Application, error)
 
@@ -44,6 +47,9 @@ type Querier interface {
 
 	// GetEndpoints gets endpoints by id
 	GetEndpoints(ctx context.Context, ids []string) ([]EndpointDetails, error)
+
+	// GetEndpointsByUrl gets endpoints by url
+	GetEndpointsByUrl(ctx context.Context, urls []string) ([]EndpointDetails, error)
 
 	// ListEndpoints lists endpoints
 	ListEndpoints(ctx context.Context, params ListEndpointsParams) ([]Endpoint, error)

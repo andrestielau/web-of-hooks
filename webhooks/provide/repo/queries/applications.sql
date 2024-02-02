@@ -45,6 +45,21 @@ SELECT (
 FROM webhooks.application
 WHERE uid = ANY(pggen.arg('ids')::uuid[]);
 
+-- GetApplicationsByName gets applications by name
+-- name: GetApplicationsByName :many
+SELECT (
+    id,
+    name,
+    uid,
+    tenant_id,
+    rate_limit,
+    metadata,
+    created_at,
+    updated_at
+)::webhooks.application
+FROM webhooks.application
+WHERE name = ANY(pggen.arg('names'));
+
 -- ListApplications lists registered applications
 -- name: ListApplications :many
 SELECT (
