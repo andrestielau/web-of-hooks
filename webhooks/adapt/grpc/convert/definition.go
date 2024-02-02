@@ -26,7 +26,7 @@ type Converter interface {
 	Application(webhooks.Application) *webhooksv1.App
 	Applications([]webhooks.Application) []*webhooksv1.App
 
-	// goverter:ignore CreatedAfter
+	// goverter:ignore TenantID CreatedAfter
 	// goverter:useZeroValueOnPointerInconsistency
 	ApplicationQuery(*webhooksv1.PageRequest) webhooks.ApplicationQuery
 

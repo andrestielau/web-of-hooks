@@ -32,6 +32,7 @@ type NewApplication struct {
 	Metadata  string
 }
 type ApplicationQuery struct {
+	TenantID     string
 	Limit        int
 	Offset       int
 	CreatedAfter time.Time

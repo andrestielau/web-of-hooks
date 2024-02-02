@@ -3,6 +3,7 @@ package repo_test
 import (
 	"context"
 	"fmt"
+	"log"
 	"math/rand"
 	"strconv"
 	"testing"
@@ -234,6 +235,32 @@ func TestPopulate(t *testing.T) {
 		appUids[i] = app.Uid
 	}
 
+	//CREATE SECRETS
+	newSecrets := lo.Times(numTenants*appsPerTenant, func(i int) webhooks.NewSecret {
+		return webhooks.NewSecret{
+			Value:         uuid.NewString(),
+			ApplicationID: appUids[i/(appsPerTenant*numTenants)],
+		}
+	})
+
+	resSecrets, err := r.CreateSecrets(ctx, newSecrets)
+	require.NoError(t, err)
+	require.Len(t, resSecrets, len(newSecrets))
+
+	secretIds := make([]*int32, numTenants*appsPerTenant)
+	secretUids := make([]string, numTenants*appsPerTenant)
+	for _, secret := range resSecrets {
+		require.NotEmpty(t, secret.Value)
+		expect, i, ok := lo.FindIndexOf(newSecrets, func(e webhooks.NewSecret) bool {
+			return e.Value == secret.Value
+		})
+		require.True(t, ok)
+		require.Nil(t, secretIds[i])
+		require.Equal(t, secret.Value, expect.Value)
+		secretUids[i] = secret.Uid
+		secretIds[i] = secret.ID
+	}
+
 	//CREATE ENDPOINTS
 	endpointsPerApp := 3
 	newEndpoints := lo.Times(endpointsPerApp*len(appIds), func(i int) webhooks.NewEndpoint {
@@ -245,6 +272,8 @@ func TestPopulate(t *testing.T) {
 			filterTypes = []string{eventTypeUids[1], eventTypeUids[2]}
 		case 3:
 			filterTypes = []string{eventTypeUids[0], eventTypeUids[2]}
+		default:
+			log.Println("default", i)
 		}
 		return webhooks.NewEndpoint{
 			Url:           fmt.Sprintf("http://app%s.com/endpoint%d", appUids[i/endpointsPerApp], i+1),
@@ -253,9 +282,10 @@ func TestPopulate(t *testing.T) {
 			Description:   "description " + strconv.Itoa(i),
 			ApplicationID: appUids[i/endpointsPerApp],
 			FilterTypeIds: filterTypes,
+			SecretId: secretUids[i/(numTenants*appsPerTenant)],
 		}
 	})
-
+log.Println(newEndpoints)
 	res3, err := r.CreateEndpoints(ctx, newEndpoints)
 	require.NoError(t, err)
 	require.Len(t, res3, len(newEndpoints))
@@ -312,15 +342,4 @@ func TestPopulate(t *testing.T) {
 		messageUids[i] = msg.Uid
 		// TODO:Check Attempts
 	}
-
-	//CREATE SECRETS
-	newSecrets := lo.Times(numTenants*appsPerTenant, func(i int) webhooks.NewSecret {
-		return webhooks.NewSecret{
-			Value:         uuid.NewString(),
-			ApplicationID: appUids[i/(appsPerTenant*numTenants)],
-		}
-	})
-	resSecrets, err := r.CreateSecrets(ctx, newSecrets)
-	require.NoError(t, err)
-	require.Len(t, resSecrets, len(newSecrets))
 }

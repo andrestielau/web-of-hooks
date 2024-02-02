@@ -222,12 +222,18 @@ func (r *Repository) EmitEvent(ctx context.Context, event webhooks.NewEvent) ([]
 			return nil, err
 		}
 
-		applicationIds := []string{}
-		// TODO get Applications/endpoints by filter type
+		// TODO: check if this is the correct way to do this
+		apps, err := r.Querier.ListApplications(ctx, queries.ListApplicationsParams{
+			Limit:    1000,
+			TenantID: event.TenantId,
+		})
+		if err != nil {
+			return nil, err
+		}
 
-		for _, applicationId := range applicationIds {
+		for _, app := range apps {
 			newMessage := webhooks.NewMessage{
-				ApplicationID: applicationId,
+				ApplicationID: app.Uid,
 				EventTypeID:   eventType.Uid,
 				EventID:       eventId,
 				Payload:       string(jsonPayload),

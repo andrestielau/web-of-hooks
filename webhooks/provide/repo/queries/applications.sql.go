@@ -122,12 +122,14 @@ const listApplicationsSQL = `SELECT (
 )::webhooks.application
 FROM webhooks.application
 WHERE created_at > $1 
+AND ($2 = '' OR tenant_id = $2)
 ORDER BY created_at
-LIMIT $2
-OFFSET $3;`
+LIMIT $3
+OFFSET $4;`
 
 type ListApplicationsParams struct {
 	CreatedAfter time.Time `json:"created_after"`
+	TenantID     string    `json:"tenant_id"`
 	Limit        int       `json:"limit"`
 	Offset       int       `json:"offset"`
 }
@@ -135,7 +137,7 @@ type ListApplicationsParams struct {
 // ListApplications implements Querier.ListApplications.
 func (q *DBQuerier) ListApplications(ctx context.Context, params ListApplicationsParams) ([]Application, error) {
 	ctx = context.WithValue(ctx, "pggen_query_name", "ListApplications")
-	rows, err := q.conn.Query(ctx, listApplicationsSQL, params.CreatedAfter, params.Limit, params.Offset)
+	rows, err := q.conn.Query(ctx, listApplicationsSQL, params.CreatedAfter, params.TenantID, params.Limit, params.Offset)
 	if err != nil {
 		return nil, fmt.Errorf("query ListApplications: %w", err)
 	}

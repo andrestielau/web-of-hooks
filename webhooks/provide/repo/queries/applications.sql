@@ -59,6 +59,7 @@ SELECT (
 )::webhooks.application
 FROM webhooks.application
 WHERE created_at > pggen.arg('created_after') 
+AND (pggen.arg('tenant_id') = '' OR tenant_id = pggen.arg('tenant_id'))
 ORDER BY created_at
 LIMIT pggen.arg('limit')
 OFFSET pggen.arg('offset');
