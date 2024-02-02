@@ -9,14 +9,23 @@ import (
 type EndpointsViewModel struct {
     ApplicationId string
     Data []webhooks.Endpoint
+    EventTypes map[string]string
 }
+type EndpointFormViewModel struct {
+    ApplicationId string
+    EventTypes map[string]string
+}
+
 
 templ Endpoints(vm EndpointsViewModel, err error) {
     @layout.Html(){
         @layout.Shell(nil) {
             <h1 class={C("capitalize")}>endpoints</h1>
             @EndpointList(vm.ApplicationId, vm.Data)
-            @EndpointForm(vm.ApplicationId)
+            @EndpointForm(EndpointFormViewModel{
+                ApplicationId: vm.ApplicationId,
+                EventTypes: vm.EventTypes,
+            })
             if err != nil {
                 @EndpointsError(err)
             }
@@ -46,26 +55,23 @@ templ EndpointList(appId string, data []webhooks.Endpoint) {
         </ul>
     }
 }
-templ EndpointForm(applicationId string) {
+
+templ EndpointForm(vm EndpointFormViewModel) {
     <form 
     id="endpoint-form"
     hx-swap="beforeend"
     hx-target="#endpoint-list"
     hx-headers={`{"Accept": "text/html"}`}
-    hx-post={"/applications/"+applicationId+"/endpoints"}
-    hx-on::after-request="this.reset()">
+    hx-post={"/applications/"+vm.ApplicationId+"/endpoints"}
+    hx-on::after-request="if(event.detail.successful) this.reset()">
         <label for="name">Name</label>
         <input id="name" name="name" type="text"/><br></br>
         <label for="url">Url</label>
         <input id="url" name="url" type="text"/><br></br>
-
-        <input type="checkbox" id="kyc" name="filterTypes" value="KYC-Event" />
-        <label for="kyc"> KYC Events</label><br></br>
-        <input type="checkbox" id="attributions" name="filterTypes" value="Pending-Attribution" />
-        <label for="attributions"> Pending Attributions</label><br></br>
-        <input type="checkbox" id="transactions" name="filterTypes" value="Transaction-Event" />
-        <label for="transactions"> Transaction Events</label><br></br>
-
+        for id, eventType := range vm.EventTypes {
+            <input type="checkbox" id={id} name="filterTypes" value={id} />
+            <label for={id}>{eventType}</label><br></br>
+        } 
         <button type="reset">Reset</button>
         <button type="submit">Create</button>
     </form>

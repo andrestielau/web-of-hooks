@@ -7,6 +7,7 @@ import (
 )
 type ApplicationsViewModel struct {
     Data []webhooks.Application
+    EventTypes map[string]string
 }
 templ Applications(vm ApplicationsViewModel, err error) {
     @layout.Html(){
@@ -20,12 +21,19 @@ templ Applications(vm ApplicationsViewModel, err error) {
         }
     }
 }
-templ Application(app webhooks.ApplicationDetails) {
+type ApplicationViewModel struct {
+    webhooks.ApplicationDetails
+    EventTypes map[string]string
+}
+templ Application(app ApplicationViewModel) {
     @layout.Html(){
         @layout.Shell(nil) {
             <h1>Application: {app.Name}</h1>
             <h2>Add Endpoint</h2>
-            @EndpointForm(app.Uid)
+            @EndpointForm(EndpointFormViewModel{
+                ApplicationId: app.Uid,
+                EventTypes: app.EventTypes,
+            })
             <h2>Endpoints</h2>
             @EndpointList(app.Uid, app.Endpoints)
         }

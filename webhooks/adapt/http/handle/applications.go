@@ -89,7 +89,13 @@ func (h *Handler) GetApplication(w http.ResponseWriter, r *http.Request, applica
 		ret = h.Convert.ApplicationDetail(res[0])
 	}
 	if media.ShouldRender(r) {
-		applications.Application(res[0]).Render(r.Context(), w)
+		res2, _ := h.Repo.ListEventTypes(r.Context(), webhooks.EventTypeQuery{})
+		applications.Application(applications.ApplicationViewModel{
+			ApplicationDetails: res[0],
+			EventTypes: lo.SliceToMap(res2, func(e webhooks.EventType) (string, string) {
+				return e.Uid, e.Key
+			}),
+		}).Render(r.Context(), w)
 	} else if err := media.Res(w, media.Accept(r), ret); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
