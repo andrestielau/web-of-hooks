@@ -55,7 +55,7 @@ func (h *Handler) CreateEndpoints(w http.ResponseWriter, r *http.Request, applic
 	if media.ShouldRender(r) {
 		applications.EndpointItems(applicationId, lo.Map(res, func(e webhooks.EndpointDetails, _ int) webhooks.Endpoint {
 			return e.Endpoint
-		}))
+		})).Render(r.Context(), w)
 	} else if err := media.Res(w, media.Accept(r), ret); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
