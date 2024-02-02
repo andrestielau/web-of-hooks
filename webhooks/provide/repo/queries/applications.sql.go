@@ -72,31 +72,31 @@ func (q *DBQuerier) DeleteApplications(ctx context.Context, ids []string) (pgcon
 }
 
 const getApplicationsSQL = `SELECT ((
-    id,
-    name,
-    uid,
-    tenant_id,
-    rate_limit,
-    metadata,
-    created_at,
-    updated_at
-)::webhooks.application, 
-(SELECT ARRAY_AGG((
-    id,
-    url,
-    name,
-    application_id,
-    uid,
-    rate_limit,
-    metadata,
-    disabled,
-    description,
-    created_at,
-    updated_at
-)::webhooks.endpoint) FROM webhooks.endpoint e WHERE e.application_id = id)
+        a.id,
+        a.name,
+        a.uid,
+        a.tenant_id,
+        a.rate_limit,
+        a.metadata,
+        a.created_at,
+        a.updated_at
+    )::webhooks.application, 
+    (SELECT ARRAY_AGG((
+        e.id,
+        e.url,
+        e.name,
+        e.application_id,
+        e.uid,
+        e.rate_limit,
+        e.metadata,
+        e.disabled,
+        e.description,
+        e.created_at,
+        e.updated_at
+    )::webhooks.endpoint) FROM webhooks.endpoint e WHERE e.application_id = a.id)
 )::webhooks.application_details
-FROM webhooks.application
-WHERE uid = ANY($1::uuid[]);`
+FROM webhooks.application a
+WHERE a.uid = ANY($1::uuid[]);`
 
 // GetApplications implements Querier.GetApplications.
 func (q *DBQuerier) GetApplications(ctx context.Context, ids []string) ([]ApplicationDetails, error) {
