@@ -1,6 +1,7 @@
 package http
 
 import (
+	"fmt"
 	"woh/package/actor"
 	"woh/package/actor/net/http/server"
 	"woh/webhooks"
@@ -24,7 +25,7 @@ func New(opts Options) *Adapter {
 		Handler: opts.Handler.Session.LoadAndSave( // wrap in session middleware
 			webhooksv1.Handler(opts.Handler),
 		),
-		Addr: ":3000",
+		Addr: fmt.Sprintf(":%d", webhooks.API_PORT),
 	})
 	a.SpawnAll(actor.Actors{
 		webhooks.SecretsKey: opts.Handler.Secrets,

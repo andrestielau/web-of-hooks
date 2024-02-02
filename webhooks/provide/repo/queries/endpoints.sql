@@ -132,6 +132,38 @@ SELECT ((
 )::webhooks.endpoint_details FROM webhooks.endpoint
 WHERE url = ANY(pggen.arg('urls'));
 
+
+-- GetEndpointsByTenantAndEventTypes gets endpoints by tenant and event types
+-- name: GetEndpointsByTenantAndEventTypes :many
+SELECT ((
+        ep.id,
+        ep.url,
+        ep.name,
+        ep.application_id,
+        ep.uid,
+        ep.rate_limit,
+        ep.metadata,
+        ep.disabled,
+        ep.description,
+        ep.created_at,
+        ep.updated_at
+    )::webhooks.endpoint,
+    (SELECT ARRAY_AGG(e.uid::UUID)
+    FROM webhooks.event_type e
+    INNER JOIN webhooks.endpoint_filter f 
+        ON f.event_type_id = e.id  
+    WHERE f.endpoint_id = id),
+    (SELECT value FROM webhooks.secret s, webhooks.endpoint_secret es
+    WHERE es.endpoint_id = id AND s.id = es.secret_id 
+    LIMIT 1)
+)::webhooks.endpoint_details 
+FROM webhooks.endpoint ep
+JOIN webhooks.endpoint_filter ef ON ep.id = ef.endpoint_id
+JOIN webhooks.event_type et ON ef.event_type_id = et.id
+JOIN webhooks.application a ON ep.application_id = a.id
+WHERE a.tenant_id = pggen.arg('tenant_id')
+AND et.key = ANY(pggen.arg('eventTypeKeys'));
+
 -- ListEndpoints lists endpoints
 -- name: ListEndpoints :many
 SELECT (

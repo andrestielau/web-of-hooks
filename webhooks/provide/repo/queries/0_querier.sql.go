@@ -51,6 +51,9 @@ type Querier interface {
 	// GetEndpointsByUrl gets endpoints by url
 	GetEndpointsByUrl(ctx context.Context, urls []string) ([]EndpointDetails, error)
 
+	// GetEndpointsByTenantAndEventTypes gets endpoints by tenant and event types
+	GetEndpointsByTenantAndEventTypes(ctx context.Context, tenantID string, eventTypeKeys []string) ([]EndpointDetails, error)
+
 	// ListEndpoints lists endpoints
 	ListEndpoints(ctx context.Context, params ListEndpointsParams) ([]Endpoint, error)
 

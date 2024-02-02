@@ -1,6 +1,7 @@
 package grpc
 
 import (
+	"fmt"
 	"woh/package/actor"
 	"woh/package/actor/net/grpc/server"
 	"woh/webhooks"
@@ -25,7 +26,7 @@ func New(opts Options) *Adapter {
 		Handler: func(s *grpc.Server) {
 			webhooksv1.RegisterWebHookServiceServer(s, opts.Handler)
 		},
-		Addr: ":3001",
+		Addr: fmt.Sprintf(":%d", webhooks.GRPC_PORT),
 	})
 	a.SpawnAll(actor.Actors{
 		webhooks.SecretsKey: opts.Handler.Secrets,

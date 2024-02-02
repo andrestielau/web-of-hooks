@@ -2,6 +2,7 @@ package repo_test
 
 import (
 	"context"
+	"encoding/base64"
 	"fmt"
 	"math/rand"
 	"strconv"
@@ -453,7 +454,7 @@ func TestPopulateOne(t *testing.T) {
 
 	//CREATE SECRETS
 	newSecrets := []webhooks.NewSecret{{
-		Value:         uuid.NewString(),
+		Value:         base64.StdEncoding.EncodeToString([]byte(uuid.NewString())),
 		ApplicationID: apps[0].Uid,
 	}}
 

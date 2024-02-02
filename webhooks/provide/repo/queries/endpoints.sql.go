@@ -222,6 +222,61 @@ func (q *DBQuerier) GetEndpointsByUrl(ctx context.Context, urls []string) ([]End
 	return items, err
 }
 
+const getEndpointsByTenantAndEventTypesSQL = `SELECT ((
+        ep.id,
+        ep.url,
+        ep.name,
+        ep.application_id,
+        ep.uid,
+        ep.rate_limit,
+        ep.metadata,
+        ep.disabled,
+        ep.description,
+        ep.created_at,
+        ep.updated_at
+    )::webhooks.endpoint,
+    (SELECT ARRAY_AGG(e.uid::UUID)
+    FROM webhooks.event_type e
+    INNER JOIN webhooks.endpoint_filter f 
+        ON f.event_type_id = e.id  
+    WHERE f.endpoint_id = id),
+    (SELECT value FROM webhooks.secret s, webhooks.endpoint_secret es
+    WHERE es.endpoint_id = id AND s.id = es.secret_id 
+    LIMIT 1)
+)::webhooks.endpoint_details 
+FROM webhooks.endpoint ep
+JOIN webhooks.endpoint_filter ef ON ep.id = ef.endpoint_id
+JOIN webhooks.event_type et ON ef.event_type_id = et.id
+JOIN webhooks.application a ON ep.application_id = a.id
+WHERE a.tenant_id = $1
+AND et.key = ANY($2);`
+
+// GetEndpointsByTenantAndEventTypes implements Querier.GetEndpointsByTenantAndEventTypes.
+func (q *DBQuerier) GetEndpointsByTenantAndEventTypes(ctx context.Context, tenantID string, eventTypeKeys []string) ([]EndpointDetails, error) {
+	ctx = context.WithValue(ctx, "pggen_query_name", "GetEndpointsByTenantAndEventTypes")
+	rows, err := q.conn.Query(ctx, getEndpointsByTenantAndEventTypesSQL, tenantID, eventTypeKeys)
+	if err != nil {
+		return nil, fmt.Errorf("query GetEndpointsByTenantAndEventTypes: %w", err)
+	}
+	defer rows.Close()
+	items := []EndpointDetails{}
+	rowRow := q.types.newEndpointDetails()
+	for rows.Next() {
+		var item EndpointDetails
+		if err := rows.Scan(rowRow); err != nil {
+			return nil, fmt.Errorf("scan GetEndpointsByTenantAndEventTypes row: %w", err)
+		}
+		if err := rowRow.AssignTo(&item); err != nil {
+			return nil, fmt.Errorf("assign GetEndpointsByTenantAndEventTypes row: %w", err)
+		}
+		items = append(items, item)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("close GetEndpointsByTenantAndEventTypes rows: %w", err)
+	}
+	return items, err
+}
+
 const listEndpointsSQL = `SELECT (
     id,
     url,

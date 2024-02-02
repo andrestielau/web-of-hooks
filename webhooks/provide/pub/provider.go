@@ -5,25 +5,30 @@ import (
 	"woh/package/actor/third/gps/pub"
 
 	"woh/webhooks/provide/pub/publish"
+
+	"woh/webhooks"
+
 	"github.com/google/wire"
 )
 
 type Options struct {
-	Pub *pub.Provider
+	Pub  *pub.Provider
+	Repo webhooks.Repository
 }
 type Provider struct {
 	*actor.Base
 	Pub *pub.Provider
 }
 
-func New(o Options) *Provider {
+func New(opts Options) *Provider {
 	provider := &Provider{
 		Base: actor.New(),
-		Pub:  o.Pub,
+		Pub:  opts.Pub,
 	}
 
 	provider.SpawnAll(actor.Actors{
-		pub.Key: o.Pub,
+		pub.Key:          opts.Pub,
+		webhooks.RepoKey: opts.Repo,
 	})
 	return provider
 }

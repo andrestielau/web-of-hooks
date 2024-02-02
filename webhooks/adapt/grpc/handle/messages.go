@@ -80,7 +80,7 @@ func (h *Handler) EmitEvent(ctx context.Context, request *webhooksv1.EmitEventRe
 			EventTypeKey: eventTypeKey,
 			ReferenceID:  request.ReferenceId,
 		}
-		if err := h.Publisher.Publish(payload); err != nil {
+		if err := h.Publisher.Publish(ctx, payload); err != nil {
 			errors = append(errors, webhooks.GrpcErrors(err)...)
 		}
 	})

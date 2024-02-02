@@ -6,6 +6,11 @@ import (
 	"woh/package/actor"
 )
 
+const (
+	API_PORT  = 3000
+	GRPC_PORT = 3001
+)
+
 const WorkerKey = "webhooks-worker"
 
 type Worker interface {
@@ -34,6 +39,7 @@ type Repository interface {
 	DeleteEndpoints(context.Context, []string) error
 	GetEndpoints(context.Context, []string) ([]EndpointDetails, error)
 	GetEndpointsByUrl(context.Context, []string) ([]EndpointDetails, error)
+	GetEndpointsByTenantAndEventTypes(context.Context, string, []string) ([]EndpointDetails, error)
 	ListEndpoints(context.Context, EndpointQuery) ([]Endpoint, error)
 	ListApplicationEndpoints(context.Context, string, EndpointQuery) ([]Endpoint, error)
 	CreateEventTypes(context.Context, []NewEventType) ([]EventType, error)
@@ -58,5 +64,5 @@ const PublisherKey = "webhooks-pub"
 
 type Publisher interface {
 	actor.Actor
-	Publish(payload Payload) error
+	Publish(context.Context, Payload) error
 }

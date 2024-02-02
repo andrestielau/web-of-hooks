@@ -1,6 +1,7 @@
 package publish
 
 import (
+	"context"
 	"encoding/json"
 	"woh/package/actor/third/gps/pub"
 
@@ -8,14 +9,16 @@ import (
 
 	"github.com/ThreeDotsLabs/watermill"
 	"github.com/ThreeDotsLabs/watermill/message"
+	"github.com/samber/lo"
 )
 
 type Publisher struct {
-	Pub *pub.Provider
+	Pub  *pub.Provider
+	Repo webhooks.Repository
 }
 
-func (p *Publisher) Publish(payload webhooks.Payload) error {
-	endpoints, err := p.SearchEndpoints(payload)
+func (p *Publisher) Publish(ctx context.Context, payload webhooks.Payload) error {
+	endpoints, err := p.SearchEndpoints(ctx, payload)
 	if err != nil {
 		return err
 	}
@@ -39,7 +42,13 @@ func (p *Publisher) Publish(payload webhooks.Payload) error {
 	return err
 }
 
-func (p *Publisher) SearchEndpoints(payload webhooks.Payload) ([]webhooks.Endpoint, error) {
-	//TODO implement
-	return nil, nil
+func (p *Publisher) SearchEndpoints(ctx context.Context, payload webhooks.Payload) ([]webhooks.Endpoint, error) {
+	endpoints, err := p.Repo.GetEndpointsByTenantAndEventTypes(ctx, payload.TenantID, []string{payload.EventTypeKey})
+	if err != nil {
+		return nil, err
+	}
+	return lo.Map(endpoints, func(e webhooks.EndpointDetails, _ int) webhooks.Endpoint {
+		return e.Endpoint
+	}), nil
+	// return []webhooks.Endpoint{{Uid: "018d6907-fb08-7227-537f-f32dc3364eec"}}, nil
 }

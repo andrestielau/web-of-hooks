@@ -57,7 +57,8 @@ func Adapters() (actor.Actors, error) {
 	}
 	pubProvider := pub.New(pubOptions)
 	publisher := publish.Publisher{
-		Pub: pubProvider,
+		Pub:  pubProvider,
+		Repo: provider,
 	}
 	handleHandler := &handle2.Handler{
 		Repo:      provider,

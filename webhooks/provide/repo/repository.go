@@ -102,6 +102,14 @@ func (r *Repository) GetEndpointsByUrl(ctx context.Context, urls []string) ([]we
 	return r.Convert.EndpointDetails(res), nil
 }
 
+func (r *Repository) GetEndpointsByTenantAndEventTypes(ctx context.Context, tenantId string, eventTypeKeys []string) ([]webhooks.EndpointDetails, error) {
+	res, err := r.Querier.GetEndpointsByTenantAndEventTypes(ctx, tenantId, eventTypeKeys)
+	if err != nil {
+		return nil, err
+	}
+	return r.Convert.EndpointDetails(res), nil
+}
+
 func (r *Repository) ListEndpoints(ctx context.Context, query webhooks.EndpointQuery) ([]webhooks.Endpoint, error) {
 	res, err := r.Querier.ListEndpoints(ctx, r.Convert.EndpointQuery(query))
 	if err != nil {
