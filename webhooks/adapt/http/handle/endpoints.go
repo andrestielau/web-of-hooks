@@ -31,7 +31,7 @@ func (h *Handler) CreateEndpoints(w http.ResponseWriter, r *http.Request, applic
 		}}
 		log.Println(req)
 	} else {
-		err = json.NewDecoder(r.Body).Decode(&ret)
+		err = json.NewDecoder(r.Body).Decode(&req)
 	}
 	// ENDTODO
 	if err != nil { // err := media.Req(r, &req);
