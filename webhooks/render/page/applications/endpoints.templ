@@ -67,6 +67,7 @@ templ EndpointForm(vm EndpointFormViewModel) {
         <input id="name" name="name" type="text"/><br></br>
         <label for="url">Url</label>
         <input id="url" name="url" type="text"/><br></br>
+        <input id="rate_limit" name="rate_limit" type="hidden" value="10"/><br></br>
         for id, eventType := range vm.EventTypes {
             <input type="checkbox" id={id} name="filterTypes" value={id} />
             <label for={id}>{eventType}</label><br></br>

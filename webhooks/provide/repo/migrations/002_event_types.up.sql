@@ -8,3 +8,5 @@ CREATE TABLE webhooks.event_type (
     uid UUID NOT NULL UNIQUE DEFAULT generate_ulid(),
     created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+INSERT INTO webhooks.event_type (key) VALUES ('onboarding.approved'), ('attribution.pending'), ('transaction.complete');

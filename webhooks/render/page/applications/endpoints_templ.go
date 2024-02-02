@@ -293,7 +293,7 @@ func EndpointForm(vm EndpointFormViewModel) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" hx-on::after-request=\"if(event.detail.successful) this.reset()\"><label for=\"name\">Name</label> <input id=\"name\" name=\"name\" type=\"text\"><br><label for=\"url\">Url</label> <input id=\"url\" name=\"url\" type=\"text\"><br>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" hx-on::after-request=\"if(event.detail.successful) this.reset()\"><label for=\"name\">Name</label> <input id=\"name\" name=\"name\" type=\"text\"><br><label for=\"url\">Url</label> <input id=\"url\" name=\"url\" type=\"text\"><br><input id=\"rate_limit\" name=\"rate_limit\" type=\"hidden\" value=\"10\"><br>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -329,7 +329,7 @@ func EndpointForm(vm EndpointFormViewModel) templ.Component {
 			var templ_7745c5c3_Var13 string
 			templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.JoinStringErrs(eventType)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `webhooks/render/page/applications/endpoints.templ`, Line: 71, Col: 38}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `webhooks/render/page/applications/endpoints.templ`, Line: 72, Col: 38}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var13))
 			if templ_7745c5c3_Err != nil {

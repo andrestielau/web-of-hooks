@@ -85,6 +85,14 @@ func (r *Repository) ListAttempts(ctx context.Context, query webhooks.AttemptQue
 }
 
 func (r *Repository) CreateEndpoints(ctx context.Context, endpoints []webhooks.NewEndpoint) ([]webhooks.EndpointDetails, error) {
+	for i, endpoint := range endpoints {
+		res, _ := r.CreateSecrets(ctx, []webhooks.NewSecret{{
+			ApplicationID: endpoint.ApplicationID,
+			Value:         uuid.NewString(),
+		}})
+		endpoints[i].SecretId = res[0].Uid
+		endpoints[i].RateLimit = lo.ToPtr[int32](10)
+	}
 	res, err := r.Querier.CreateEndpoints(ctx, r.Convert.NewEndpoints(endpoints))
 	if err != nil {
 		return nil, err
