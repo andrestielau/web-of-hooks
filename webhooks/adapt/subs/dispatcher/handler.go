@@ -10,8 +10,8 @@ import (
 	"strings"
 	"time"
 
+	"woh/package/auth"
 	"woh/webhooks"
-	"woh/webhooks/auth"
 
 	"github.com/ThreeDotsLabs/watermill/message"
 	"github.com/google/uuid"

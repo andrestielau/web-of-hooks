@@ -33,6 +33,17 @@ type Converter interface {
 	Applications([]webhooks.Application) []webhooksv1.Application
 
 	// goverter:ignore TenantID CreatedAfter
+	// goverter:map Application.ID Id
+	// goverter:map Application.Uid Uid
+	// goverter:map Application.Name Name
+	// goverter:map Application.TenantID TenantId
+	// goverter:map Application.RateLimit RateLimit
+	// goverter:map Application.CreatedAt CreatedAt
+	// goverter:map Application.UpdatedAt UpdatedAt
+	ApplicationDetail(webhooks.ApplicationDetails) webhooksv1.Application
+	ApplicationDetails([]webhooks.ApplicationDetails) []webhooksv1.Application
+
+	// goverter:ignore CreatedAfter
 	// goverter:useZeroValueOnPointerInconsistency
 	ApplicationQuery(webhooksv1.ListApplicationsParams) webhooks.ApplicationQuery
 

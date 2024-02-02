@@ -35,10 +35,7 @@ require (
 	woh v0.0.0-00010101000000-000000000000
 )
 
-require (
-	github.com/Azure/go-ansiterm v0.0.0-20230124172434-306776ec8161 // indirect
-	github.com/apapsch/go-jsonmerge/v2 v2.0.0 // indirect
-)
+require github.com/apapsch/go-jsonmerge/v2 v2.0.0 // indirect
 
 require (
 	cloud.google.com/go v0.110.10 // indirect

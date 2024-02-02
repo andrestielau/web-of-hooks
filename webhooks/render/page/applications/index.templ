@@ -1,25 +1,67 @@
 package applications
 
 import (
+    "woh/webhooks"
     . "woh/webhooks/render/style"
     "woh/webhooks/render/layout"
 )
 type ApplicationsViewModel struct {
-    Data any
+    Data []webhooks.Application
 }
 templ Applications(vm ApplicationsViewModel, err error) {
-    @layout.Html(nil) {
+    @layout.Html(){
         @layout.Shell(nil) {
             <h1 class={C("capitalize")}>applications</h1>
-            
+            @ApplicationForm()
+            @ApplicationList(vm.Data)
             if err != nil {
                 @ApplicationsError(err)
             }
         }
     }
 }
-
+templ Application(app webhooks.ApplicationDetails) {
+    @layout.Html(){
+        @layout.Shell(nil) {
+            <h1>Application: {app.Name}</h1>
+            <h2>Add Endpoint</h2>
+            @EndpointForm(app.Uid)
+            <h2>Endpoints</h2>
+            @EndpointList(app.Uid, app.Endpoints)
+        }
+    }
+}
 templ ApplicationsError(err error) {
     <h1>An error has occured</h1>
     <p>{err.Error()}</p>
 } 
+
+templ ApplicationForm() {
+    <form 
+        hx-swap="beforeend"
+        hx-target="#application-list"
+        hx-headers={`{"Accept": "text/html"}`}
+        hx-post={"/applications"}
+        hx-on::after-request="this.reset()">
+        <label for="name">Name: </label>
+        <input id="name" name="name" />
+        <br></br>
+        <label for="tenant">Tenant: </label>
+        <input id="tenant" name="tenantId" />
+        <br></br>
+        <button type="reset">Reset</button>
+        <button type="submit">Create</button>
+    </form>
+}
+templ ApplicationItems(apps []webhooks.Application) {
+    for _, app := range apps {
+        <li>
+            <a href={templ.SafeURL("/applications/"+ app.Uid)}>{app.TenantID}: {app.Name}</a>
+        </li>
+    }
+}
+templ ApplicationList(apps []webhooks.Application) {
+    <ul id="application-list">
+        @ApplicationItems(apps)
+    </ul>
+}

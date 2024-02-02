@@ -1,8 +1,11 @@
 package handle
 
 import (
+	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
+	"strings"
 	"woh/package/utils/media"
 	"woh/webhooks"
 	webhooksv1 "woh/webhooks/adapt/http/v1"
@@ -15,11 +18,28 @@ import (
 func (h *Handler) CreateApplications(w http.ResponseWriter, r *http.Request) {
 	var req webhooksv1.CreateApplicationsPayload
 	var ret webhooksv1.CreatedApplications
-	if err := media.Req(r, &req); err != nil {
+	// TODO:
+	if r.Body == nil {
+		return
+	}
+	var err error
+	defer r.Body.Close()
+	if strings.Contains(r.Header.Get("Content-Type"), "form") {
+		req = []webhooksv1.NewApplication{{
+			Name:     r.FormValue("name"),
+			TenantId: r.FormValue("tenantId"),
+		}}
+		log.Println(req)
+	} else {
+		err = json.NewDecoder(r.Body).Decode(&ret)
+	}
+	// ENDTODO
+	if err != nil { // err := media.Req(r, &req);
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	if res, err := h.Repo.CreateApplications(r.Context(), h.Convert.NewApplications(req)); err != nil {
+	res, err := h.Repo.CreateApplications(r.Context(), h.Convert.NewApplications(req))
+	if err != nil {
 		errs, stop := webhooks.HttpErrors(w, err)
 		if stop {
 			return
@@ -29,7 +49,7 @@ func (h *Handler) CreateApplications(w http.ResponseWriter, r *http.Request) {
 		ret.Data = h.Convert.Applications(res)
 	}
 	if media.ShouldRender(r) {
-		// TODO: partial
+		applications.ApplicationItems(res).Render(r.Context(), w)
 	} else if err := media.Res(w, media.Accept(r), ret); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
@@ -59,16 +79,17 @@ func (h *Handler) DeleteApplications(w http.ResponseWriter, r *http.Request) {
 // GetApplication implements webhooksv1.ServerInterface.
 func (h *Handler) GetApplication(w http.ResponseWriter, r *http.Request, applicationId string) {
 	var ret webhooksv1.Application
-	if res, err := h.Repo.GetApplications(r.Context(), []string{applicationId}); webhooks.HttpError(w, err) {
+	res, err := h.Repo.GetApplications(r.Context(), []string{applicationId})
+	if webhooks.HttpError(w, err) {
 		return
 	} else if len(res) == 0 {
 		http.Error(w, fmt.Sprintf("Application with uid %s not found", applicationId), http.StatusNotFound)
 		return
 	} else if len(res) == 1 {
-		ret = h.Convert.Application(res[0])
+		ret = h.Convert.ApplicationDetail(res[0])
 	}
 	if media.ShouldRender(r) {
-		// TODO: partial
+		applications.Application(res[0]).Render(r.Context(), w)
 	} else if err := media.Res(w, media.Accept(r), ret); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
@@ -96,7 +117,7 @@ func (h *Handler) GetApplicationStats(w http.ResponseWriter, r *http.Request, ap
 	if res, err := h.Repo.GetApplications(r.Context(), []string{applicationId}); webhooks.HttpError(w, err) {
 		return
 	} else if len(res) == 1 {
-		ret = h.Convert.Application(res[0])
+		ret = h.Convert.ApplicationDetail(res[0])
 	}
 	if media.ShouldRender(r) {
 		// TODO: partial

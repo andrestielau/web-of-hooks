@@ -11,7 +11,7 @@ type EventTypesViewModel struct {
 }
 
 templ EventTypes(vm EventTypesViewModel, err error) {
-    @layout.Html(nil) {
+    @layout.Html() {
         @layout.Shell(nil) {
             <h1 class={C("capitalize")}>event-types</h1>
             if err != nil {

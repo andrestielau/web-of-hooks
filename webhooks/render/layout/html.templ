@@ -1,10 +1,16 @@
 package layout
 
-templ Html(head templ.Component) {
+import (
+    . "woh/webhooks/render/style"
+)
+
+templ Html() {
     <html>
-        if head != nil {
-            @head
-        }
-        { children... }
+        <head>
+              <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+        </head>
+        <body class={C("bg:black")}>
+            { children... }
+        </body>
     </html>
 }

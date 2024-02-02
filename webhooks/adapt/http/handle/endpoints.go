@@ -1,7 +1,10 @@
 package handle
 
 import (
+	"encoding/json"
+	"log"
 	"net/http"
+	"strings"
 	"woh/package/utils/media"
 	"woh/webhooks"
 	webhooksv1 "woh/webhooks/adapt/http/v1"
@@ -14,16 +17,33 @@ import (
 func (h *Handler) CreateEndpoints(w http.ResponseWriter, r *http.Request, applicationId string) {
 	var req webhooksv1.CreateEndpointsPayload
 	var ret webhooksv1.CreatedEndpoints
-	if err := media.Req(r, &req); err != nil {
+	// TODO:
+	if r.Body == nil {
+		return
+	}
+	var err error
+	defer r.Body.Close()
+	if strings.Contains(r.Header.Get("Content-Type"), "form") {
+		req = []webhooksv1.NewEndpoint{{
+			Name:          lo.ToPtr(r.FormValue("name")),
+			Url:           r.FormValue("url"),
+			FilterTypeIds: lo.ToPtr([]string{}),
+		}}
+		log.Println(req)
+	} else {
+		err = json.NewDecoder(r.Body).Decode(&ret)
+	}
+	// ENDTODO
+	if err != nil { // err := media.Req(r, &req);
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	
+
 	for i := range req {
 		req[i].ApplicationId = &applicationId
 	}
-
-	if res, err := h.Repo.CreateEndpoints(r.Context(), h.Convert.NewEndpoints(req)); err != nil {
+	res, err := h.Repo.CreateEndpoints(r.Context(), h.Convert.NewEndpoints(req))
+	if err != nil {
 		errs, stop := webhooks.HttpErrors(w, err)
 		if stop {
 			return
@@ -33,7 +53,9 @@ func (h *Handler) CreateEndpoints(w http.ResponseWriter, r *http.Request, applic
 		ret.Data = h.Convert.EndpointDetails(res)
 	}
 	if media.ShouldRender(r) {
-		// TODO: partial
+		applications.EndpointItems(applicationId, lo.Map(res, func(e webhooks.EndpointDetails, _ int) webhooks.Endpoint {
+			return e.Endpoint
+		}))
 	} else if err := media.Res(w, media.Accept(r), ret); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}

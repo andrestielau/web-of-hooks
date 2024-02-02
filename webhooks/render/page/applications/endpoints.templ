@@ -12,10 +12,10 @@ type EndpointsViewModel struct {
 }
 
 templ Endpoints(vm EndpointsViewModel, err error) {
-    @layout.Html(nil) {
+    @layout.Html(){
         @layout.Shell(nil) {
             <h1 class={C("capitalize")}>endpoints</h1>
-            @EndpointList(vm.Data)
+            @EndpointList(vm.ApplicationId, vm.Data)
             @EndpointForm(vm.ApplicationId)
             if err != nil {
                 @EndpointsError(err)
@@ -29,43 +29,44 @@ templ EndpointsError(err error) {
     <p>{err.Error()}</p>
 } 
 
-templ EndpointItem(id, url string) {
-    <li>{id}: {url}</li>
+templ EndpointItems(appId string, endpoints []webhooks.Endpoint) {
+    for _, e := range endpoints {
+        <li id={"endpoint-item-"+e.Uid}>
+            <a href={templ.SafeURL("/applications/"+ appId+"/endpoints/"+e.Uid)}>{e.Uid}: {e.Url}</a>
+        </li>
+    }
 }
 // TODO: map to generic input before calling
-templ EndpointList(data []webhooks.Endpoint) {
+templ EndpointList(appId string, data []webhooks.Endpoint) {
     if len(data) == 0 {
-        <h2>No Endpoint was found</h2>
+        <h2 id="endpoint-list">No Endpoint was found</h2>
     } else {
-        <ul>
-        for _, endpoint := range data {
-            @EndpointItem(endpoint.Uid, endpoint.Url)
-        }
+        <ul id="endpoint-list">
+            @EndpointItems(appId, data)
         </ul>
     }
 }
-
-templ EndpointInput() {
-    <div>
-        <label for="0">Url</label>
-        <input id="0" name="0.url" form="endpoint-form"/>
-    </div>
-}
-
-script AddEndpoint() {
-    var templ = document.getElementById("endpoint-form-item")
-    var clone = templ.content.cloneNode(true)
-    document.getElementById("endpoint-form").appendChild(clone)
-}
-
 templ EndpointForm(applicationId string) {
-    <form action={templ.SafeURL("/applications/"+applicationId+"/endpoints")} method="POST" id="endpoint-form" enctype="multipart/form-data">
-        @EndpointInput()
-        <button type="button" onclick={AddEndpoint()}>Add</button>
+    <form 
+    id="endpoint-form"
+    hx-swap="beforeend"
+    hx-target="#endpoint-list"
+    hx-headers={`{"Accept": "text/html"}`}
+    hx-post={"/applications/"+applicationId+"/endpoints"}
+    hx-on::after-request="this.reset()">
+        <label for="name">Name</label>
+        <input id="name" name="name" type="text"/><br></br>
+        <label for="url">Url</label>
+        <input id="url" name="url" type="text"/><br></br>
+
+        <input type="checkbox" id="kyc" name="filterTypes" value="KYC-Event" />
+        <label for="kyc"> KYC Events</label><br></br>
+        <input type="checkbox" id="attributions" name="filterTypes" value="Pending-Attribution" />
+        <label for="attributions"> Pending Attributions</label><br></br>
+        <input type="checkbox" id="transactions" name="filterTypes" value="Transaction-Event" />
+        <label for="transactions"> Transaction Events</label><br></br>
+
         <button type="reset">Reset</button>
         <button type="submit">Create</button>
     </form>
-    <template id="endpoint-form-item">
-        @EndpointInput()
-    </template>
 }

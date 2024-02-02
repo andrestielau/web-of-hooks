@@ -21,6 +21,9 @@ type Converter interface {
 	// goverter:ignore Metadata
 	Application(queries.Application) webhooks.Application
 	Applications([]queries.Application) []webhooks.Application
+	ApplicationDetail(queries.ApplicationDetails) webhooks.ApplicationDetails
+	ApplicationDetails([]queries.ApplicationDetails) []webhooks.ApplicationDetails
+
 	// goverter:ignore Metadata
 	NewApplication(webhooks.NewApplication) queries.NewApplication
 	NewApplications([]webhooks.NewApplication) []queries.NewApplication

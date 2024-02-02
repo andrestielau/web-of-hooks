@@ -22,7 +22,7 @@ type Querier interface {
 	DeleteApplications(ctx context.Context, ids []string) (pgconn.CommandTag, error)
 
 	// GetApplications gets applications by id
-	GetApplications(ctx context.Context, ids []string) ([]Application, error)
+	GetApplications(ctx context.Context, ids []string) ([]ApplicationDetails, error)
 
 	// GetApplicationsByName gets applications by name
 	GetApplicationsByName(ctx context.Context, names []string) ([]Application, error)
@@ -138,6 +138,12 @@ type Application struct {
 	Metadata  pgtype.JSONB `json:"metadata"`
 	CreatedAt time.Time    `json:"created_at"`
 	UpdatedAt time.Time    `json:"updated_at"`
+}
+
+// ApplicationDetails represents the Postgres composite type "application_details".
+type ApplicationDetails struct {
+	Application Application `json:"application"`
+	Endpoints   []Endpoint  `json:"endpoints"`
 }
 
 // Endpoint represents the Postgres composite type "endpoint".
@@ -329,6 +335,16 @@ func (tr *typeResolver) newArrayValue(name, elemName string, defaultVal func() p
 		return textPreferrer{ValueTranscoder: typ, typeName: name}
 	}
 	return typ
+}
+
+// newApplicationDetails creates a new pgtype.ValueTranscoder for the Postgres
+// composite type 'application_details'.
+func (tr *typeResolver) newApplicationDetails() pgtype.ValueTranscoder {
+	return tr.newCompositeValue(
+		"application_details",
+		compositeField{name: "application", typeName: "application", defaultVal: tr.newApplication()},
+		compositeField{name: "endpoints", typeName: "_endpoint", defaultVal: tr.newEndpointArray()},
+	)
 }
 
 // newApplication creates a new pgtype.ValueTranscoder for the Postgres
@@ -559,6 +575,12 @@ func (tr *typeResolver) newSecret() pgtype.ValueTranscoder {
 		compositeField{name: "created_at", typeName: "timestamptz", defaultVal: &pgtype.Timestamptz{}},
 		compositeField{name: "updated_at", typeName: "timestamptz", defaultVal: &pgtype.Timestamptz{}},
 	)
+}
+
+// newEndpointArray creates a new pgtype.ValueTranscoder for the Postgres
+// '_endpoint' array type.
+func (tr *typeResolver) newEndpointArray() pgtype.ValueTranscoder {
+	return tr.newArrayValue("_endpoint", "endpoint", tr.newEndpoint)
 }
 
 // newMessageAttemptArray creates a new pgtype.ValueTranscoder for the Postgres

@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
-	"time"
 	"woh/package/actor/sql/pgx"
 
 	"woh/webhooks"
@@ -22,11 +21,9 @@ import (
 )
 
 func TestDispatcher(t *testing.T) {
-	timer := time.NewTimer(time.Second)
 	s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 		log.Println("yo", r.Header)
-		timer.Stop()
 		json.NewEncoder(w).Encode(map[string]any{"status": "all right"})
 	}))
 	r := repo.New(pgx.ProvideOptions())
@@ -69,5 +66,4 @@ func TestDispatcher(t *testing.T) {
 	})
 	require.NoError(t, err)
 	log.Println(res)
-	<-timer.C
 }

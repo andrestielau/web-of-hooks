@@ -42,8 +42,8 @@ func (h *Handler) GetApps(ctx context.Context, request *webhooksv1.GetAppsReques
 	} else {
 
 		apps := map[string]*webhooksv1.App{}
-		lo.ForEach(res, func(app webhooks.Application, _ int) {
-			apps[app.Uid] = h.Convert.Application(app)
+		lo.ForEach(res, func(app webhooks.ApplicationDetails, _ int) {
+			apps[app.Uid] = h.Convert.Application(app.Application)
 		})
 		return &webhooksv1.GetAppsResponse{Data: apps}, nil
 	}

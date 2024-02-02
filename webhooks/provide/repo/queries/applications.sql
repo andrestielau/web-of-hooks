@@ -32,7 +32,7 @@ DELETE FROM webhooks.application WHERE uid = ANY(pggen.arg('ids')::UUID[]);
 
 -- GetApplications gets applications by id
 -- name: GetApplications :many
-SELECT (
+SELECT ((
     id,
     name,
     uid,
@@ -41,7 +41,21 @@ SELECT (
     metadata,
     created_at,
     updated_at
-)::webhooks.application
+)::webhooks.application, 
+(SELECT ARRAY_AGG((
+    id,
+    url,
+    name,
+    application_id,
+    uid,
+    rate_limit,
+    metadata,
+    disabled,
+    description,
+    created_at,
+    updated_at
+)::webhooks.endpoint) FROM webhooks.endpoint e WHERE e.application_id = id)
+)::webhooks.application_details
 FROM webhooks.application
 WHERE uid = ANY(pggen.arg('ids')::uuid[]);
 

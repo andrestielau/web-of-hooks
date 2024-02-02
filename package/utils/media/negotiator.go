@@ -18,7 +18,7 @@ func Req(r *http.Request, ret any) (err error) {
 		return
 	}
 	defer r.Body.Close()
-	if strings.Contains(r.Header.Get("Content-Type"), "form-data") {
+	if strings.Contains(r.Header.Get("Content-Type"), "form") {
 		err = form.NewDecoder(r.Body).Decode(&ret)
 	} else {
 		err = json.NewDecoder(r.Body).Decode(&ret)

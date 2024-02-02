@@ -12,12 +12,20 @@ import (
 	"github.com/samber/lo"
 )
 
+const DefaultLimit = 100
+
 type Repository struct {
 	Convert convert.Converter
 	Querier queries.Querier
 }
 
 func (r *Repository) CreateApplications(ctx context.Context, applications []webhooks.NewApplication) ([]webhooks.Application, error) {
+	for i, app := range applications {
+		if app.RateLimit == nil {
+			app.RateLimit = lo.ToPtr[int32](DefaultLimit)
+		}
+		applications[i] = app
+	}
 	res, err := r.Querier.CreateApplications(ctx, r.Convert.NewApplications(applications))
 	if err != nil {
 		return nil, err
@@ -30,12 +38,12 @@ func (r *Repository) DeleteApplications(ctx context.Context, ids []string) error
 	return err
 }
 
-func (r *Repository) GetApplications(ctx context.Context, ids []string) ([]webhooks.Application, error) {
+func (r *Repository) GetApplications(ctx context.Context, ids []string) ([]webhooks.ApplicationDetails, error) {
 	res, err := r.Querier.GetApplications(ctx, ids)
 	if err != nil {
 		return nil, err
 	}
-	return r.Convert.Applications(res), nil
+	return r.Convert.ApplicationDetails(res), nil
 }
 
 func (r *Repository) GetApplicationsByName(ctx context.Context, names []string) ([]webhooks.Application, error) {
@@ -47,6 +55,7 @@ func (r *Repository) GetApplicationsByName(ctx context.Context, names []string) 
 }
 
 func (r *Repository) ListApplications(ctx context.Context, query webhooks.ApplicationQuery) ([]webhooks.Application, error) {
+	query.Limit = defaultLimit(query.Limit)
 	res, err := r.Querier.ListApplications(ctx, r.Convert.ApplicationQuery(query))
 	if err != nil {
 		return nil, err
@@ -67,6 +76,7 @@ func (r *Repository) GetAttempts(ctx context.Context, ids []string) ([]webhooks.
 }
 
 func (r *Repository) ListAttempts(ctx context.Context, query webhooks.AttemptQuery) ([]webhooks.Attempt, error) {
+	query.Limit = defaultLimit(query.Limit)
 	res, err := r.Querier.ListAttempts(ctx, r.Convert.AttemptQuery(query))
 	if err != nil {
 		return nil, err
@@ -111,6 +121,7 @@ func (r *Repository) GetEndpointsByTenantAndEventTypes(ctx context.Context, tena
 }
 
 func (r *Repository) ListEndpoints(ctx context.Context, query webhooks.EndpointQuery) ([]webhooks.Endpoint, error) {
+	query.Limit = defaultLimit(query.Limit)
 	res, err := r.Querier.ListEndpoints(ctx, r.Convert.EndpointQuery(query))
 	if err != nil {
 		return nil, err
@@ -119,6 +130,7 @@ func (r *Repository) ListEndpoints(ctx context.Context, query webhooks.EndpointQ
 }
 
 func (r *Repository) ListApplicationEndpoints(ctx context.Context, application_uid string, query webhooks.EndpointQuery) ([]webhooks.Endpoint, error) {
+	query.Limit = defaultLimit(query.Limit)
 	q := r.Convert.ApplicationEndpointQuery(query)
 	q.ApplicationUid = application_uid
 	res, err := r.Querier.ListApplicationEndpoints(ctx, q)
@@ -158,6 +170,7 @@ func (r *Repository) GetEventTypesByKeys(ctx context.Context, keys []string) ([]
 }
 
 func (r *Repository) ListEventTypes(ctx context.Context, query webhooks.EventTypeQuery) ([]webhooks.EventType, error) {
+	query.Limit = defaultLimit(query.Limit)
 	res, err := r.Querier.ListEventTypes(ctx, r.Convert.EventTypeQuery(query))
 	if err != nil {
 		return nil, err
@@ -186,6 +199,7 @@ func (r *Repository) GetMessages(ctx context.Context, ids []string) ([]webhooks.
 	return r.Convert.MessageDetails(res), nil
 }
 func (r *Repository) ListMessages(ctx context.Context, query webhooks.MessageQuery) ([]webhooks.Message, error) {
+	query.Limit = defaultLimit(query.Limit)
 	res, err := r.Querier.ListMessages(ctx, r.Convert.MessageQuery(query))
 	if err != nil {
 		return nil, err
@@ -193,6 +207,7 @@ func (r *Repository) ListMessages(ctx context.Context, query webhooks.MessageQue
 	return r.Convert.Messages(res), nil
 }
 func (r *Repository) ListApplicationMessages(ctx context.Context, application_uid string, query webhooks.MessageQuery) ([]webhooks.Message, error) {
+	query.Limit = defaultLimit(query.Limit)
 	q := r.Convert.ApplicationMessageQuery(query)
 	q.ApplicationUid = application_uid
 	res, err := r.Querier.ListApplicationMessages(ctx, q)
@@ -220,6 +235,7 @@ func (r *Repository) DeleteSecrets(ctx context.Context, ids []string) error {
 	return err
 }
 func (r *Repository) ListSecrets(ctx context.Context, query webhooks.SecretQuery) ([]webhooks.Secret, error) {
+	query.Limit = defaultLimit(query.Limit)
 	res, err := r.Querier.ListSecrets(ctx, r.Convert.SecretQuery(query))
 	if err != nil {
 		return nil, err
@@ -282,4 +298,10 @@ func (r *Repository) EmitEvent(ctx context.Context, event webhooks.NewEvent) ([]
 	}
 
 	return r.Convert.Messages(messages), nil
+}
+func defaultLimit(l int) int {
+	if l == 0 {
+		l = DefaultLimit
+	}
+	return l
 }

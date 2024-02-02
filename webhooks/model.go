@@ -47,6 +47,10 @@ type Application struct {
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }
+type ApplicationDetails struct {
+	Application
+	Endpoints []Endpoint
+}
 type NewEndpoint struct {
 	Url           string
 	Name          string

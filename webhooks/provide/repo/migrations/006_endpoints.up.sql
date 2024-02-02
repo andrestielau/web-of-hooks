@@ -42,4 +42,9 @@ CREATE TYPE webhooks.endpoint_details AS (
     endpoint webhooks.endpoint,
     filter_type_ids TEXT[],
     secret TEXT
-)
+);
+
+CREATE TYPE webhooks.application_details AS (
+    application webhooks.application,
+    endpoints webhooks.endpoint[]
+);

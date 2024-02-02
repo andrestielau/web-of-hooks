@@ -71,7 +71,7 @@ func (q *DBQuerier) DeleteApplications(ctx context.Context, ids []string) (pgcon
 	return cmdTag, err
 }
 
-const getApplicationsSQL = `SELECT (
+const getApplicationsSQL = `SELECT ((
     id,
     name,
     uid,
@@ -80,22 +80,36 @@ const getApplicationsSQL = `SELECT (
     metadata,
     created_at,
     updated_at
-)::webhooks.application
+)::webhooks.application, 
+(SELECT ARRAY_AGG((
+    id,
+    url,
+    name,
+    application_id,
+    uid,
+    rate_limit,
+    metadata,
+    disabled,
+    description,
+    created_at,
+    updated_at
+)::webhooks.endpoint) FROM webhooks.endpoint e WHERE e.application_id = id)
+)::webhooks.application_details
 FROM webhooks.application
 WHERE uid = ANY($1::uuid[]);`
 
 // GetApplications implements Querier.GetApplications.
-func (q *DBQuerier) GetApplications(ctx context.Context, ids []string) ([]Application, error) {
+func (q *DBQuerier) GetApplications(ctx context.Context, ids []string) ([]ApplicationDetails, error) {
 	ctx = context.WithValue(ctx, "pggen_query_name", "GetApplications")
 	rows, err := q.conn.Query(ctx, getApplicationsSQL, ids)
 	if err != nil {
 		return nil, fmt.Errorf("query GetApplications: %w", err)
 	}
 	defer rows.Close()
-	items := []Application{}
-	rowRow := q.types.newApplication()
+	items := []ApplicationDetails{}
+	rowRow := q.types.newApplicationDetails()
 	for rows.Next() {
-		var item Application
+		var item ApplicationDetails
 		if err := rows.Scan(rowRow); err != nil {
 			return nil, fmt.Errorf("scan GetApplications row: %w", err)
 		}

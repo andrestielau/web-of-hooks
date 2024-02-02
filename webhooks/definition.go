@@ -29,8 +29,8 @@ type Repository interface {
 	actor.Actor
 	CreateApplications(context.Context, []NewApplication) ([]Application, error)
 	DeleteApplications(context.Context, []string) error
-	GetApplications(context.Context, []string) ([]Application, error)
 	GetApplicationsByName(context.Context, []string) ([]Application, error)
+	GetApplications(context.Context, []string) ([]ApplicationDetails, error)
 	ListApplications(context.Context, ApplicationQuery) ([]Application, error)
 	DeleteAttempts(context.Context, []string) error
 	GetAttempts(context.Context, []string) ([]Attempt, error)
